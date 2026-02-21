@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { CursorProvider } from './context/CursorContext';
+import { CursorProvider, useCursor } from './context/CursorContext';
 import { CustomCursor } from './components/common/CustomCursor';
 import { useGlobalTextReveal } from './hooks/useGlobalTextReveal';
-import { useSmoothScroll } from './hooks/useSmoothScroll';
+import { SplashLoader } from './components/layout/SplashLoader';
 
 // Layout Components
 import { Header } from './components/layout/Header';
@@ -17,38 +17,53 @@ import { Work } from './pages/Work';
 import { CaseStudy } from './pages/CaseStudy';
 import { Contact } from './pages/Contact';
 
-// Helper: Scroll to top on every route change
-const ScrollToTop = () => {
+const RouteTransitions = () => {
   const { pathname } = useLocation();
+  const { setCursorType } = useCursor();
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [pathname]);
+    setCursorType('default'); 
+
+    const isCaseStudy = pathname.includes('/work/') && pathname !== '/work';
+    document.body.style.transition = 'background-color 0.4s ease, color 0.4s ease';
+    
+    if (isCaseStudy) {
+      document.body.style.backgroundColor = 'var(--light-bg)';
+      document.body.style.color = 'var(--light-text)';
+    } else {
+      document.body.style.backgroundColor = 'var(--bg-color)';
+      document.body.style.color = 'var(--text-color)';
+    }
+  }, [pathname, setCursorType]);
+
   return null;
 };
 
-// We wrap the inner app content here so hooks can access the Router context
 const AppContent: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // 1. Initialize our native smooth scroller
-  useSmoothScroll();
+  // FIX: Introduce the master loading lock
+  const [isLoaded, setIsLoaded] = useState(false);
   
-  // 2. Triggers the sitewide text animation automatically on every page
-  useGlobalTextReveal();
+  // Pass the lock to the animation hook so it waits
+  useGlobalTextReveal(isLoaded);
 
-  // Prevent scrolling when the full-page menu is open
+  // Lock the body scroll if the menu is open OR if the splash screen is active
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-  }, [isMenuOpen]);
+    if (isMenuOpen || !isLoaded) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+  }, [isMenuOpen, isLoaded]);
 
   return (
     <>
       <CustomCursor />
-      <ScrollToTop />
+      <RouteTransitions />
+      
+      {/* The Splash Screen only renders once. 
+        When the counter hits 100 and the curtain slides away, it fires onComplete. 
+      */}
+      {!isLoaded && <SplashLoader onComplete={() => setIsLoaded(true)} />}
       
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <MenuOverlay isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />

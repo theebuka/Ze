@@ -13,20 +13,23 @@ export const CaseStudy: React.FC = () => {
         
         <div className="cs-meta-grid">
           <div>
-            <span className="meta-label">CLIENT</span>
-            <span className="meta-value">Monibac</span>
+            <span className="meta-label">Timeline</span>
+            <span className="meta-value">Mar - June 2022</span>
           </div>
           <div>
             <span className="meta-label">ROLE</span>
             <span className="meta-value">Product Designer</span>
           </div>
           <div>
-            <span className="meta-label">YEAR</span>
-            <span className="meta-value">2023</span>
+            <span className="meta-label">STACK</span>
+            <span className="meta-value">Figma</span>
+            <span className="meta-value">Adobe Photoshop</span>
+            <span className="meta-value">Adobe Illustrator</span>
+            <span className="meta-value">Lottie</span>
           </div>
           <div>
-            <span className="meta-label">SERVICES</span>
-            <span className="meta-value">Web Design, Art Direction, UI/UX, Interaction Design, Webflow Development.</span>
+            <span className="meta-label">Summary</span>
+            <span className="meta-value">A unified motion system was developed to enhance consistency, usability, and brand expression across Instacart’s products. Core principles—clarity, efficiency, and warmth—guided the creation of a reusable Lottie-based library. The outcome was streamlined handoffs, cohesive user experiences, and scalable motion integration.</span>
           </div>
         </div>
       </header>

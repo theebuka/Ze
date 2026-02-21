@@ -15,8 +15,8 @@ export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) =
     { title: 'VAULT', path: '/vault' }
   ];
 
-  // The custom Quintic Out easing
-  const customEase = [0.76, 0, 0.24, 1];
+  // The custom Quintic Out easing (cubic-bezier tuple)
+  const customEase: [number, number, number, number] = [0.76, 0, 0.24, 1];
 
   return (
     <AnimatePresence>
