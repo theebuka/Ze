@@ -87,16 +87,20 @@ body {
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  
-  scrollbar-width: none;  
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-body::-webkit-scrollbar {
-  display: none;
+
+/* Hide scrollbar strictly across the board */
+html, body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar, 
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
 
 html.lenis, html.lenis body {
   height: auto;
@@ -259,28 +263,170 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .focus-heading { font-size: var(--font-home-primary); font-weight: 400; margin-bottom: 4vh; }
 .focus-list { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 20px 40px; max-width: 60%; font-size: var(--font-home-exc); }
 
-/* CASE STUDY (Inverted) */
-.page-case-study { background-color: var(--light-bg); color: var(--light-text); }
-.cs-header { margin-bottom: 10vh; }
-.cs-title { font-size: var(--font-int-main); line-height: var(--lh-int-main); letter-spacing: var(--ls-int-main); font-weight: 400; margin-bottom: 8px; }
-.cs-subtitle { font-size: var(--font-int-main); line-height: var(--lh-int-main); letter-spacing: var(--ls-int-main); font-weight: 400; color: #888; margin-bottom: 8vh; }
-.cs-meta-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: var(--grid-gutter); border-top: 1px solid #ddd; padding-top: 24px; }
-.meta-label { font-size: var(--font-cs-sub); letter-spacing: var(--ls-cs-sub); color: #888; margin-bottom: 8px; display: block; text-transform: uppercase; }
-.meta-value { font-size: var(--font-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); }
-.cs-row { margin-bottom: 10vh; align-items: start; }
-.cs-text { font-size: var(--font-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); }
-.cs-img { width: 100%; background: #e5e5e5; border: 1px solid #ddd; }
-.cs-img.hero { aspect-ratio: 16/9; }
-.cs-img.standard { aspect-ratio: 4/3; }
+/* =========================================
+   CASE STUDY (HERO & METADATA)
+========================================= */
+.cs-hero {
+  padding-top: clamp(10vh, 15vh, 20vh); 
+}
 
-/* CONTACT */
+.cs-title {
+  font-size: clamp(48px, 6vw, 96px); 
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  margin-bottom: clamp(40px, 5vw, 80px);
+  font-weight: 400;
+}
+
+.cs-title span {
+  display: inline-block; /* FIX: Prevents SplitType from miscalculating jumpy height */
+  width: 100%;
+}
+
+.cs-title .font-sec-muted {
+  font-size: clamp(48px, 6vw, 96px);
+  font-weight: 400;
+  opacity: 0.6;
+  margin-top: clamp(8px, 0.8vw, 16px);
+}
+
+.cs-metadata {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: clamp(24px, 2.5vw, 40px);
+}
+
+body[style*="background-color: var(--light-bg)"] .cs-metadata {
+  border-top: 1px solid rgba(0, 0, 0, 0.05); 
+}
+
+.meta-label {
+  display: block;
+  font-size: clamp(10px, 0.6vw, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+  margin-bottom: clamp(12px, 1.2vw, 24px);
+}
+
+.meta-value {
+  display: block;
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+}
+
+.meta-stack-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.meta-stack-list li {
+  margin-bottom: clamp(4px, 0.4vw, 8px);
+}
+
+.cs-section-title {
+  font-size: clamp(24px, 2vw, 32px);
+  margin-bottom: clamp(16px, 1.5vw, 24px);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.cs-block-title {
+  font-size: clamp(16px, 1.25vw, 20px);
+  margin-bottom: clamp(12px, 1vw, 16px);
+  font-weight: bold;
+  letter-spacing: -0.02em;
+}
+
+/* =========================================
+   CASE STUDY BUILDER (THE 12-COL GRID)
+========================================= */
+.case-study-builder {
+  width: 100%;
+}
+
+.section-padding {
+  margin-bottom: clamp(80px, 8.33vw, 160px);
+}
+
+.grid-12-col {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  align-items: start;
+}
+
+/* Strict Column Spans */
+.col-12 { grid-column: span 12; }
+.col-6 { grid-column: span 6; }
+.col-5 { grid-column: span 5; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+.col-2 { grid-column: span 2; }
+
+/* Custom Flex Spacing for fractional grid gaps */
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* EXACT GRID MATH: 
+  Calculates the precise width of 3 columns + the 2 internal gutters 
+  within a 12-column container. 
+*/
+.flex-col-3 {
+  width: calc((100% - (11 * var(--grid-gutter))) / 12 * 3 + (2 * var(--grid-gutter)));
+}
+
+/* Grid Push Utilities (Replaces destructive .flex-end) */
+.push-right-6 { grid-column: 7 / span 6; }
+.push-right-5 { grid-column: 8 / span 5; }
+
+.cs-text-body {
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+}
+
+.cs-media-wrapper {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.cs-img, .cs-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.cs-caption {
+  display: block;
+  margin-top: clamp(12px, 1.2vw, 24px);
+  font-size: clamp(10px, 0.6vw, 12px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+/* =========================================
+   CONTACT PAGE
+========================================= */
 .contact-headline { font-size: var(--font-int-main); line-height: var(--lh-int-main); letter-spacing: var(--ls-int-main); font-weight: 400; margin-bottom: 15vh; max-width: 90%; }
 .contact-links { display: flex; flex-direction: column; gap: 8vh; align-items: flex-end; }
 .link-group { display: flex; flex-direction: column; align-items: flex-end; }
 .contact-label { font-size: var(--font-cs-sub); color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; }
 .contact-big-link { font-size: var(--font-int-main); letter-spacing: var(--ls-int-main); font-weight: 400; transition: color 0.6s var(--ease-custom); }
 
-/* Responsive Overrides */
+/* =========================================
+   RESPONSIVE OVERRIDES
+========================================= */
 @media (max-width: 768px) {
   .hero-row { flex-direction: column; align-items: flex-start; gap: 24px; }
   .page-home .hero-subtitle { text-align: left; }
@@ -289,4 +435,24 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
   .footer-cta { flex-direction: column; align-items: flex-start; gap: 24px; }
   .about-focus { align-items: flex-start; }
   .focus-list { justify-content: flex-start; max-width: 100%; }
+  
+  .grid-12-col {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .col-12, .col-6, .col-5, .col-4, .col-3, .col-2, .push-right-6, .push-right-5 {
+    width: 100%;
+  }
+
+  /* Add this inside your @media (max-width: 768px) block */
+  .flex-space-between {
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .flex-col-3 {
+    width: 100%;
+  }
 }

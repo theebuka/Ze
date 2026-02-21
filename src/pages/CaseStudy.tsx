@@ -1,122 +1,91 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
+import { client } from '../lib/sanity';
+import { BlockRenderer } from '../components/case-study/BlockRenderer';
+
+interface ProjectData {
+  brand: string;
+  projectType: string;
+  timeline: string;
+  role: string;
+  stack: string[];
+  summary: string;
+  contentBlocks: any[];
+}
 
 export const CaseStudy: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const query = `*[_type == "caseStudy" && slug.current == $slug][0] {
+          brand, projectType, timeline, role, stack, summary, contentBlocks
+        }`;
+        const data = await client.fetch(query, { slug });
+        if (!data) return navigate('/work');
+        
+        setProject(data);
+      } catch (error) {
+        console.error("Sanity fetch error:", error);
+      }
+    };
+    fetchProject();
+  }, [slug, navigate]);
+
+  // LOCAL GSAP TRIGGER: Runs only after data is injected into the DOM
+  useEffect(() => {
+    if (project && containerRef.current) {
+      gsap.fromTo(containerRef.current, 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: 'power4.out', delay: 0.1 }
+      );
+    }
+  }, [project]);
+
+  // FIX: Renders a completely invisible div while fetching to prevent FOUC
+  if (!project) return <div className="page-wrapper" style={{ opacity: 0 }}></div>;
 
   return (
-    <main className="page-wrapper page-case-study">
-      {/* Header Section */}
-      <header className="cs-header">
-        <h1 className="cs-title">Monibac</h1>
-        <h2 className="cs-subtitle">Marketing website</h2>
-        
-        <div className="cs-meta-grid">
-          <div>
-            <span className="meta-label">Timeline</span>
-            <span className="meta-value">Mar - June 2022</span>
+    <div className="page-wrapper case-study-page" ref={containerRef} style={{ opacity: 0 }}>
+      <header className="cs-hero section-padding">
+        <h1 className="cs-title">
+          <span>{project.brand}</span>
+          <span className="font-sec-muted">{project.projectType}</span>
+        </h1>
+
+        <div className="cs-metadata grid-12-col">
+          <div className="col-2">
+            <span className="meta-label">TIMELINE</span>
+            <span className="meta-value">{project.timeline}</span>
           </div>
-          <div>
+          
+          <div className="col-3">
             <span className="meta-label">ROLE</span>
-            <span className="meta-value">Product Designer</span>
+            <span className="meta-value">{project.role}</span>
           </div>
-          <div>
+          
+          <div className="col-2">
             <span className="meta-label">STACK</span>
-            <span className="meta-value">Figma</span>
-            <span className="meta-value">Adobe Photoshop</span>
-            <span className="meta-value">Adobe Illustrator</span>
-            <span className="meta-value">Lottie</span>
+            <ul className="meta-stack-list">
+              {project.stack?.map((item, index) => (
+                <li key={index} className="meta-value">{item}</li>
+              ))}
+            </ul>
           </div>
-          <div>
-            <span className="meta-label">Summary</span>
-            <span className="meta-value">A unified motion system was developed to enhance consistency, usability, and brand expression across Instacart’s products. Core principles—clarity, efficiency, and warmth—guided the creation of a reusable Lottie-based library. The outcome was streamlined handoffs, cohesive user experiences, and scalable motion integration.</span>
+          
+          <div className="col-5">
+            <span className="meta-label">SUMMARY</span>
+            <p className="meta-value">{project.summary}</p>
           </div>
         </div>
       </header>
 
-      {/* Content Section (Staggered Grid) */}
-      <article className="cs-content">
-        
-        {/* Block 1: Full Width Image */}
-        <div className="cs-row grid-12">
-          <div className="col-full">
-            <div className="cs-img hero"></div>
-          </div>
-        </div>
-
-        {/* Block 2: Right-aligned Text (5 cols) */}
-        <div className="cs-row grid-12">
-          <div className="text-span-right">
-            <p className="cs-text">
-              Monibac is a digital financial solution dedicated to making banking seamless and accessible. 
-              The objective was to redesign their marketing website to reflect a modern, trustworthy, and 
-              highly engaging presence. The new design had to balance dense data with approachability, 
-              guiding users naturally through complex financial products while maintaining an aesthetic 
-              that felt distinctly premium and secure.
-            </p>
-          </div>
-        </div>
-
-        {/* Block 3: 50/50 Images */}
-        <div className="cs-row grid-12">
-          <div className="col-half-left">
-            <div className="cs-img standard"></div>
-          </div>
-          <div className="col-half-right">
-            <div className="cs-img standard"></div>
-          </div>
-        </div>
-
-        {/* Block 4: Left-aligned Text (5 cols) */}
-        <div className="cs-row grid-12">
-          <div className="text-span-left">
-            <p className="cs-text">
-              We focused heavily on typography and whitespace to create a structural hierarchy. 
-              By utilizing a stark contrasting palette, we were able to draw immediate attention 
-              to primary calls-to-action and core value propositions. Interactive elements were 
-              kept subtle but deliberate, ensuring they guided the user without overwhelming 
-              the reading experience.
-            </p>
-          </div>
-        </div>
-
-        {/* Block 5: 50/50 Images */}
-        <div className="cs-row grid-12">
-          <div className="col-half-left">
-            <div className="cs-img standard"></div>
-          </div>
-          <div className="col-half-right">
-            <div className="cs-img standard"></div>
-          </div>
-        </div>
-
-        {/* Block 6: 50/50 Text Blocks (5 cols each) */}
-        <div className="cs-row grid-12">
-          <div className="text-span-left">
-            <p className="cs-text">
-              The development phase required a tight integration of Framer Motion for scroll-triggered 
-              animations, ensuring that the visual storytelling remained fluid. The architecture was 
-              built on a headless CMS, allowing the marketing team to rapidly deploy new landing pages 
-              and update product details without requiring engineering resources.
-            </p>
-          </div>
-          <div className="text-span-right">
-            <p className="cs-text">
-              Ultimately, the redesigned Monibac platform achieved a 40% increase in user retention 
-              during the onboarding flow. The minimalist approach, combined with highly readable 
-              typography and strategic interaction design, successfully positioned the brand as a 
-              forward-thinking leader in the digital finance space.
-            </p>
-          </div>
-        </div>
-      </article>
-
-      {/* Next Work Footer */}
-      <div className="cs-footer">
-        <Link to="/work/next-project" className="next-work-link">
-          NEXT<br />WORK ↗
-        </Link>
-      </div>
-    </main>
+      <BlockRenderer blocks={project.contentBlocks || []} />
+    </div>
   );
 };

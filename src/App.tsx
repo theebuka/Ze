@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { CursorProvider, useCursor } from './context/CursorContext';
 import { CustomCursor } from './components/common/CustomCursor';
 import { useGlobalTextReveal } from './hooks/useGlobalTextReveal';
+import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { SplashLoader } from './components/layout/SplashLoader';
 
 // Layout Components
@@ -46,6 +47,9 @@ const AppContent: React.FC = () => {
   // FIX: Introduce the master loading lock
   const [isLoaded, setIsLoaded] = useState(false);
   
+  // Bring back the smooth scroll engine
+  useSmoothScroll();
+
   // Pass the lock to the animation hook so it waits
   useGlobalTextReveal(isLoaded);
 

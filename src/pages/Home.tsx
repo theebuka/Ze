@@ -1,13 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCursor } from '../context/CursorContext';
+import { client } from '../lib/sanity';
 import heroImage from '../assets/hero-placeholder.jpg';
+
+interface Project {
+  _id: string;
+  brand: string;
+  slug: string;
+  category?: string;
+  thumbnailUrl: string;
+}
 
 export const Home: React.FC = () => {
   const { setCursorType } = useCursor();
+  const [featuredWorks, setFeaturedWorks] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleMouseEnter = () => setCursorType('view-project');
   const handleMouseLeave = () => setCursorType('default');
+
+  useEffect(() => {
+    const fetchFeaturedWorks = async () => {
+      try {
+        const data = await client.fetch(`
+          *[_type == "caseStudy" && isFeatured == true] | order(publishedAt desc)[0...2] {
+            _id,
+            brand,
+            "slug": slug.current,
+            category,
+            "thumbnailUrl": thumbnail.asset->url
+          }
+        `);
+        setFeaturedWorks(data);
+      } catch (error) {
+        console.error("Error fetching featured works:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedWorks();
+  }, []);
 
   return (
     <main className="page-wrapper page-home">
@@ -39,29 +73,30 @@ export const Home: React.FC = () => {
         </header>
         
         <div className="work-grid">
-          <div 
-            className="work-item"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="work-img-wrapper ratio-16-9"></div>
-            <div className="work-meta meta-spaced">
-              <span className="font-bold-white">Sprocket</span>
-              <span>E-COMMERCE, PRODUCT DESIGN</span>
-            </div>
-          </div>
-          
-          <div 
-            className="work-item"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className="work-img-wrapper ratio-16-9"></div>
-            <div className="work-meta meta-spaced">
-              <span className="font-bold-white">Monibac</span>
-              <span>FINTECH, WEB DESIGN</span>
-            </div>
-          </div>
+          {!loading && featuredWorks.map((project) => (
+            <Link 
+              to={`/work/${project.slug}`} 
+              key={project._id} 
+              className="work-item"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              style={{ display: 'block' }}
+            >
+              <div className="work-img-wrapper ratio-16-9">
+                {project.thumbnailUrl && (
+                  <img 
+                    src={project.thumbnailUrl} 
+                    alt={project.brand} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                  />
+                )}
+              </div>
+              <div className="work-meta meta-spaced" style={{ marginTop: '16px' }}>
+                <span className="font-bold-white">{project.brand}</span>
+                <span>{project.category || 'CASE STUDY'}</span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
     </main>

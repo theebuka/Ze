@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { client } from '../../lib/sanity';
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -8,8 +9,23 @@ interface MenuOverlayProps {
 }
 
 export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) => {
+  const [workCount, setWorkCount] = useState<number>(0);
+
+  // Fetch the total number of published Case Studies on load
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const count = await client.fetch(`count(*[_type == "caseStudy"])`);
+        setWorkCount(count);
+      } catch (err) {
+        console.error("Failed to fetch count:", err);
+      }
+    };
+    fetchCount();
+  }, []);
+
   const links = [
-    { title: 'WORK', path: '/work', count: 7 },
+    { title: 'WORK', path: '/work', count: workCount },
     { title: 'ABOUT', path: '/about' },
     { title: 'CONTACT', path: '/contact' },
     { title: 'VAULT', path: '/vault' }
@@ -43,7 +59,10 @@ export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) =
                   onClick={closeMenu}
                 >
                   {link.title}
-                  {link.count && <span className="menu-count">({link.count})</span>}
+                  {/* Safely render the count if it exists and is greater than 0 */}
+                  {(link.count !== undefined && link.count > 0) && (
+                    <span className="menu-count">({link.count})</span>
+                  )}
                 </Link>
               </motion.div>
             ))}
