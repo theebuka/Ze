@@ -13,17 +13,13 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
     <div className="case-study-builder">
       {blocks.map((block, index) => {
         
-        // Helper to render the overarching section title if the user typed one in
-        const SectionHeader = () => block.sectionTitle ? (
-          <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>
-        ) : null;
-
         switch (block._type) {
           
           case 'fullWidthMedia':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {/* FIX: Inline rendering prevents React from swallowing the component */}
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className="col-12"><MediaItem data={block.media} /></div>
               </section>
             );
@@ -31,7 +27,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'halfWidthMedia':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className={block.align === 'right' ? 'push-right-6' : 'col-6'}><MediaItem data={block.media} /></div>
               </section>
             );
@@ -39,7 +35,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'sideBySideMedia':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className="col-6"><MediaItem data={block.leftMedia} /></div>
                 <div className="col-6"><MediaItem data={block.rightMedia} /></div>
               </section>
@@ -48,7 +44,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'threeColMedia':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className="col-4"><MediaItem data={block.media1} /></div>
                 <div className="col-4"><MediaItem data={block.media2} /></div>
                 <div className="col-4"><MediaItem data={block.media3} /></div>
@@ -58,7 +54,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'halfWidthText':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className={block.align === 'right' ? 'push-right-5' : 'col-5'}>
                   {block.heading && <h4 className="cs-block-title">{block.heading}</h4>}
                   <p className="cs-text-body">{block.text}</p>
@@ -69,7 +65,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'sideBySideText':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className="col-5">
                   {block.leftHeading && <h4 className="cs-block-title">{block.leftHeading}</h4>}
                   <p className="cs-text-body">{block.leftText}</p>
@@ -84,7 +80,7 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
           case 'threeColText':
             return (
               <section key={index} className="grid-12-col section-padding">
-                <SectionHeader />
+                {block.sectionTitle && <div className="col-12"><h3 className="cs-section-title">{block.sectionTitle}</h3></div>}
                 <div className="col-4">
                   {block.heading1 && <h4 className="cs-block-title">{block.heading1}</h4>}
                   <p className="cs-text-body">{block.text1}</p>
@@ -140,27 +136,23 @@ const MediaItem = ({ data }: { data: any }) => {
     return (
       <div className="cs-media-wrapper video-container" style={{ aspectRatio: '16/9', background: '#111' }}>
         <ReactPlayer 
-          src={data.videoUrl} 
+          src={data.videoUrl} // FIX: ReactPlayer requires 'url', not 'src'
           playing 
           loop 
           muted 
-          playsInline 
+          playsInline // Lowercase i for standard React DOM properties
           controls={false}
           width="100%" 
           height="100%" 
-          // pointerEvents: 'none' physically prevents the user from interacting with the iframe
           style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
           config={{
             youtube: {
-              rel: 0,
-              disablekb: 1,
-              fs: 0,
-              iv_load_policy: 3
+              // FIX: Must be nested inside playerVars to kill the UI
+              playerVars: { controls: 0, modestbranding: 1, rel: 0, disablekb: 1, fs: 0, iv_load_policy: 3 }
             },
             vimeo: {
-              background: true,
-              controls: false,
-              dnt: true
+              // FIX: Must be nested inside playerOptions
+              playerOptions: { background: true, controls: false, dnt: true }
             }
           }}
         />
