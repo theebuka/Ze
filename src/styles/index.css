@@ -178,6 +178,8 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 
 .menu-nav { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 0.625vw, 12px); }
 .menu-link { font-weight: 900; font-size: clamp(48px, 7.5vw, 144px); line-height: 1; letter-spacing: -0.06em; position: relative; transition: opacity 0.6s var(--ease-custom), color 0.6s var(--ease-custom); }
+/* RollingText wrapper inherits line-height: 1 so the clip masks one row of text exactly */
+.menu-link .rolling-text { line-height: 1; }
 .menu-count { font-size: var(--font-body); color: var(--text-muted); font-weight: 400; letter-spacing: normal; position: absolute; top: 0; right: -30px; }
 
 /* =========================================
@@ -214,12 +216,24 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .footer-cta { display: flex; justify-content: space-between; align-items: flex-end; }
 .footer-cta h2 { font-size: var(--font-home-primary); line-height: var(--lh-home-primary); letter-spacing: var(--ls-home-primary); font-weight: 400; }
 .footer-email { font-size: var(--font-home-exc); line-height: var(--lh-home-exc); letter-spacing: var(--ls-home-exc); transition: opacity 0.6s var(--ease-custom); }
-.footer-bottom { display: flex; justify-content: space-between; font-size: var(--font-home-sec); color: var(--text-muted); text-transform: uppercase; }
+.footer-email:hover { opacity: 0.5; }
+/* RollingText wrapper inside footer-email must keep line-height: 1 to
+   preserve the overflow:hidden clip height. The --lh-home-exc (1.25) is
+   applied to the .footer-email anchor itself for layout spacing — the
+   rolling-text wrapper needs to stay at exactly 1em tall for the clip. */
+.footer-email .rolling-text { line-height: 1; }
+/* width: 100% ensures space-between reaches edge-to-edge inside the
+   flex-direction:column parent (.site-footer position:fixed). Without it,
+   the footer-bottom collapses to fit-content width in some browsers. */
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: var(--font-home-sec); color: var(--text-muted); text-transform: uppercase; }
 .footer-socials { display: flex; gap: 24px; }
 .footer-socials a { transition: opacity 0.6s var(--ease-custom); }
 
 /* Sitewide Hover Animations */
-.menu-link:hover, .contact-big-link:hover, .footer-email:hover, .footer-socials a:hover, .next-work-link:hover { opacity: 0.5; }
+/* .menu-link:hover and .footer-email:hover intentionally removed.
+   Both are now managed by the RollingText GSAP animation (interactions.css).
+   An opacity rule here would interfere with the per-character stagger. */
+.contact-big-link:hover, .footer-socials a:hover, .next-work-link:hover { opacity: 0.5; }
 .header-logo a:hover, .header-menu-toggle:hover { opacity: 0.6; }
 .work-item { transition: opacity 0.6s var(--ease-custom); }
 .work-item:hover .work-img-wrapper { opacity: 0.8; }
@@ -250,7 +264,7 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .work-title { font-size: var(--font-int-main); line-height: var(--lh-int-main); letter-spacing: var(--ls-int-main); font-weight: 400; }
 .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--grid-gutter); row-gap: 10vh; }
 .work-item { display: flex; flex-direction: column; }
-.work-img-wrapper { width: 100%; aspect-ratio: 4/3; background: #111; }
+.work-img-wrapper { width: 100%; aspect-ratio: 4/3; background: #111; overflow: hidden; /* Required: contains the 115% tall parallax-img */ }
 .work-meta { display: flex; justify-content: space-between; font-size: var(--font-home-sec); text-transform: uppercase; color: var(--text-muted); }
 
 /* ABOUT */
@@ -427,32 +441,369 @@ body[style*="background-color: var(--light-bg)"] .cs-metadata {
 /* =========================================
    RESPONSIVE OVERRIDES
 ========================================= */
+
+/* =========================================
+   RESPONSIVE — MOBILE ( ≤ 768px )
+
+   APPROACH: Override CSS custom properties in :root first so every
+   component that references a variable automatically picks up the
+   mobile value. Then handle structural layout changes per component.
+
+   Font scale is pure vw (no clamp) so the type stays proportional
+   to the viewport exactly as designed. Minimum sizes are enforced
+   with max() where a floor is needed (labels, captions, meta).
+========================================= */
 @media (max-width: 768px) {
-  .hero-row { flex-direction: column; align-items: flex-start; gap: 24px; }
-  .page-home .hero-subtitle { text-align: left; }
-  .work-grid, .cs-meta-grid { grid-template-columns: 1fr; }
-  .col-half-left, .col-half-right, .text-span-left, .text-span-right { grid-column: 1 / -1; }
-  .footer-cta { flex-direction: column; align-items: flex-start; gap: 24px; }
-  .about-focus { align-items: flex-start; }
-  .focus-list { justify-content: flex-start; max-width: 100%; }
-  
-  .grid-12-col {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+
+  /* ── 0. VARIABLE OVERRIDES ──────────────────────────────────────
+     The desktop :root clamp() values have minimums (48px, 40px…)
+     that are larger than the designed mobile sizes. We must override
+     them here so mobile viewports get the correct vw-scaled values.
+  ──────────────────────────────────────────────────────────────── */
+  :root {
+    --grid-margin: 16px;
+    --grid-gutter: 16px;
+    --header-height: 64px;
+
+    --pad-page-top: 8px;
+    --pad-page-bottom: 64px;
+    --gap-nav-heading: 24px;
+
+    /* Type scale — designed for 390px viewport */
+    --font-home-primary:  10.26vw; /* "CHUKWUEBUKA" fills line   */
+    --font-int-main:       7.69vw; /* Page & section headings    */
+    --font-home-exc:       5.13vw; /* Subtitle / footer email    */
+    --font-home-sec:  max(13px, 3.59vw); /* Header / meta / labels  */
+    --font-body:      max(14px, 4.10vw); /* Body paragraphs         */
+    --font-cs-sub:    max(11px, 3.08vw); /* Captions / small labels */
   }
-  
-  .col-12, .col-6, .col-5, .col-4, .col-3, .col-2, .push-right-6, .push-right-5 {
+
+  /* ── 1. HEADER ──────────────────────────────────────────────── */
+  /* Header stays 3-col (ZE | TIME | MENU) — just tighter spacing */
+  .site-header {
+    padding: 0 var(--grid-margin);
+  }
+
+  /* ── 2. MENU OVERLAY ────────────────────────────────────────── */
+  /*
+    Design: items are centered, font fills the screen.
+    "CONTACT" (7 chars) at 18.5vw fills ~390px at -0.06em tracking.
+    Count superscript repositioned to top-right of word.
+  */
+  .menu-nav {
+    align-items: center;
+    gap: 0;
+  }
+
+  .menu-link {
+    font-size: 18.5vw;
+    letter-spacing: -0.05em;
+    text-align: center;
+  }
+
+  .menu-link .rolling-text {
+    line-height: 1;
+  }
+
+  .menu-count {
+    font-size: max(11px, 3vw);
+    right: -24px;
+    top: 4px;
+  }
+
+  /* ── 3. HOME PAGE ───────────────────────────────────────────── */
+  .page-home .hero-section {
+    margin-top: 0;
+    padding-top: calc(var(--header-height) + 24px);
+  }
+
+  /*
+    Design: subtitle sits ABOVE the name on mobile.
+    Desktop is a flex-row (name left, subtitle right).
+    Mobile is flex-column with subtitle reordered to the top.
+  */
+  .page-home .hero-row {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .page-home .hero-subtitle {
+    order: -1; /* floats above the h1 */
+    text-align: left;
+    font-size: var(--font-home-exc);
+    line-height: 1.4;
+    max-width: 100%;
+  }
+
+  .page-home .hero-title {
+    font-size: var(--font-home-primary);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+  }
+
+  .hero-image-wrapper {
+    height: 56vw; /* ~218px at 390px — 9:16 crop feel */
+    margin-left: calc(-1 * var(--grid-margin));
+    margin-right: calc(-1 * var(--grid-margin));
+    width: calc(100% + var(--grid-margin) * 2);
+  }
+
+  /* Selected works header */
+  .selected-works .works-header {
+    margin-bottom: 24px;
+  }
+
+  .page-home .works-header h2 {
+    font-size: 7.69vw;
+  }
+
+  /* ── 4. WORK GRID (shared by Home + Work page) ──────────────── */
+  .work-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    row-gap: 48px;
+  }
+
+  .work-img-wrapper {
+    aspect-ratio: 16 / 9;
+  }
+
+  .work-meta {
+    font-size: var(--font-home-sec);
+    margin-top: 12px;
+  }
+
+  /* ── 5. WORK PAGE ───────────────────────────────────────────── */
+  .work-page-header {
+    margin-bottom: 40px;
+  }
+
+  .work-title {
+    font-size: var(--font-int-main);
+    line-height: 1.1;
+    max-width: 100%;
+  }
+
+  /* ── 6. ABOUT PAGE ──────────────────────────────────────────── */
+  .about-hero {
+    margin-bottom: 8vh;
+  }
+
+  .about-intro-text {
+    font-size: var(--font-int-main);
+    line-height: 1.15;
+  }
+
+  .about-grid {
+    row-gap: 8vh;
+    margin-bottom: 8vh;
+  }
+
+  .about-img-placeholder {
+    aspect-ratio: 4 / 3;
+  }
+
+  /*
+    Design: FOCUS heading is large — "FOCUS" at ~19vw fills the line.
+    Focus list switches to left-aligned wrapping chips.
+  */
+  .about-focus {
+    align-items: flex-start;
+  }
+
+  .focus-heading {
+    font-size: 19vw;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    line-height: 1;
+  }
+
+  .focus-list {
+    justify-content: flex-start;
+    max-width: 100%;
+    gap: 12px 24px;
+    font-size: var(--font-home-exc);
+  }
+
+  /* ── 7. CONTACT PAGE ────────────────────────────────────────── */
+  /*
+    Design: headline fills width, links section is right-aligned
+    with stacked social links.
+  */
+  .contact-headline {
+    font-size: var(--font-int-main);
+    line-height: 1.1;
+    margin-bottom: 10vh;
+    max-width: 100%;
+  }
+
+  .contact-links {
+    gap: 5vh;
+    align-items: flex-end; /* keep right-aligned */
     width: 100%;
   }
 
-  /* Add this inside your @media (max-width: 768px) block */
+  .link-group {
+    align-items: flex-end;
+  }
+
+  .contact-label {
+    font-size: var(--font-cs-sub);
+    margin-bottom: 8px;
+  }
+
+  .contact-big-link {
+    font-size: var(--font-int-main);
+    line-height: 1.1;
+    text-align: right;
+  }
+
+  /* ── 8. CASE STUDY ──────────────────────────────────────────── */
+  /*
+    Design: title is large, metadata unstacks from the 12-col grid
+    into a single-column vertical list. Each metadata field shows
+    its label above its value, full width.
+  */
+  .cs-hero {
+    padding-top: calc(var(--header-height) + 24px);
+  }
+
+  .cs-title {
+    font-size: var(--font-home-primary);
+    margin-bottom: 24px;
+    line-height: 0.95;
+  }
+
+  .cs-title .font-sec-muted {
+    font-size: var(--font-home-primary);
+  }
+
+  .cs-metadata {
+    padding-top: 20px;
+  }
+
+  /* Unstack the grid metadata into a single column */
+  .cs-metadata.grid-12-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .cs-metadata .col-2,
+  .cs-metadata .col-3,
+  .cs-metadata .col-5 {
+    width: 100%;
+  }
+
+  .meta-label {
+    font-size: var(--font-cs-sub);
+    margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-size: var(--font-body);
+  }
+
+  .cs-section-title {
+    font-size: 5.13vw;
+  }
+
+  .cs-block-title {
+    font-size: max(14px, 4.1vw);
+  }
+
+  .cs-text-body {
+    font-size: var(--font-body);
+  }
+
+  .cs-caption {
+    font-size: var(--font-cs-sub);
+  }
+
+  /* Content blocks: all full-width on mobile */
+  .grid-12-col {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .col-12, .col-6, .col-5, .col-4, .col-3, .col-2,
+  .push-right-6, .push-right-5 {
+    width: 100%;
+  }
+
+  .section-padding {
+    margin-bottom: 48px;
+  }
+
+  /* Flex-based 3-col text blocks collapse to single column */
   .flex-space-between {
     flex-direction: column;
-    gap: 40px;
+    gap: 32px;
   }
-  
+
   .flex-col-3 {
     width: 100%;
+  }
+
+  /* ── 9. FOOTER ──────────────────────────────────────────────── */
+  /*
+    Design: CTA block stacks — heading on left, email below it.
+    Desktop has them side-by-side (space-between).
+    Bottom row stays space-between (copyright | IG X LI).
+  */
+  .site-footer {
+    padding-top: 48px;
+    padding-bottom: 24px;
+    gap: 40px;
+  }
+
+  .footer-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer-cta h2 {
+    font-size: var(--font-home-primary);
+    line-height: 1;
+  }
+
+  .footer-email {
+    font-size: var(--font-home-exc);
+    line-height: 1.3;
+  }
+
+  .footer-bottom {
+    font-size: var(--font-home-sec);
+  }
+
+  .footer-socials {
+    gap: 16px;
+  }
+
+  /* ── 10. PAGE WRAPPER ───────────────────────────────────────── */
+  .page-wrapper {
+    padding-left: var(--grid-margin);
+    padding-right: var(--grid-margin);
+  }
+
+  /* Shared grid utilities */
+  .col-half-left, .col-half-right,
+  .text-span-left, .text-span-right {
+    grid-column: 1 / -1;
+  }
+
+  /* Margin helpers */
+  .margin-top-huge {
+    margin-top: 56px;
+  }
+
+  .works-header {
+    margin-bottom: 24px;
   }
 }

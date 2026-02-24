@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLagosTime } from '../../hooks/useLagosTime';
+import { useMagneticEffect } from '../../hooks/useMagneticEffect';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -10,23 +11,34 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const lagosTime = useLagosTime();
   const location = useLocation();
-  
-  // Check if we are on a specific case study page (e.g., /work/monibac)
-  const isCaseStudy = location.pathname.includes('/work/') && location.pathname !== '/work';
+
+  const isCaseStudy =
+    location.pathname.includes('/work/') && location.pathname !== '/work';
+
+  // ── Magnetic MENU toggle ─────────────────────────────────────────────
+  // Slightly stronger pull (0.5) on a larger radius since this is the
+  // primary interactive element in the header.
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  useMagneticEffect(toggleRef, 0.5, 80);
 
   return (
-    // Apply an inversion class if on a case study, UNLESS the menu is currently open
-    <header className={`site-header ${(isCaseStudy && !isMenuOpen) ? 'invert-text' : ''}`}>
+    <header
+      className={`site-header ${isCaseStudy && !isMenuOpen ? 'invert-text' : ''}`}
+    >
       <div className="header-logo">
-        <Link to="/" onClick={() => setIsMenuOpen(false)}>ZE</Link>
+        <Link to="/" onClick={() => setIsMenuOpen(false)}>
+          ZE
+        </Link>
       </div>
-      
+
       <div className="header-time">
-        <span>LOCAL / </span>{lagosTime.toUpperCase()}
+        <span>LOCAL / </span>
+        {lagosTime.toUpperCase()}
       </div>
-      
-      <button 
-        className="header-menu-toggle"
+
+      <button
+        ref={toggleRef}
+        className="header-menu-toggle magnetic"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         {isMenuOpen ? 'CLOSE' : 'MENU'}

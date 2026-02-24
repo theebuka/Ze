@@ -1,0 +1,185 @@
+/* ============================================================
+   INTERACTIONS.CSS
+   All micro-interaction styles. Import in main.tsx AFTER index.css
+   ============================================================ */
+
+/* ── 1. INNER IMAGE PARALLAX ─────────────────────────────────
+   The wrapper clips. The image is taller than the wrapper,
+   and GSAP scrubs its Y position on scroll.
+   ─────────────────────────────────────────────────────────── */
+   .parallax-wrapper {
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .parallax-img {
+    width: 100%;
+    height: 115% !important;   /* Extra 15% provides travel room */
+    object-fit: cover;
+    display: block;
+    will-change: transform;
+    transform-origin: center center;
+  }
+  
+  /* ── 2. MAGNETIC ELEMENTS ────────────────────────────────────
+     GSAP handles the transform. We just mark will-change.
+     ─────────────────────────────────────────────────────────── */
+  .magnetic {
+    display: inline-block;
+    will-change: transform;
+  }
+  
+  /* ── 3. ROLLING SPLIT-TEXT HOVER ─────────────────────────────
+     Two text rows stacked. Wrapper clips to one line height.
+     GSAP shuffles the rows on hover with per-char stagger.
+     ─────────────────────────────────────────────────────────── */
+  .rolling-text {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    cursor: pointer;
+    /* height: 1em + line-height: 1 together give overflow:hidden a hard,
+       reliable bounding box. line-height alone doesn't constrain flex children
+       — they ignore it for sizing. Without an explicit height, .rt-top (a flex
+       row) expands to its content height and the wrapper follows, doubling the
+       occupied vertical space even though .rt-bot is position:absolute. */
+    line-height: 1;
+    height: 1em;
+  }
+  
+  .rolling-text .rt-top,
+  .rolling-text .rt-bot {
+    display: flex;
+    align-items: center;
+    /* Both rows must be exactly 1em tall so they occupy the same slot.
+       Without height: 100%, .rt-top can grow beyond 1em due to font metrics
+       (ascenders, descenders) and push the wrapper open from inside. */
+    height: 100%;
+  }
+  
+  .rolling-text .rt-bot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  
+  .rolling-text .rt-top > span,
+  .rolling-text .rt-bot > span {
+    display: inline-block;
+    will-change: transform;
+    /* Preserve whitespace so spaces render correctly */
+    white-space: pre;
+  }
+  
+  /* Screen-reader only text */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  /* ── 4. CINEMATIC FOOTER UNCOVER ─────────────────────────────
+     Footer is pinned to the viewport bottom behind everything.
+     Main content has margin-bottom = footer height, so as the
+     user scrolls to the end, main "peels away" to reveal footer.
+  
+     THEMING: RouteTransitions adds/removes `theme-light` on <body>.
+     CSS cascade handles both elements from a single source of truth.
+     This replaces the broken `background-color: inherit` approach —
+     `inherit` reads the computed value at cascade time and does NOT
+     reactively follow inline style changes on the parent.
+     ─────────────────────────────────────────────────────────── */
+  
+  /* Main — always above the footer, always opaque */
+  main.app-main {
+    position: relative;
+    z-index: 1;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.4s ease, color 0.4s ease;
+    /* Shadow casts downward onto the revealed footer, making main feel like
+       a physical card peeling away from a surface underneath it. */
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.theme-light main.app-main {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+  }
+  
+  /* Footer — fixed behind main, revealed as main scrolls away.
+     ALWAYS inverted from the page theme — creates contrast and signals
+     a distinct "end of page" zone regardless of which page you're on. */
+  .site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    /* Default (dark pages): footer is light — inverted */
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  /* Case study pages (light theme): footer flips to dark — still inverted */
+  body.theme-light .site-footer {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+  
+  /* ── 5. MEDIA-AWARE CUSTOM CURSOR ────────────────────────────
+     In 'media' mode, the cursor becomes a circular video player.
+     mix-blend-mode is removed so the video is visible.
+     ─────────────────────────────────────────────────────────── */
+  .cursor-media-wrapper {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cursor-media-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+  }
+  
+  /* Label inside the media cursor */
+  .cursor-media-label {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 2;
+  }
+  
+  /* Cursor dim overlay when no video is provided (fallback) */
+  .cursor-fallback-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--bg-color);
+    pointer-events: none;
+  }
