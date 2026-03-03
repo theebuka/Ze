@@ -67,6 +67,13 @@
   font-weight: 700;
   font-style: bold;
 }
+/* Nacelle Light — ensure Nacelle-Light.otf is in src/assets/fonts/ */
+@font-face {
+  font-family: 'Nacelle';
+  src: url('../assets/fonts/Nacelle-Light.otf') format('otf');
+  font-weight: 300;
+  font-style: light;
+}
 
 /* Global Cursor Override */
 * { 
@@ -83,6 +90,7 @@ a, button {
 
 body {
   font-family: 'Nacelle', sans-serif;
+  /* font-weight: 300; Nacelle Light is the sitewide base weight */
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
@@ -805,5 +813,604 @@ body[style*="background-color: var(--light-bg)"] .cs-metadata {
 
   .works-header {
     margin-bottom: 24px;
+  }
+}
+/* =========================================
+   7. NEW VARIABLES
+   Added for new components — marquee, extended grid, work card brand.
+========================================= */
+:root {
+  /* Footer marquee — intentionally raw vw, no clamp.
+     The marquee should always fill the full visual field. */
+  --font-marquee: 13.3333vw;   /* 256px / 1920px viewport */
+  /* Footer text scale — Nacelle Light, fixed design values converted to vw */
+  --font-footer-body: 1.0417vw;   /* 20px / 1920 */
+  --lh-footer-body: 1.4;          /* 28px / 20px */
+  --font-footer-label: 0.8333vw;  /* 16px / 1920 */
+  --lh-footer-label: 1.25;        /* 20px / 16px */
+  --ls-footer: -0.02em;           /* -2% letter-spacing */
+
+  /* Work card brand name — slightly larger than --font-home-sec */
+  --font-work-brand: clamp(15px, 1.25vw, 22px);
+}
+
+/* Extended grid column spans */
+.col-7 { grid-column: span 7; }
+.col-8 { grid-column: span 8; }
+.col-9 { grid-column: span 9; }
+
+/* =========================================
+   8. WORK CARD META — REDESIGNED
+   Two-row structure: [category + arrow] / [brand name]
+   Overrides the old single-row .work-meta rule above.
+========================================= */
+.work-meta {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 8px between category row and brand name */
+}
+
+.work-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 16px / 1920 = 0.833vw | lh: 20/16=1.25 | ls: -0.02em | Sentence case | Nacelle Light */
+.work-meta-category {
+  font-size: 0.8333vw;
+  /* font-weight: 300; */
+  line-height: 1.25;
+  color: var(--text-muted);
+  letter-spacing: -0.02em;
+  /* Sentence case — no text-transform */
+}
+
+/* Arrow rotates ↗ → → on card hover */
+.work-meta-arrow {
+  font-size: 0.8333vw;
+  color: var(--text-muted);
+  display: inline-block;
+  transition: transform 0.4s var(--ease-custom), color 0.4s var(--ease-custom);
+}
+
+.work-item:hover .work-meta-arrow {
+  transform: rotate(-45deg);
+  color: var(--text-color);
+}
+
+.work-meta-brand {
+  font-size: var(--font-work-brand);
+  font-weight: 400;
+  color: var(--text-color);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* =========================================
+   9. HOME — FOCUS SECTION
+   Layout: left col = "FOCUS" heading, right col = body + skill rows
+   Skills grid: each row has [skill ✦ skill] with bottom border.
+   ✦ spins 360° once on row hover.
+========================================= */
+.focus-section {
+  margin-top: clamp(80px, 10vw, 160px);
+  margin-bottom: clamp(80px, 10vw, 160px);
+}
+
+/* 12-col: heading=col 1-4 | content=col 7-12 (6 cols, 2-col gap between) */
+.focus-section > .col-4 {
+  grid-column: 1 / span 4;
+}
+
+.focus-section > .col-6 {
+  grid-column: 7 / span 6;
+}
+
+.focus-section .focus-heading {
+  font-size: var(--font-home-primary);
+  font-weight: 900;
+  letter-spacing: var(--ls-home-primary);
+  line-height: 1;
+  position: sticky;
+  top: calc(var(--header-height) + 24px);
+}
+
+.focus-body {
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--text-muted);
+  margin-bottom: clamp(32px, 4vw, 64px);
+}
+
+.focus-skills {
+  width: 100%;
+}
+
+.focus-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: clamp(16px, 2vw, 32px);
+  padding: clamp(12px, 1.25vw, 20px) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: default;
+}
+
+.focus-skill {
+  font-size: var(--font-cs-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  transition: color 0.35s var(--ease-custom);
+  line-height: 1;
+}
+
+/* Second skill in each row aligns right */
+.focus-skill:last-child {
+  text-align: right;
+}
+
+.focus-star {
+  font-size: clamp(7px, 0.52vw, 10px);
+  color: var(--text-muted);
+  display: inline-block;
+  transition: color 0.35s var(--ease-custom);
+  line-height: 1;
+}
+
+/* Hover: brighten everything in the row */
+.focus-row:hover .focus-skill {
+  color: var(--text-color);
+}
+
+.focus-row:hover .focus-star {
+  color: var(--text-color);
+  animation: starSpin 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes starSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* =========================================
+   10. CONTACT PAGE — REBUILT
+   Layout: 4-col heading + 8-col right (intro, divider, 3-col links)
+========================================= */
+
+/* Contacts inherits .page-wrapper padding, so no extra wrapper needed */
+.contact-top {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  align-items: flex-start;
+  margin-bottom: clamp(48px, 6vw, 96px);
+}
+
+/* heading: col 1-4 | content: col 7-12 (6 cols, 2-col gap between) */
+.contact-top > :first-child {
+  grid-column: 1 / span 4;
+}
+
+.contact-top > :last-child {
+  grid-column: 7 / span 6;
+}
+
+.contact-heading {
+  font-size: var(--font-int-main);
+  line-height: var(--lh-about-main);
+  letter-spacing: var(--ls-int-main);
+  font-weight: 400;
+  /* Sticky so heading anchors as right content grows */
+  position: sticky;
+  top: calc(var(--header-height) + 24px);
+}
+
+/* "talk." uses text-muted inline span */
+.contact-heading .contact-muted {
+  color: var(--text-muted);
+}
+
+.contact-intro {
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--text-muted);
+}
+
+.contact-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: clamp(40px, 5vw, 80px) 0;
+}
+
+.contact-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--grid-gutter);
+  align-items: flex-start;
+}
+
+.contact-col {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 0.9375vw, 16px);
+}
+
+.contact-col-label {
+  font-size: var(--font-cs-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: clamp(8px, 0.625vw, 12px);
+}
+
+.contact-link {
+  font-size: var(--font-home-sec);
+  line-height: var(--lh-home-sec);
+  letter-spacing: var(--ls-home-sec);
+  transition: opacity 0.4s var(--ease-custom);
+}
+
+.contact-link:hover {
+  opacity: 0.4;
+}
+
+/* =========================================
+   11. VAULT PAGE
+   Layout: 4-col heading + 8-col right (intro + bordered link rows)
+   Each .vault-link-item is a future preview host — don't flatten it.
+========================================= */
+.vault-top {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  align-items: flex-start;
+}
+
+/* heading: col 1-4 | content: col 7-12 (6 cols, 2-col gap between) */
+.vault-top > :first-child {
+  grid-column: 1 / span 4;
+}
+
+.vault-top > :last-child {
+  grid-column: 7 / span 6;
+}
+
+.vault-heading {
+  font-size: var(--font-int-main);
+  font-weight: 400;
+  letter-spacing: var(--ls-int-main);
+  line-height: var(--lh-int-main);
+  position: sticky;
+  top: calc(var(--header-height) + 24px);
+}
+
+.vault-intro {
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--text-muted);
+  margin-bottom: clamp(40px, 5vw, 80px);
+}
+
+.vault-links {
+  width: 100%;
+}
+
+/* The outer container — future preview image will be appended here */
+.vault-link-item {
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: visible; /* allow preview to overflow if needed */
+}
+
+.vault-link {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.25vw, 20px);
+  padding: clamp(20px, 2vw, 32px) 0;
+  width: 100%;
+  transition: opacity 0.4s var(--ease-custom);
+}
+
+.vault-link-arrow {
+  font-size: clamp(11px, 0.78vw, 15px);
+  display: inline-block;
+  color: var(--text-muted);
+  transition: transform 0.45s var(--ease-custom), color 0.35s var(--ease-custom);
+  flex-shrink: 0;
+}
+
+.vault-link-label {
+  font-size: clamp(12px, 0.9375vw, 18px);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color 0.35s var(--ease-custom);
+}
+
+/* Hover: brighten both arrow + label, arrow rotates ↗ → → */
+.vault-link:hover .vault-link-arrow {
+  transform: rotate(-45deg);
+  color: var(--text-color);
+}
+
+.vault-link:hover .vault-link-label {
+  color: var(--text-color);
+}
+
+/* =========================================
+   12. FOOTER — COMPLETE REBUILD
+   Structure: [full-bleed marquee] [bottom bar]
+   The marquee auto-scrolls and pauses on hover.
+   Bottom bar: left = copyright + IG/X/LI | right = MENU col + CTA col
+   
+   COLOR LOGIC (unchanged from interactions.css):
+   - Default (dark pages): footer bg is light, text is dark #111
+   - Light pages (case study): footer bg is dark, text is white #fff
+   Hover states respond to the background context.
+========================================= */
+
+/* Override old site-footer padding/gap — interactions.css owns position/bg/color */
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+}
+
+/* MARQUEE */
+.footer-marquee {
+  overflow: hidden;
+  width: 100%;
+  /* No border — removed per design */
+  line-height: 1;
+}
+
+/* Pause on hover */
+.footer-marquee:hover .footer-marquee-track {
+  animation-play-state: paused;
+}
+
+.footer-marquee-track {
+  display: flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marqueeScroll 18s linear infinite;
+}
+
+.footer-marquee-set {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+}
+
+.footer-marquee-item {
+  font-size: var(--font-marquee);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  white-space: nowrap;
+  padding-right: 0.15em;
+}
+
+.footer-marquee-sep {
+  font-size: var(--font-marquee);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  opacity: 0.3;
+  padding-right: 0.15em;
+  white-space: nowrap;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* BOTTOM BAR */
+.footer-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  /* 160px top / 72px bottom at 1920px → vw */
+  padding-top: 8.3333vw;
+  padding-bottom: 3.75vw;
+  padding-left: var(--grid-margin);
+  padding-right: var(--grid-margin);
+  gap: var(--grid-gutter);
+  /* No border-top — visual separation is the marquee text itself */
+  margin-top: 7.5vw; /* 144px gap between marquee and bottom bar */
+}
+
+.footer-bottom-left {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.25vw, 20px);
+}
+
+.footer-copyright {
+  font-size: var(--font-footer-body);
+  /* font-weight: 300; */
+  line-height: var(--lh-footer-body);
+  letter-spacing: var(--ls-footer);
+  opacity: 0.5;
+}
+
+.footer-social-icons {
+  display: flex;
+  gap: clamp(16px, 1.66vw, 24px);
+}
+
+.footer-social-link {
+  font-size: var(--font-footer-body);
+  /* font-weight: 300; */
+  line-height: var(--lh-footer-body);
+  letter-spacing: var(--ls-footer);
+  transition: opacity 0.4s var(--ease-custom);
+}
+
+/* Default footer is bright (dark pages) → hover dims */
+.footer-social-link:hover {
+  opacity: 0.4;
+}
+
+/* Dark footer (light pages / case study) → base slightly dim, hover brightens */
+body.theme-light .footer-social-link {
+  opacity: 0.6;
+}
+body.theme-light .footer-social-link:hover {
+  opacity: 1;
+}
+
+.footer-bottom-right {
+  display: flex;
+  flex-direction: column;  /* MENU and Got a project stack vertically */
+  gap: clamp(32px, 4.16vw, 80px);
+  align-items: flex-start;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.52vw, 10px);
+}
+
+.footer-col-label {
+  /* "MENU" and "Got a project?" — 16px, 20px lh, -0.02em */
+  font-size: var(--font-footer-label);
+  /* font-weight: 300; */
+  line-height: var(--lh-footer-label);
+  letter-spacing: var(--ls-footer);
+  opacity: 0.4;
+  margin-bottom: clamp(6px, 0.52vw, 10px);
+}
+
+.footer-col-link {
+  font-size: var(--font-footer-body);
+  /* font-weight: 300; */
+  line-height: var(--lh-footer-body);
+  letter-spacing: var(--ls-footer);
+  transition: opacity 0.4s var(--ease-custom);
+}
+
+.footer-col-link:hover {
+  opacity: 0.4;
+}
+
+body.theme-light .footer-col-link {
+  opacity: 0.6;
+}
+body.theme-light .footer-col-link:hover {
+  opacity: 1;
+}
+
+.footer-cta-email {
+  font-size: var(--font-footer-body);
+  /* font-weight: 300; */
+  line-height: var(--lh-footer-body);
+  letter-spacing: var(--ls-footer);
+  transition: opacity 0.4s var(--ease-custom);
+}
+
+.footer-cta-email:hover {
+  opacity: 0.4;
+}
+
+body.theme-light .footer-cta-email {
+  opacity: 0.6;
+}
+body.theme-light .footer-cta-email:hover {
+  opacity: 1;
+}
+
+/* =========================================
+   MOBILE OVERRIDES — NEW COMPONENTS
+   These append to the existing @media (max-width: 768px) block rules.
+   They do NOT replace the existing mobile block — they extend it.
+========================================= */
+@media (max-width: 768px) {
+
+  /* Work card meta */
+  .work-meta {
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .work-meta-brand {
+    font-size: max(14px, 4.1vw);
+  }
+
+  /* Focus section */
+  .focus-section {
+    margin-top: 56px;
+    margin-bottom: 56px;
+  }
+  .focus-section.grid-12-col {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .focus-section .focus-heading {
+    font-size: 19vw;
+    position: static; /* no sticky on mobile */
+  }
+  .focus-row {
+    gap: 12px;
+    padding: 14px 0;
+  }
+  .focus-skill {
+    font-size: max(10px, 3.08vw);
+  }
+
+  /* Contact page */
+  .contact-top {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .contact-heading {
+    font-size: var(--font-int-main);
+    position: static;
+  }
+  .contact-cols {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  /* Vault page */
+  .vault-top {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .vault-heading {
+    font-size: var(--font-int-main);
+    position: static;
+  }
+  .vault-link {
+    padding: 18px 0;
+  }
+  .vault-link-label {
+    font-size: max(12px, 3.59vw);
+  }
+
+  /* Footer */
+  .footer-marquee-item,
+  .footer-marquee-sep {
+    font-size: max(60px, 18vw);
+  }
+  .footer-bottom-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 24px var(--grid-margin);
+  }
+  .footer-bottom-right {
+    gap: 32px;
+    flex-wrap: wrap;
   }
 }

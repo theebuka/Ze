@@ -10,37 +10,36 @@ export const useGlobalTextReveal = (isLoaded: boolean) => {
   const location = useLocation();
 
   useEffect(() => {
-    // ── Is this a case study page? ───────────────────────────────────────
-    // CaseStudy.tsx owns its own reveal lifecycle after async Sanity data
-    // lands. We skip all main content here to avoid two GSAP contexts
-    // competing for opacity on the same elements.
-    // We do NOT use :not(:has()) in querySelectorAll — :has() selector
-    // support in JS is inconsistent across browser versions and fails silently,
-    // returning empty NodeLists and breaking all animations.
+    // ── Case study check ─────────────────────────────────────────────────
+    // CaseStudy.tsx owns its reveal lifecycle after async Sanity data lands.
+    // We skip all main content here to avoid two GSAP contexts competing.
+    // NOT using :not(:has()) — fails silently in some browsers.
     const isCaseStudy = !!document.querySelector('.case-study-page');
 
+    // ── TEXT targets ──────────────────────────────────────────────────────
+    // .focus-skill intentionally excluded: the skill rows animate as units
+    // via CSS, not line-by-line via SplitType. Splitting them would create
+    // incorrect overflow masks on the short all-caps labels.
     const textElements = isCaseStudy
       ? document.querySelectorAll(`
-          .footer-cta h2, .footer-email, .footer-bottom,
           .header-logo a, .header-time, .header-menu-toggle
         `)
       : document.querySelectorAll(`
           main h1, main h2, main h3, main p,
-          .footer-cta h2, .footer-email, .footer-bottom,
-          .contact-big-link, .focus-list span,
-          .work-meta span, .header-logo a, .header-time, .header-menu-toggle
+          .contact-link, .vault-link-label,
+          .work-meta-brand,
+          .header-logo a, .header-time, .header-menu-toggle
         `);
 
+    // ── IMAGE targets ─────────────────────────────────────────────────────
     const imageElements = isCaseStudy
       ? document.querySelectorAll('.hero-image-wrapper')
       : document.querySelectorAll(`
-          .work-img-wrapper, .about-img-placeholder, .hero-image-wrapper,
-          main img
+          .work-img-wrapper, .about-img-placeholder,
+          .hero-image-wrapper, main img
         `);
 
-    // Pre-hide via JS only — never via CSS.
-    // If JS fails for any reason, elements remain visible (degraded but
-    // not broken). A CSS opacity:0 failure = permanently blank page.
+    // Pre-hide via JS only. CSS opacity:0 = permanently blank if JS fails.
     gsap.set(textElements, { opacity: 0 });
     gsap.set(imageElements, { opacity: 0 });
 
@@ -50,8 +49,6 @@ export const useGlobalTextReveal = (isLoaded: boolean) => {
     let timerId: ReturnType<typeof setTimeout>;
     let ctx: gsap.Context;
 
-    // fonts.ready ensures SplitType measures line breaks with the real font,
-    // not the fallback. Race with 2s timeout so a stalled font never hangs.
     Promise.race([
       document.fonts.ready,
       new Promise<void>((resolve) => setTimeout(resolve, 2000)),
@@ -59,7 +56,7 @@ export const useGlobalTextReveal = (isLoaded: boolean) => {
       timerId = setTimeout(() => {
         ctx = gsap.context(() => {
 
-          // ── TEXT ────────────────────────────────────────────────────
+          // ── TEXT reveals ───────────────────────────────────────────────
           textElements.forEach((el) => {
             if (el.classList.contains('split-processed')) return;
             el.classList.add('split-processed');
@@ -110,7 +107,7 @@ export const useGlobalTextReveal = (isLoaded: boolean) => {
             }
           });
 
-          // ── IMAGES ──────────────────────────────────────────────────
+          // ── IMAGE reveals ──────────────────────────────────────────────
           imageElements.forEach((img) => {
             if (img.classList.contains('img-processed')) return;
             img.classList.add('img-processed');

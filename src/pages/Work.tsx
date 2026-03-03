@@ -10,7 +10,6 @@ interface Project {
   slug: string;
   category?: string;
   thumbnailUrl: string;
-  /** Optional: short looping MP4 or GIF for the media cursor */
   previewVideoUrl?: string;
 }
 
@@ -19,7 +18,6 @@ export const Work: React.FC = () => {
   const [works, setWorks] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ── Image parallax ───────────────────────────────────────────────────
   useImageParallax([works]);
 
   useEffect(() => {
@@ -42,11 +40,9 @@ export const Work: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchWorks();
   }, []);
 
-  // ── Cursor handlers ──────────────────────────────────────────────────
   const handleMouseEnter = (project: Project) => {
     if (project.previewVideoUrl) {
       setCursorType('media');
@@ -81,14 +77,7 @@ export const Work: React.FC = () => {
               onMouseEnter={() => handleMouseEnter(project)}
               onMouseLeave={handleMouseLeave}
             >
-              {/*
-                parallax-wrapper: overflow:hidden clipping window
-                parallax-img: GSAP will scrub yPercent on scroll
-              */}
-              <div
-                className="work-img-wrapper parallax-wrapper"
-                style={{ aspectRatio: '16/9' }}
-              >
+              <div className="work-img-wrapper parallax-wrapper">
                 {project.thumbnailUrl && (
                   <img
                     src={project.thumbnailUrl}
@@ -98,11 +87,15 @@ export const Work: React.FC = () => {
                 )}
               </div>
 
-              <div className="work-meta" style={{ marginTop: '16px' }}>
-                <span style={{ color: '#fff', fontWeight: 'bold' }}>
-                  {project.brand}
-                </span>
-                <span>{project.category || 'CASE STUDY'}</span>
+              {/* New two-row meta: [category + arrow] / [brand] */}
+              <div className="work-meta">
+                <div className="work-meta-row">
+                  <span className="work-meta-category">
+                    {project.category || 'Case Study'}
+                  </span>
+                  <span className="work-meta-arrow" aria-hidden="true">↗</span>
+                </div>
+                <div className="work-meta-brand">{project.brand}</div>
               </div>
             </Link>
           ))}
