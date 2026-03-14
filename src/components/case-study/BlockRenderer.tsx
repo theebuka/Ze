@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactPlayer from 'react-player';
 import { urlFor } from '../../lib/sanity';
 import { useImageParallax } from '../../hooks/useImageParallax';
@@ -8,9 +8,6 @@ interface BlockProps {
 }
 
 export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
-  // ── Image Parallax ─────────────────────────────────────────────────
-  // Fires after `blocks` arrives from Sanity. Queries all `.parallax-wrapper`
-  // elements rendered by the MediaItem components below.
   useImageParallax([blocks]);
 
   if (!blocks) return null;
@@ -199,11 +196,6 @@ export const BlockRenderer: React.FC<BlockProps> = ({ blocks }) => {
   );
 };
 
-// ── MediaItem ────────────────────────────────────────────────────────────
-// The key change: image wrappers now carry `parallax-wrapper` and images
-// carry `parallax-img`. These are the hooks that useImageParallax targets.
-// Videos are excluded — parallax on a playing video is disorienting.
-
 const MediaItem = ({ data }: { data: any }) => {
   if (!data) return null;
 
@@ -213,32 +205,32 @@ const MediaItem = ({ data }: { data: any }) => {
         className="cs-media-wrapper video-container"
         style={{ aspectRatio: '16/9', background: '#111' }}
       >
-        <ReactPlayer
-          url={data.videoUrl}
-          playing
-          loop
-          muted
-          playsInline
-          controls={false}
-          width="100%"
-          height="100%"
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-          config={{
-            youtube: {
-              playerVars: {
-                controls: 0,
-                modestbranding: 1,
-                rel: 0,
-                disablekb: 1,
-                fs: 0,
-                iv_load_policy: 3,
+        {(ReactPlayer as any)({ 
+            url: data.videoUrl,
+            playing: true,
+            loop: true,
+            muted: true,
+            playsInline: true,
+            controls: false,
+            width: "100%",
+            height: "100%",
+            style: { position: 'absolute', top: 0, left: 0, pointerEvents: 'none' },
+            config: {
+              youtube: {
+                playerVars: {
+                  controls: 0,
+                  modestbranding: 1,
+                  rel: 0,
+                  disablekb: 1,
+                  fs: 0,
+                  iv_load_policy: 3,
+                },
               },
-            },
-            vimeo: {
-              playerOptions: { background: true, controls: false, dnt: true },
-            },
-          }}
-        />
+              vimeo: {
+                playerOptions: { background: true, controls: false, dnt: true },
+              },
+            }
+          })}
         {data.caption && (
           <span className="cs-caption" style={{ position: 'relative', zIndex: 2 }}>
             {data.caption}
@@ -250,12 +242,10 @@ const MediaItem = ({ data }: { data: any }) => {
 
   if (data.image) {
     return (
-      // ── parallax-wrapper: the clipping container ──────────────────
       <div className="cs-media-wrapper parallax-wrapper">
         <img
           src={urlFor(data.image).url()}
           alt={data.caption || 'Case study visual'}
-          // ── parallax-img: GSAP scrubs yPercent on this element ────
           className="cs-img parallax-img"
         />
         {data.caption && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CursorProvider, useCursor } from './context/CursorContext';
 import { CustomCursor } from './components/common/CustomCursor';
