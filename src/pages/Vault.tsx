@@ -1,22 +1,34 @@
 import React from 'react';
+import { RollingText } from '../components/common/RollingText';
 
 /*
   VAULT PAGE
-  
-  Each .vault-link-item is the future host for a hover image preview.
-  When you're ready to add previews: append a <div className="vault-link-preview"> 
-  inside .vault-link-item alongside the existing <a> — no structural refactoring needed.
-  
-  The ↗ arrow rotates -45deg on hover to point → (CSS only, no JS).
-  Both arrow and label text brighten to full text-color on hover.
+
+  .vault-link-item: block-level container — intentionally not collapsed
+  into the <a> so a future hover image preview can be appended as a sibling
+  of .vault-link without any structural refactoring:
+    <div class="vault-link-item">
+      <a class="vault-link">...</a>
+      <div class="vault-link-preview" />   ← future addition
+    </div>
+
+  .line-reveal: animated border element, sits below the <a> inside
+  .vault-link-item. GSAP + ScrollTrigger in useGlobalTextReveal handles
+  scaleX(0) → scaleX(1) left-to-right on scroll.
+
+  Arrow rotation: CSS .vault-link:hover .vault-link-arrow { transform: rotate(-45deg) }
+  rotates ↗ counter-clockwise 45° to point →.
+
+  RollingText: the rollover character animation. It manages its own
+  onMouseEnter/Leave internally.
 */
 
 const VAULT_CATEGORIES = [
-  { id: 'articles',     label: 'Articles',     href: '#' },
-  { id: 'explorations', label: 'Explorations', href: '#' },
-  { id: 'resources',    label: 'Resources',    href: '#' },
-  { id: 'playlists',    label: 'Playlists',    href: '#' },
-  { id: 'gallery',      label: 'Gallery',      href: '#' },
+  { id: 'articles',     label: 'Articles'     },
+  { id: 'explorations', label: 'Explorations' },
+  { id: 'resources',    label: 'Resources'    },
+  { id: 'playlists',    label: 'Playlists'    },
+  { id: 'gallery',      label: 'Gallery'      },
 ] as const;
 
 export const Vault: React.FC = () => {
@@ -24,12 +36,12 @@ export const Vault: React.FC = () => {
     <main className="page-wrapper page-vault">
       <div className="vault-top">
 
-        {/* Left: heading */}
+        {/* Left col: heading (sticky on desktop) */}
         <div>
           <h1 className="vault-heading">Vault</h1>
         </div>
 
-        {/* Right: intro + category links */}
+        {/* Right col: intro + category links */}
         <div>
           <p className="vault-intro">
             A curated collection of experiments, explorations, and in-progress
@@ -41,26 +53,29 @@ export const Vault: React.FC = () => {
 
           <nav className="vault-links" aria-label="Vault categories">
             {VAULT_CATEGORIES.map((cat) => (
-              /*
-                .vault-link-item is intentionally a block-level container —
-                not collapsed into the <a> — so a future hover preview image
-                can be appended as a sibling of .vault-link without disruption.
-                Add: data-category={cat.id} for JS targeting if needed.
-              */
               <div
                 className="vault-link-item"
                 key={cat.id}
                 data-category={cat.id}
               >
                 <a
-                  href={cat.href}
+                  href="#"
                   className="vault-link"
                   aria-label={cat.label}
                 >
                   <span className="vault-link-arrow" aria-hidden="true">↗</span>
-                  <span className="vault-link-label">{cat.label}</span>
+                  {/*
+                    RollingText wraps the label. It handles mouse events itself.
+                    The .vault-link:hover rule also brightens arrow + label via CSS.
+                  */}
+                  <RollingText text={cat.label} className="vault-link-label" />
                 </a>
-                {/* Future: <div className="vault-link-preview" /> */}
+                {/*
+                  .line-reveal replaces the CSS border-bottom.
+                  GSAP animates it left-to-right on scroll reveal.
+                  Future preview image: add <div className="vault-link-preview" /> here.
+                */}
+                <span className="line-reveal" aria-hidden="true" />
               </div>
             ))}
           </nav>

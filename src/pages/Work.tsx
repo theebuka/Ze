@@ -25,8 +25,7 @@ export const Work: React.FC = () => {
       try {
         const data = await client.fetch(`
           *[_type == "caseStudy"] | order(publishedAt desc) {
-            _id,
-            brand,
+            _id, brand,
             "slug": slug.current,
             category,
             "thumbnailUrl": thumbnail.asset->url,
@@ -34,8 +33,8 @@ export const Work: React.FC = () => {
           }
         `);
         setWorks(data);
-      } catch (error) {
-        console.error('Error fetching works from Sanity:', error);
+      } catch (err) {
+        console.error('Error fetching works from Sanity:', err);
       } finally {
         setLoading(false);
       }
@@ -51,7 +50,6 @@ export const Work: React.FC = () => {
       setCursorType('view-project');
     }
   };
-
   const handleMouseLeave = () => {
     setCursorType('default');
     setCursorMedia(null);
@@ -65,6 +63,12 @@ export const Work: React.FC = () => {
           <br />
           hashed out in recent years
         </h1>
+      </header>
+
+      {/* works-header with animated line-reveal border */}
+      <header className="works-header">
+        <span /> {/* spacer so space-between pushes line to bottom */}
+        <span className="line-reveal" aria-hidden="true" />
       </header>
 
       <div className="work-grid">
@@ -87,7 +91,6 @@ export const Work: React.FC = () => {
                 )}
               </div>
 
-              {/* New two-row meta: [category + arrow] / [brand] */}
               <div className="work-meta">
                 <div className="work-meta-row">
                   <span className="work-meta-category">

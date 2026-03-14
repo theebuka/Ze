@@ -14,6 +14,13 @@ interface Project {
   previewVideoUrl?: string;
 }
 
+/*
+  FOCUS_ROWS — [left skill, right skill] pairs.
+  ✦ (focus-star) sits between them in a 3-col sub-grid.
+  CSS @keyframes starSpin rotates it 360° once on row hover.
+  .line-reveal inside each row is the animated border-bottom — GSAP
+  handles scaleX(0) → scaleX(1) left-to-right via useGlobalTextReveal.
+*/
 const FOCUS_ROWS: [string, string][] = [
   ['Art Direction',     'Product Thinking'],
   ['Creative Strategy', 'User Experience'],
@@ -33,8 +40,7 @@ export const Home: React.FC = () => {
       try {
         const data = await client.fetch(`
           *[_type == "caseStudy" && isFeatured == true] | order(publishedAt desc)[0...2] {
-            _id,
-            brand,
+            _id, brand,
             "slug": slug.current,
             category,
             "thumbnailUrl": thumbnail.asset->url,
@@ -42,8 +48,8 @@ export const Home: React.FC = () => {
           }
         `);
         setFeaturedWorks(data);
-      } catch (error) {
-        console.error('Error fetching featured works:', error);
+      } catch (err) {
+        console.error('Error fetching featured works:', err);
       } finally {
         setLoading(false);
       }
@@ -59,7 +65,6 @@ export const Home: React.FC = () => {
       setCursorType('view-project');
     }
   };
-
   const handleMouseLeave = () => {
     setCursorType('default');
     setCursorMedia(null);
@@ -94,14 +99,12 @@ export const Home: React.FC = () => {
 
       {/* ── Focus ─────────────────────────────────────────────────────── */}
       {/*
-        12-col: heading spans cols 1-4, right content spans cols 7-12 (6 cols).
-        2-col gap between them handled by CSS grid-column positioning.
-        The heading is position:sticky so it anchors as skills scroll past.
-        .focus-row is a 3-col sub-grid: [skill] [✦] [skill].
-        ✦ spins 360° once on row hover (CSS animation, no JS).
-        .focus-skill spans excluded from useGlobalTextReveal — animate as units.
+        12-col grid: heading = col 1-4 (sticky), content = col 7-12 (6 cols).
+        CSS uses > :first-child and > :last-child selectors for the column positions.
+        .focus-skills intentionally excluded from useGlobalTextReveal —
+        .focus-skill spans animate as CSS units (hover), not SplitType lines.
       */}
-      <section className="focus-section grid-12-col">
+      <section className="focus-section grid-12-col margin-top-huge">
         <div className="col-4">
           <h2 className="focus-heading">FOCUS</h2>
         </div>
@@ -109,7 +112,7 @@ export const Home: React.FC = () => {
         <div className="col-6">
           <p className="focus-body">
             Alongside that, I've worked across agencies and freelance roles,
-            designing products for FinTech, EdTech, and marketplace startups—
+            designing products for FinTech, EdTech, and marketplace startups —
             sometimes designing interfaces, sometimes shaping brands, sometimes
             building scrappy internal tools. I enjoy getting my hands dirty,
             asking uncomfortable questions early, and turning abstract ideas
@@ -124,6 +127,12 @@ export const Home: React.FC = () => {
                 <span className="focus-skill">{left}</span>
                 <span className="focus-star" aria-hidden="true">✦</span>
                 <span className="focus-skill">{right}</span>
+                {/*
+                  .line-reveal replaces CSS border-bottom.
+                  GSAP in useGlobalTextReveal animates scaleX(0) → scaleX(1).
+                  position: relative on .focus-row allows this to sit at bottom.
+                */}
+                <span className="line-reveal" aria-hidden="true" />
               </div>
             ))}
           </div>
@@ -135,6 +144,11 @@ export const Home: React.FC = () => {
         <header className="works-header">
           <h2>SELECTED WORKS</h2>
           <Link to="/work" className="font-sec-muted">SEE ALL</Link>
+          {/*
+            .line-reveal replaces the border-bottom on .works-header.
+            It spans the full width of the header row.
+          */}
+          <span className="line-reveal" aria-hidden="true" />
         </header>
 
         <div className="work-grid">
@@ -158,7 +172,7 @@ export const Home: React.FC = () => {
                   )}
                 </div>
 
-                {/* New two-row meta: [category + arrow] / [brand] */}
+                {/* Two-row meta: [category + arrow] / [brand] */}
                 <div className="work-meta">
                   <div className="work-meta-row">
                     <span className="work-meta-category">
@@ -172,6 +186,7 @@ export const Home: React.FC = () => {
             ))}
         </div>
       </section>
+
     </main>
   );
 };

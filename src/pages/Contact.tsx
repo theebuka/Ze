@@ -1,25 +1,25 @@
 import React from 'react';
 
+/*
+  CONTACT PAGE
+  
+  .contact-divider-line is a .line-reveal element replacing the <hr>.
+  GSAP in useGlobalTextReveal animates it left-to-right on scroll.
+*/
+
 export const Contact: React.FC = () => {
   return (
     <main className="page-wrapper page-contact">
-
-      {/*
-        Two-column layout: heading (left 4fr) + content (right 8fr).
-        The heading uses CSS sticky so it pins while the right side grows.
-        The divider and 3 link columns live inside the right column —
-        they're automatically right-aligned with the paragraph above.
-      */}
       <div className="contact-top">
 
-        {/* Left: heading */}
+        {/* Left col: heading (sticky on desktop) */}
         <div>
           <h1 className="contact-heading">
             Let's <span className="contact-muted">talk.</span>
           </h1>
         </div>
 
-        {/* Right: intro paragraph + divider + 3 link columns */}
+        {/* Right col: intro + line + 3-col links */}
         <div>
           <p className="contact-intro">
             Have a project in mind, a collaboration opportunity, or just want to
@@ -28,91 +28,48 @@ export const Contact: React.FC = () => {
             conversations. Ready when you are.
           </p>
 
-          <hr className="contact-divider" />
+          {/* Animated divider — replaces <hr> */}
+          <span
+            className="line-reveal contact-divider-line"
+            aria-hidden="true"
+          />
 
           <div className="contact-cols">
 
             {/* SOCIALS */}
             <div className="contact-col">
               <span className="contact-col-label">Socials</span>
-              <a
-                href="https://instagram.com/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://x.com/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                X (Twitter)
-              </a>
-              <a
-                href="https://linkedin.com/in/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                LinkedIn
-              </a>
+              {[
+                { href: 'https://instagram.com/theebuka', label: 'Instagram' },
+                { href: 'https://x.com/theebuka',         label: 'X (Twitter)' },
+                { href: 'https://linkedin.com/in/theebuka', label: 'LinkedIn' },
+              ].map(({ href, label }) => (
+                <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link">
+                  {label}
+                </a>
+              ))}
             </div>
 
             {/* CRAFT */}
             <div className="contact-col">
               <span className="contact-col-label">Craft</span>
-              <a
-                href="https://theebuka.substack.com"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Substack
-              </a>
-              <a
-                href="https://medium.com/@theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Medium
-              </a>
-              <a
-                href="https://behance.net/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Behance
-              </a>
-              <a
-                href="https://dribbble.com/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Dribbble
-              </a>
-              <a
-                href="https://are.na/theebuka"
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-              >
-                Are.na
-              </a>
+              {[
+                { href: 'https://theebuka.substack.com',   label: 'Substack' },
+                { href: 'https://medium.com/@theebuka',    label: 'Medium'   },
+                { href: 'https://behance.net/theebuka',    label: 'Behance'  },
+                { href: 'https://dribbble.com/theebuka',   label: 'Dribbble' },
+                { href: 'https://are.na/theebuka',         label: 'Are.na'   },
+              ].map(({ href, label }) => (
+                <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link">
+                  {label}
+                </a>
+              ))}
             </div>
 
             {/* EMAIL */}
             <div className="contact-col">
               <span className="contact-col-label">Email</span>
-              <a
-                href="mailto:me@theebuka.com"
-                className="contact-link"
-              >
+              <a href="mailto:me@theebuka.com" className="contact-link">
                 me@theebuka.com
               </a>
             </div>

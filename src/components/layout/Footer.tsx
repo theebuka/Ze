@@ -1,25 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { RollingText } from '../common/RollingText';
 
 /*
-  FOOTER — Complete rebuild.
+  FOOTER
   
-  Structure:
-    [full-bleed marquee: "ZE ©2026 •" auto-scrolling, pauses on hover]
-    [bottom bar: copyright + IG/X/LI | MENU links | GOT A PROJECT? + email]
+  Nav links use RollingText for the rollover animation.
+  onClick scrolls to the top — RouteTransitions in App.tsx also fires
+  window.scrollTo(0,0) on pathname change, but this ensures it fires
+  even if the user re-clicks the active page link.
   
-  Color inversion logic is entirely handled by interactions.css:
-    - Dark pages  → light footer bg (#f3f3f3), dark text (#111)
-    - Light pages → dark footer bg (#000), light text (#fff)
-  We just inherit from .site-footer — no inline color logic needed here.
-  
-  Hover states in index.css respond to body.theme-light automatically.
+  Color inversion: interactions.css drives bg/color via body.theme-light.
+  Hover states: dim on light bg, brighten on dark bg — handled by CSS.
 */
 
-// Enough repetitions per set so the content is always > 1 viewport wide.
-// At 13.5vw font on a 1440px viewport, "ZE ©2026 • " ≈ 1200px.
-// 4 items per set = ~4800px, well over any viewport.
-const MARQUEE_ITEMS = Array(4).fill(null);
+const MARQUEE_COUNT = 6; // items per set — always exceeds viewport width
 
 const NAV_LINKS = [
   { to: '/',        label: '/Home'    },
@@ -29,44 +24,41 @@ const NAV_LINKS = [
   { to: '/vault',   label: '/Vault'   },
 ];
 
+const SOCIAL_LINKS = [
+  { href: 'https://instagram.com/theebuka',   aria: 'Instagram',   abbr: 'IG' },
+  { href: 'https://x.com/theebuka',           aria: 'X / Twitter', abbr: 'X'  },
+  { href: 'https://linkedin.com/in/theebuka', aria: 'LinkedIn',    abbr: 'LI' },
+];
+
+const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
+
 export const Footer: React.FC = () => {
   return (
     <footer className="site-footer">
 
-      {/* ── Marquee ──────────────────────────────────────────────────── */}
+      {/* ── Marquee ────────────────────────────────────────────────────── */}
       {/*
-        Two identical .footer-marquee-set elements.
-        Animation moves translateX(0) → translateX(-50%), looping seamlessly.
-        Hover on .footer-marquee pauses the track via CSS (no JS).
-        aria-hidden: purely decorative — screen readers skip it.
+        Two identical .footer-marquee-set divs.
+        translateX(-50%) loops back to start seamlessly.
+        .footer-marquee:hover .footer-marquee-track pauses via CSS.
+        aria-hidden: decorative only.
       */}
       <div className="footer-marquee" aria-hidden="true">
         <div className="footer-marquee-track">
-
-          {/* Set 1 */}
-          <div className="footer-marquee-set">
-            {MARQUEE_ITEMS.map((_, i) => (
-              <React.Fragment key={`a-${i}`}>
-                <span className="footer-marquee-item">ZE ©2026</span>
-                <span className="footer-marquee-sep">&nbsp;•&nbsp;</span>
-              </React.Fragment>
-            ))}
-          </div>
-
-          {/* Set 2 — identical, provides the seamless second half */}
-          <div className="footer-marquee-set">
-            {MARQUEE_ITEMS.map((_, i) => (
-              <React.Fragment key={`b-${i}`}>
-                <span className="footer-marquee-item">ZE ©2026</span>
-                <span className="footer-marquee-sep">&nbsp;•&nbsp;</span>
-              </React.Fragment>
-            ))}
-          </div>
-
+          {[0, 1].map((setIdx) => (
+            <div className="footer-marquee-set" key={setIdx}>
+              {Array.from({ length: MARQUEE_COUNT }).map((_, i) => (
+                <React.Fragment key={i}>
+                  <span className="footer-marquee-item">ZE ©2026</span>
+                  <span className="footer-marquee-sep">&nbsp;•&nbsp;</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── Bottom bar ───────────────────────────────────────────────── */}
+      {/* ── Bottom bar ─────────────────────────────────────────────────── */}
       <div className="footer-bottom-bar">
 
         {/* Left: copyright + social icon links */}
@@ -75,57 +67,48 @@ export const Footer: React.FC = () => {
             All Rights Reserved, Chukwuebuka Arinze Nwaju.
           </span>
           <div className="footer-social-icons">
-            <a
-              href="https://instagram.com/theebuka"
-              target="_blank"
-              rel="noreferrer"
-              className="footer-social-link"
-              aria-label="Instagram"
-            >
-              IG
-            </a>
-            <a
-              href="https://x.com/theebuka"
-              target="_blank"
-              rel="noreferrer"
-              className="footer-social-link"
-              aria-label="X / Twitter"
-            >
-              X
-            </a>
-            <a
-              href="https://linkedin.com/in/theebuka"
-              target="_blank"
-              rel="noreferrer"
-              className="footer-social-link"
-              aria-label="LinkedIn"
-            >
-              LI
-            </a>
+            {SOCIAL_LINKS.map(({ href, aria, abbr }) => (
+              <a
+                key={abbr}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="footer-social-link"
+                aria-label={aria}
+              >
+                <RollingText text={abbr} />
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* Right: MENU nav column + GOT A PROJECT? CTA column */}
+        {/* Right: MENU + GOT A PROJECT? stacked vertically */}
         <div className="footer-bottom-right">
 
           {/* MENU */}
           <nav className="footer-col" aria-label="Site navigation">
             <span className="footer-col-label">Menu</span>
             {NAV_LINKS.map(({ to, label }) => (
-              <Link key={to} to={to} className="footer-col-link">
-                {label}
+              <Link
+                key={to}
+                to={to}
+                className="footer-col-link"
+                onClick={scrollTop}
+              >
+                {/*
+                  RollingText handles its own onMouseEnter/Leave.
+                  The Link click triggers scrollTop AND React Router navigation.
+                */}
+                <RollingText text={label} />
               </Link>
             ))}
           </nav>
 
-          {/* CTA */}
+          {/* GOT A PROJECT? */}
           <div className="footer-col">
             <span className="footer-col-label">Got a project?</span>
-            <a
-              href="mailto:me@theebuka.com"
-              className="footer-cta-email"
-            >
-              me@theebuka.com
+            <a href="mailto:me@theebuka.com" className="footer-cta-email">
+              <RollingText text="me@theebuka.com" />
             </a>
           </div>
 
