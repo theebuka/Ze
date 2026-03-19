@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCursor } from '../context/CursorContext';
-import { client } from '../lib/sanity';
+import { client, urlFor } from '../lib/sanity';
 import { useImageParallax } from '../hooks/useImageParallax';
-import heroImage from '../assets/hero-placeholder.jpg';
 
 interface Project {
   _id: string;
@@ -14,13 +13,10 @@ interface Project {
   previewVideoUrl?: string;
 }
 
-/*
-  FOCUS_ROWS — [left skill, right skill] pairs.
-  ✦ (focus-star) sits between them in a 3-col sub-grid.
-  CSS @keyframes starSpin rotates it 360° once on row hover.
-  .line-reveal inside each row is the animated border-bottom — GSAP
-  handles scaleX(0) → scaleX(1) left-to-right via useGlobalTextReveal.
-*/
+interface SiteSettings {
+  heroImage: any;
+}
+
 const FOCUS_ROWS: [string, string][] = [
   ['Art Direction',     'Product Thinking'],
   ['Creative Strategy', 'User Experience'],
@@ -31,30 +27,35 @@ const FOCUS_ROWS: [string, string][] = [
 export const Home: React.FC = () => {
   const { setCursorType, setCursorMedia } = useCursor();
   const [featuredWorks, setFeaturedWorks] = useState<Project[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useImageParallax([featuredWorks]);
 
   useEffect(() => {
-    const fetchFeaturedWorks = async () => {
+    const fetchData = async () => {
       try {
-        const data = await client.fetch(`
-          *[_type == "caseStudy" && isFeatured == true] | order(publishedAt desc)[0...2] {
-            _id, brand,
-            "slug": slug.current,
-            category,
-            "thumbnailUrl": thumbnail.asset->url,
-            "previewVideoUrl": previewVideo.asset->url
-          }
-        `);
-        setFeaturedWorks(data);
+        const [works, settings] = await Promise.all([
+          client.fetch(`
+            *[_type == "caseStudy" && isFeatured == true] | order(publishedAt desc)[0...2] {
+              _id, brand,
+              "slug": slug.current,
+              category,
+              "thumbnailUrl": thumbnail.asset->url,
+              "previewVideoUrl": previewVideo.asset->url
+            }
+          `),
+          client.fetch(`*[_type == "siteSettings"][0]{ heroImage }`)
+        ]);
+        setFeaturedWorks(works);
+        setSiteSettings(settings);
       } catch (err) {
-        console.error('Error fetching featured works:', err);
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchFeaturedWorks();
+    fetchData();
   }, []);
 
   const handleMouseEnter = (project: Project) => {
@@ -93,17 +94,17 @@ export const Home: React.FC = () => {
 
         <div className="hero-image-wrapper parallax-wrapper">
           <div className="hero-blur-overlay" />
-          <img src={heroImage} alt="ZE" className="parallax-img" />
+          {siteSettings?.heroImage && (
+            <img
+              src={urlFor(siteSettings.heroImage).auto('format').quality(80).width(1920).url()}
+              alt="ZE"
+              className="parallax-img"
+            />
+          )}
         </div>
       </section>
 
       {/* ── Focus ─────────────────────────────────────────────────────── */}
-      {/*
-        12-col grid: heading = col 1-4 (sticky), content = col 7-12 (6 cols).
-        CSS uses > :first-child and > :last-child selectors for the column positions.
-        .focus-skills intentionally excluded from useGlobalTextReveal —
-        .focus-skill spans animate as CSS units (hover), not SplitType lines.
-      */}
       <section className="focus-section grid-12-col margin-top-huge">
         <div className="col-4">
           <h2 className="focus-heading">FOCUS</h2>
@@ -127,11 +128,6 @@ export const Home: React.FC = () => {
                 <span className="focus-skill">{left}</span>
                 <span className="focus-star" aria-hidden="true">✦</span>
                 <span className="focus-skill">{right}</span>
-                {/*
-                  .line-reveal replaces CSS border-bottom.
-                  GSAP in useGlobalTextReveal animates scaleX(0) → scaleX(1).
-                  position: relative on .focus-row allows this to sit at bottom.
-                */}
                 <span className="line-reveal" aria-hidden="true" />
               </div>
             ))}
@@ -144,10 +140,6 @@ export const Home: React.FC = () => {
         <header className="works-header">
           <h2>SELECTED WORKS</h2>
           <Link to="/work" className="font-sec-muted">SEE ALL</Link>
-          {/*
-            .line-reveal replaces the border-bottom on .works-header.
-            It spans the full width of the header row.
-          */}
           <span className="line-reveal" aria-hidden="true" />
         </header>
 
@@ -171,8 +163,6 @@ export const Home: React.FC = () => {
                     />
                   )}
                 </div>
-
-                {/* Two-row meta: [category + arrow] / [brand] */}
                 <div className="work-meta">
                   <div className="work-meta-row">
                     <span className="work-meta-category">

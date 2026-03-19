@@ -1,10 +1,20 @@
-import React from 'react';
-import placeholderImg1 from '../assets/about-1.png'; // Add your first image here
-import placeholderImg2 from '../assets/about-2.png'; // Add your second image here
-// import { useLineReveal } from '../hooks/useLineReveal';
+import React, { useEffect, useState } from 'react';
+import { client, urlFor } from '../lib/sanity';
+
+interface SiteSettings {
+  aboutImage1: any;
+  aboutImage2: any;
+}
 
 export const About: React.FC = () => {
-  // const introRef = useLineReveal();
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+
+  useEffect(() => {
+    client.fetch(`*[_type == "siteSettings"][0]{ aboutImage1, aboutImage2 }`)
+      .then(setSiteSettings)
+      .catch(console.error);
+  }, []);
+
   return (
     <main className="page-wrapper page-about">
       {/* Hero Intro */}
@@ -14,16 +24,20 @@ export const About: React.FC = () => {
         </h1>
       </header>
 
-      {/* Editorial Grid Section using the 12-Column System */}
+      {/* Editorial Grid Section */}
       <section className="about-grid grid-12">
-        
+
         {/* Row 1: Image Right */}
         <div className="col-half-right">
-          <img src={placeholderImg1} alt="ZE thinking" />
-          {/* <div className="about-img-placeholder"></div> */}
+          {siteSettings?.aboutImage1 && (
+            <img
+              src={urlFor(siteSettings.aboutImage1).auto('format').quality(80).width(1200).url()}
+              alt="ZE thinking"
+            />
+          )}
         </div>
 
-        {/* Row 2: Text Left, Text Right (Strict 5-Col Spans) */}
+        {/* Row 2: Text Left, Text Right */}
         <div className="text-span-left">
           <p>
             I fell into creative tech through the usual route. I started in medical radiography, working around complex systems of care structure, out of pure passion, and the desire to build for the unknown. Somewhere in between managing care, understanding human patterns, and helping others make sense of what I learned, I realized I was deeply invested in systems. I fell in love with shaping how people experience them. From there, I joined tech startups, where I've spent the last few years designing products from the ground up—often as the first or sole designer, working closely with engineers and product teams. In that space, I led the design of core platform experiences from full design system and UI overhauls, navigation, onboarding, identity authentication, and cross-platform adaptations across mobile, tablet, and wearables. I like to stay close to the process, bridging the gap between design and engineering to ensure integrity and consistency across the delivery cycle.
@@ -37,11 +51,15 @@ export const About: React.FC = () => {
 
         {/* Row 3: Image Left */}
         <div className="col-half-left">
-           <img src={placeholderImg2} alt="ZE smiling" />
-           {/* <div className="about-img-placeholder"></div> */}
+          {siteSettings?.aboutImage2 && (
+            <img
+              src={urlFor(siteSettings.aboutImage2).auto('format').quality(80).width(1200).url()}
+              alt="ZE smiling"
+            />
+          )}
         </div>
 
-        {/* Row 4: Text Left, Text Right (Strict 5-Col Spans) */}
+        {/* Row 4: Text Left, Text Right */}
         <div className="text-span-left">
           <p>
             Outside of design, I'm probably fueled by three things: music, pop culture, and collecting pieces of repetitive bass which usually find their way onto my personal mood boards which I share. I've curated a solid, diverse, and somewhat surprising mix of strictly underground, lo-fi, and alternative rap/hip-hop artists. I'm deep into physical artifacts—books, magazines, accessories, and sneakers—where the tactile nature of material, form, and texture heavily, implicitly, explains my sensitivity to detail and systems. These days, I'm constantly learning, building, breaking, unbuilding elements—expanding where design, technology, and art/human interact across contexts, outside screens, into actual views, and how visual noise translates seamlessly, gently along the xy-board.
