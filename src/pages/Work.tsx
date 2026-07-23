@@ -3,11 +3,15 @@ import { WorkGrid } from '../components/work/WorkGrid';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
+import { useAppReady } from '../context/AppReadyContext';
 
 export const Work: React.FC = () => {
   const { projects, loading, error } = useProjects('all');
+  const splashDone = useAppReady();
 
-  const scope = useReveal<HTMLElement>({ deps: [projects] });
+  // Work can be the entry route on a fresh load/refresh, mounting underneath
+  // the splash overlay same as Home — same gate, same reason.
+  const scope = useReveal<HTMLElement>({ deps: [projects], enabled: splashDone });
   useParallax(scope, [projects]);
 
   return (

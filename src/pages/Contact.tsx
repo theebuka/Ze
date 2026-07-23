@@ -1,5 +1,6 @@
 import React from 'react';
 import { useReveal } from '../hooks/useReveal';
+import { useAppReady } from '../context/AppReadyContext';
 
 /*
   CONTACT PAGE
@@ -9,7 +10,10 @@ import { useReveal } from '../hooks/useReveal';
 */
 
 export const Contact: React.FC = () => {
-  const scope = useReveal<HTMLElement>({ deps: [] });
+  const splashDone = useAppReady();
+  // Contact can be the entry route on a fresh load/refresh, mounting
+  // underneath the splash overlay same as Home — same gate, same reason.
+  const scope = useReveal<HTMLElement>({ deps: [], enabled: splashDone });
 
   return (
     <main className="page-wrapper page-contact" ref={scope}>

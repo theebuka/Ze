@@ -283,3 +283,32 @@ html.lenis body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── 10. SPLASH ODOMETER ──────────────────────────────────────
+   .splash-counter (index.css) sets the big display font-size/weight and
+   line-height: 1 — these rules turn it into a flex row of 3 rolling digit
+   columns instead of a single plain text node. Each column clips to exactly
+   one digit's height (1em, matching line-height: 1) and the strip inside
+   scrolls via an inline transform set from SplashLoader.tsx.
+   ─────────────────────────────────────────────────────────── */
+.splash-counter {
+  display: flex;
+}
+
+.splash-odometer-col {
+  position: relative;
+  overflow: hidden;
+  height: 1em;
+}
+
+.splash-odometer-strip {
+  display: flex;
+  flex-direction: column;
+}
+
+.splash-odometer-digit {
+  height: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
