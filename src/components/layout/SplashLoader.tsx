@@ -1,77 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { gsap, prefersReducedMotion } from '../../lib/gsap';
 
-interface SplashLoaderProps {
+interface Props {
   onComplete: () => void;
 }
 
-export const SplashLoader: React.FC<SplashLoaderProps> = ({ onComplete }) => {
+/**
+ * SplashLoader — same look, real timing, no framer-motion.
+ *
+ * The old version was a fake progress bar on a fixed schedule:
+ *   ~42 ticks x 80ms to reach 85, + 600ms hold, + ~10 ticks x 120ms,
+ *   + 400ms, + 1400ms exit  ≈  7 seconds, every single visit.
+ *
+ * Locally that hid the load. On a CDN the real load time stacks on top of it
+ * instead of behind it, so deployment felt dramatically slower than dev.
+ *
+ * Now the counter is driven by actual readiness (fonts + window load, with a
+ * 3s ceiling) and the whole thing caps out around 1.6s.
+ */
+
+const MAX_WAIT = 3000;
+const MIN_SHOW = 700;
+
+export const SplashLoader: React.FC<Props> = ({ onComplete }) => {
   const [count, setCount] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
+    if (prefersReducedMotion()) {
+      onComplete();
+      return;
+    }
 
-    const startCounter = () => {
-      let currentCount = 0;
+    const started = performance.now();
+    let done = false;
 
-      const updateCount = () => {
-        if (currentCount < 85) {
-          currentCount += Math.floor(Math.random() * 3) + 1;
-          if (currentCount > 85) currentCount = 85;
-          setCount(currentCount);
-          timeoutId = setTimeout(updateCount, 80);
+    // Creep toward 90 while we wait. Never claims 100 until it is true.
+    const creep = gsap.to(
+      { v: 0 },
+      {
+        v: 90,
+        duration: 1.4,
+        ease: 'power2.out',
+        onUpdate() {
+          setCount(Math.round((this.targets()[0] as { v: number }).v));
+        },
+      }
+    );
 
-        } else if (currentCount === 85) {
-          setCount(currentCount);
-          currentCount += 1;
-          timeoutId = setTimeout(updateCount, 600);
+    const ready = Promise.race([
+      Promise.all([
+        document.fonts?.ready ?? Promise.resolve(),
+        document.readyState === 'complete'
+          ? Promise.resolve()
+          : new Promise<void>((r) => window.addEventListener('load', () => r(), { once: true })),
+      ]),
+      new Promise<void>((r) => setTimeout(r, MAX_WAIT)),
+    ]);
 
-        } else if (currentCount < 100) {
-          currentCount += Math.floor(Math.random() * 2) + 1;
-          if (currentCount >= 100) currentCount = 100;
-          setCount(currentCount);
+    ready.then(() => {
+      if (done) return;
+      done = true;
+      creep.kill();
 
-          if (currentCount === 100) {
-            // Brief pause at 100, then pull the curtain.
-            // onComplete fires via AnimatePresence onExitComplete below —
-            // only after the full 1.4s exit transition resolves.
-            timeoutId = setTimeout(() => setIsVisible(false), 400);
-          } else {
-            timeoutId = setTimeout(updateCount, 120);
+      const elapsed = performance.now() - started;
+      const hold = Math.max(0, MIN_SHOW - elapsed);
+
+      gsap
+        .timeline({ delay: hold / 1000 })
+        .to(
+          { v: count },
+          {
+            v: 100,
+            duration: 0.35,
+            ease: 'power2.out',
+            onUpdate() {
+              setCount(Math.round((this.targets()[0] as { v: number }).v));
+            },
           }
-        }
-      };
+        )
+        .to(rootRef.current, {
+          yPercent: -100,
+          duration: 0.9,
+          ease: 'expo.inOut',
+          onComplete,
+        });
+    });
 
-      updateCount();
+    return () => {
+      done = true;
+      creep.kill();
     };
-
-    // Gate on fonts being ready so SplitType (which runs after onComplete)
-    // measures line breaks with the real font, not the fallback.
-    // Promise.race prevents a broken font load from hanging the splash.
-    Promise.race([
-      document.fonts.ready,
-      new Promise<void>((resolve) => setTimeout(resolve, 2000)),
-    ]).then(startCounter);
-
-    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    // onExitComplete: fires once all children finish their exit animation.
-    // This is the correct API — replaces onAnimationComplete(definition==='exit')
-    // which only works with named variants, not inline exit props.
-    <AnimatePresence onExitComplete={onComplete}>
-      {isVisible && (
-        <motion.div
-          className="splash-screen"
-          initial={{ y: 0 }}
-          exit={{ y: '-100%' }}
-          transition={{ duration: 1.4, ease: [0.76, 0, 0.24, 1] }}
-        >
-          <div className="splash-counter">{count}</div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="splash-screen" ref={rootRef}>
+      <div className="splash-counter">{count}</div>
+    </div>
   );
 };

@@ -1,158 +1,99 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCursor } from '../../context/CursorContext';
+import { gsap } from '../../lib/gsap';
 
 /**
- * CustomCursor
+ * CustomCursor — GSAP instead of framer-motion, and inert on touch devices.
  *
- * Three distinct states:
- *   'default'      → 24px dot, mix-blend-mode: difference
- *   'view-project' → 80px circle with "VIEW" label
- *   'media'        → 120px borderless circle playing a muted looping video
- *                    from `cursorMedia` URL (set via CursorContext)
+ * Two problems with the old version:
+ *   1. It mounted on phones. `* { cursor: none }` hid a cursor that does not
+ *      exist, while this component still ran two framer-motion springs on
+ *      every frame, mounted a <video>, and listened to mousemove.
+ *   2. framer-motion was pulled in (~100KB) for this and the splash screen
+ *      only, on top of a GSAP bundle that already does both.
  *
- * Fully disabled on touch/coarse-pointer devices. No listeners, no render.
+ * gsap.quickTo is the idiomatic way to drive a cursor: it reuses one tween
+ * instance rather than creating a new one per mousemove event.
  */
-export const CustomCursor: React.FC = () => {
-  // ── Device guard: bail completely on touch devices ───────────────────
-  const isPointerFine =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(pointer: fine)').matches;
 
-  if (!isPointerFine) return null;
-
-  return <CursorInner />;
+const SIZES: Record<string, number> = {
+  default: 24,
+  'view-project': 80,
+  media: 120,
 };
 
-/** Separated so the hook rules are clean after the early return above */
-const CursorInner: React.FC = () => {
+export const CustomCursor: React.FC = () => {
   const { cursorType, cursorMedia } = useCursor();
+  const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const mouseX = useMotionValue(-200);
-  const mouseY = useMotionValue(-200);
+  // Evaluate once on mount, not on every render, and never render at all on
+  // a coarse pointer. `useState(fn)` so matchMedia runs a single time.
+  const [enabled] = useState(
+    () => !window.matchMedia('(hover: none), (pointer: coarse)').matches
+  );
 
-  const springConfig = { damping: 25, stiffness: 300, mass: 0.25 };
-  const cursorX = useSpring(mouseX, springConfig);
-  const cursorY = useSpring(mouseY, springConfig);
-
+  // Position
   useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+    if (!enabled || !ref.current) return;
+    const el = ref.current;
+
+    // Off-screen until the first real mousemove, so the cursor doesn't flash
+    // at the top-left corner (the element's `top: 0; left: 0` CSS position)
+    // before quickTo has anywhere to animate from.
+    gsap.set(el, { x: -200, y: -200 });
+
+    const xTo = gsap.quickTo(el, 'x', { duration: 0.35, ease: 'power3' });
+    const yTo = gsap.quickTo(el, 'y', { duration: 0.35, ease: 'power3' });
+
+    const move = (e: MouseEvent) => {
+      xTo(e.clientX);
+      yTo(e.clientY);
     };
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, [mouseX, mouseY]);
 
-  // ── Play/pause the video as the cursor enters/leaves media mode ──────
+    window.addEventListener('mousemove', move, { passive: true });
+    return () => window.removeEventListener('mousemove', move);
+  }, [enabled]);
+
+  // Size + blend mode
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    if (!enabled || !ref.current) return;
+    const size = SIZES[cursorType] ?? SIZES.default;
+    gsap.to(ref.current, {
+      width: size,
+      height: size,
+      xPercent: -50,
+      yPercent: -50,
+      duration: 0.4,
+      ease: 'power3.out',
+      backgroundColor: cursorType === 'media' ? 'transparent' : 'var(--text-color)',
+      mixBlendMode: cursorType === 'media' ? 'normal' : 'difference',
+    });
+  }, [cursorType, enabled]);
 
+  // Media source
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!enabled || !v) return;
     if (cursorType === 'media' && cursorMedia) {
-      video.src = cursorMedia;
-      video.play().catch(() => {
-        // Autoplay blocked in some browsers — fail silently
-      });
+      v.src = cursorMedia;
+      v.play().catch(() => {});
     } else {
-      video.pause();
-      video.src = '';
+      v.pause();
+      v.removeAttribute('src');
+      v.load();
     }
-  }, [cursorType, cursorMedia]);
+  }, [cursorType, cursorMedia, enabled]);
 
-  // ── Size + blend-mode config per state ──────────────────────────────
-  const sizeMap = {
-    default: 24,
-    'view-project': 80,
-    media: 120,
-  };
-
-  const size = sizeMap[cursorType];
-  const offset = size / 2;
-
-  // Media mode has no blend mode — video colours need to be accurate
-  const blendMode =
-    cursorType === 'media' ? 'normal' : ('difference' as const);
-
-  const bgColor =
-    cursorType === 'media' ? 'transparent' : 'var(--text-color)';
+  if (!enabled) return null;
 
   return (
-    <motion.div
-      className="custom-cursor"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 9999,
-        pointerEvents: 'none',
-        x: cursorX,
-        y: cursorY,
-        marginLeft: -offset,
-        marginTop: -offset,
-        borderRadius: '50%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: cursorType === 'media' ? 'hidden' : 'visible',
-      }}
-      animate={{
-        width: size,
-        height: size,
-        backgroundColor: bgColor,
-        mixBlendMode: blendMode,
-      }}
-      transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-    >
-      {/* ── VIEW label (view-project state) ─────────────────── */}
-      <motion.span
-        animate={{
-          opacity: cursorType === 'view-project' ? 1 : 0,
-          scale: cursorType === 'view-project' ? 1 : 0.5,
-        }}
-        transition={{ duration: 0.2 }}
-        style={{
-          color: 'var(--bg-color)',
-          fontSize: '11px',
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          pointerEvents: 'none',
-          position: 'absolute',
-        }}
-      >
-        VIEW
-      </motion.span>
-
-      {/* ── Video player (media state) ───────────────────────── */}
-      <motion.div
-        className="cursor-media-wrapper"
-        animate={{ opacity: cursorType === 'media' ? 1 : 0 }}
-        transition={{ duration: 0.25 }}
-        style={{ position: 'absolute', inset: 0 }}
-      >
-        <video
-          ref={videoRef}
-          muted
-          loop
-          playsInline
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            borderRadius: '50%',
-            display: 'block',
-          }}
-        />
-        {/* "PLAY" label floats over the video */}
-        <motion.span
-          className="cursor-media-label"
-          animate={{ opacity: cursorType === 'media' ? 1 : 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          PLAY
-        </motion.span>
-      </motion.div>
-    </motion.div>
+    <div ref={ref} className={`custom-cursor cursor-${cursorType}`} aria-hidden="true">
+      <span className="cursor-fallback-label">VIEW</span>
+      <div className="cursor-media-wrapper">
+        <video ref={videoRef} muted loop playsInline preload="none" />
+        <span className="cursor-media-label">PLAY</span>
+      </div>
+    </div>
   );
 };

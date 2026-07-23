@@ -1,12 +1,30 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-import SplitType from 'split-type';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { client } from '../lib/sanity';
 import { BlockRenderer } from '../components/case-study/BlockRenderer';
+import { useReveal } from '../hooks/useReveal';
+import { useParallax } from '../hooks/useParallax';
 
-gsap.registerPlugin(ScrollTrigger);
+/**
+ * CaseStudy
+ *
+ * The old version had three failure modes that all looked identical to the
+ * user (a blank page):
+ *
+ *   1. `catch { console.error }` left `project` null forever and rendered
+ *      `<div style={{opacity: 0}} />`. A fetch failure was indistinguishable
+ *      from a page that simply had not arrived.
+ *   2. Page visibility depended on a requestAnimationFrame callback calling
+ *      `gsap.set(container, {opacity: 1})`. If that rAF was throttled — a
+ *      backgrounded tab, iOS low power mode — the page never appeared.
+ *   3. Any throw below (MediaItem) unmounted the root, since there was no
+ *      error boundary.
+ *
+ * Now: explicit status machine, container is never opacity-gated, reveals are
+ * handled by the shared useReveal hook via data-reveal attributes. A
+ * not-found slug now renders an in-place message instead of the old
+ * `navigate('/work')` redirect — deliberate, part of this status machine.
+ */
 
 interface ProjectData {
   brand: string;
@@ -15,188 +33,121 @@ interface ProjectData {
   role: string;
   stack: string[];
   summary: string;
-  contentBlocks: any[];
+  contentBlocks: never[];
 }
+
+type Status = 'loading' | 'ready' | 'notfound' | 'error';
+
+const QUERY = `*[_type == "caseStudy" && slug.current == $slug][0]{
+  brand, projectType, timeline, role, stack, summary, contentBlocks
+}`;
 
 export const CaseStudy: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const [project, setProject] = useState<ProjectData | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState<Status>('loading');
 
-  // ── Data fetch ─────────────────────────────────────────────────────────
+  // Reveals wait for data; the dep array re-runs setup once blocks are in the
+  // DOM. `enabled` prevents a pass over an empty container.
+  const scope = useReveal<HTMLDivElement>({
+    deps: [project],
+    enabled: status === 'ready',
+  });
+  useParallax(scope, [project]);
+
   useEffect(() => {
-    setProject(null); // reset on slug change so container returns to opacity:0
-    const fetchProject = async () => {
-      try {
-        const query = `*[_type == "caseStudy" && slug.current == $slug][0] {
-          brand, projectType, timeline, role, stack, summary, contentBlocks
-        }`;
-        const data = await client.fetch(query, { slug });
-        if (!data) return navigate('/work');
+    let cancelled = false;
+    setStatus('loading');
+    setProject(null);
+
+    client
+      .fetch<ProjectData | null>(QUERY, { slug })
+      .then((data) => {
+        if (cancelled) return;
+        if (!data) {
+          setStatus('notfound');
+          return;
+        }
         setProject(data);
-      } catch (error) {
-        console.error('Sanity fetch error:', error);
-      }
-    };
-    fetchProject();
-  }, [slug, navigate]);
-
-  // ── Self-contained reveal ──────────────────────────────────────────────
-  // Fires after setProject(data) re-renders the real DOM.
-  // By the time the user reaches this page, SplashLoader has already
-  // awaited document.fonts.ready — no need to re-gate on it here.
-  // A single rAF is enough to let React flush the render before we measure.
-  useEffect(() => {
-    if (!project || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const splits: SplitType[] = [];
-    let rafId: number;
-    let ctx: gsap.Context;
-
-    rafId = requestAnimationFrame(() => {
-      ctx = gsap.context(() => {
-        const textEls = container.querySelectorAll<HTMLElement>(
-          'h1, h2, h3, .meta-label, .meta-value, .cs-section-title, .cs-block-title, .cs-text-body'
-        );
-        const imageEls = container.querySelectorAll<HTMLElement>(
-          '.cs-img, .cs-media-wrapper'
-        );
-
-        // 1. Pre-hide children while container is still opacity:0
-        gsap.set(textEls, { opacity: 0 });
-        gsap.set(imageEls, { opacity: 0 });
-
-        // 2. Reveal container — children are already invisible, so no flash
-        gsap.set(container, { opacity: 1 });
-
-        // 3. Text reveals
-        textEls.forEach((el) => {
-          if (el.classList.contains('split-processed')) return;
-          el.classList.add('split-processed');
-
-          const split = new SplitType(el, { types: 'lines' });
-          splits.push(split);
-
-          if (split.lines && split.lines.length > 0) {
-            split.lines.forEach((line) => {
-              const wrapper = document.createElement('div');
-              wrapper.classList.add('reveal-mask');
-              wrapper.style.overflow = 'hidden';
-              wrapper.style.display = 'inline-block';
-              wrapper.style.verticalAlign = 'top';
-              wrapper.style.width = '100%';
-              wrapper.style.paddingTop = '0.1em';
-              wrapper.style.paddingBottom = '0.1em';
-              wrapper.style.marginTop = '-0.1em';
-              wrapper.style.marginBottom = '-0.1em';
-              line.parentNode?.insertBefore(wrapper, line);
-              wrapper.appendChild(line);
-            });
-
-            gsap.set(el, { opacity: 1 });
-
-            const isAboveFold = el.getBoundingClientRect().top < window.innerHeight;
-
-            gsap.fromTo(
-              split.lines,
-              { y: '100%', opacity: 0 },
-              {
-                y: '0%',
-                opacity: 1,
-                duration: 1.2,
-                ease: 'power4.out',
-                stagger: 0.1,
-                delay: isAboveFold ? 0.2 : 0,
-                scrollTrigger: {
-                  trigger: el,
-                  start: 'top 95%',
-                  toggleActions: 'play none none none',
-                },
-              }
-            );
-          } else {
-            gsap.set(el, { opacity: 1 });
-          }
-        });
-
-        // 4. Image reveals
-        imageEls.forEach((img) => {
-          if (img.classList.contains('img-processed')) return;
-          img.classList.add('img-processed');
-
-          const isAboveFold = img.getBoundingClientRect().top < window.innerHeight;
-
-          gsap.fromTo(
-            img,
-            { clipPath: 'inset(100% 0% 0% 0%)', y: 40, opacity: 0 },
-            {
-              clipPath: 'inset(0% 0% 0% 0%)',
-              y: 0,
-              opacity: 1,
-              duration: 1.6,
-              ease: 'power4.out',
-              delay: isAboveFold ? 0.2 : 0,
-              scrollTrigger: {
-                trigger: img,
-                start: 'top 90%',
-                toggleActions: 'play none none none',
-              },
-            }
-          );
-        });
-
-        ScrollTrigger.refresh();
-      }, container);
-    });
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      ctx?.revert();
-      splits.forEach((s) => s.revert());
-      container.querySelectorAll('.split-processed, .img-processed').forEach((el) => {
-        el.classList.remove('split-processed', 'img-processed');
+        setStatus('ready');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[CaseStudy] Sanity fetch failed:', err);
+        setStatus('error');
       });
-    };
-  }, [project]);
 
-  if (!project) {
-    return <div className="page-wrapper" style={{ opacity: 0 }} />;
+    // Abandon the result of a stale slug rather than letting it land after a
+    // newer one. The old code had no guard, so fast back-and-forth navigation
+    // could render the previous project's data.
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (status === 'loading') {
+    return (
+      <div className="page-wrapper cs-status" aria-busy="true">
+        <span className="cs-status-text">Loading</span>
+      </div>
+    );
+  }
+
+  if (status === 'notfound') {
+    return (
+      <div className="page-wrapper cs-status">
+        <h1>That project isn't here.</h1>
+        <p>
+          It may have been renamed or unpublished. <Link to="/work">See all work</Link>.
+        </p>
+      </div>
+    );
+  }
+
+  if (status === 'error' || !project) {
+    return (
+      <div className="page-wrapper cs-status" role="alert">
+        <h1>Couldn't load this project.</h1>
+        <p>
+          Something went wrong fetching it. <Link to="/work">See all work</Link>, or
+          try again in a moment.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div
-      className="page-wrapper case-study-page"
-      ref={containerRef}
-      style={{ opacity: 0 }}
-    >
+    <div className="page-wrapper case-study-page" ref={scope}>
       <header className="cs-hero section-padding">
         <h1 className="cs-title">
-          <span>{project.brand}</span>
-          <span className="font-sec-muted">{project.projectType}</span>
+          <span data-reveal="text">{project.brand}</span>
+          <span className="font-sec-muted" data-reveal="text" data-reveal-delay="0.1">
+            {project.projectType}
+          </span>
         </h1>
 
         <div className="cs-metadata grid-12-col">
           <div className="col-2">
-            <span className="meta-label">TIMELINE</span>
-            <span className="meta-value">{project.timeline}</span>
+            <span className="meta-label" data-reveal="text">TIMELINE</span>
+            <span className="meta-value" data-reveal="text">{project.timeline}</span>
           </div>
           <div className="col-3">
-            <span className="meta-label">ROLE</span>
-            <span className="meta-value">{project.role}</span>
+            <span className="meta-label" data-reveal="text">ROLE</span>
+            <span className="meta-value" data-reveal="text">{project.role}</span>
           </div>
           <div className="col-2">
-            <span className="meta-label">STACK</span>
+            <span className="meta-label" data-reveal="text">STACK</span>
             <ul className="meta-stack-list">
-              {project.stack?.map((item, index) => (
-                <li key={index} className="meta-value">{item}</li>
+              {project.stack?.map((item) => (
+                <li key={item} className="meta-value" data-reveal="text">
+                  {item}
+                </li>
               ))}
             </ul>
           </div>
           <div className="col-5">
-            <span className="meta-label">SUMMARY</span>
-            <p className="meta-value">{project.summary}</p>
+            <span className="meta-label" data-reveal="text">SUMMARY</span>
+            <p className="meta-value" data-reveal="text">{project.summary}</p>
           </div>
         </div>
       </header>

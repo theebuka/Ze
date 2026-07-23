@@ -1,89 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCursor } from '../context/CursorContext';
-import { client, urlFor } from '../lib/sanity';
-import { useImageParallax } from '../hooks/useImageParallax';
-
-interface Project {
-  _id: string;
-  brand: string;
-  slug: string;
-  category?: string;
-  thumbnailUrl: string;
-  previewVideoUrl?: string;
-}
+import { client } from '../lib/sanity';
+import { SanityImage } from '../components/common/SanityImage';
+import { WorkGrid } from '../components/work/WorkGrid';
+import { useProjects } from '../hooks/useProjects';
+import { useReveal } from '../hooks/useReveal';
+import { useParallax } from '../hooks/useParallax';
 
 interface SiteSettings {
-  heroImage: any;
+  heroImage: unknown;
 }
 
 const FOCUS_ROWS: [string, string][] = [
-  ['Art Direction',     'Product Thinking'],
+  ['Art Direction', 'Product Thinking'],
   ['Creative Strategy', 'User Experience'],
-  ['Usability Research','Interaction Design'],
-  ['Design Systems',    'Visual Design'],
+  ['Usability Research', 'Interaction Design'],
+  ['Design Systems', 'Visual Design'],
 ];
 
 export const Home: React.FC = () => {
-  const { setCursorType, setCursorMedia } = useCursor();
-  const [featuredWorks, setFeaturedWorks] = useState<Project[]>([]);
-  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { projects, loading } = useProjects('featured');
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
 
-  useImageParallax([featuredWorks]);
+  const scope = useReveal<HTMLElement>({ deps: [projects, settings] });
+  useParallax(scope, [projects, settings]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [works, settings] = await Promise.all([
-          client.fetch(`
-            *[_type == "caseStudy" && isFeatured == true] | order(publishedAt desc)[0...2] {
-              _id, brand,
-              "slug": slug.current,
-              category,
-              "thumbnailUrl": thumbnail.asset->url,
-              "previewVideoUrl": previewVideo.asset->url
-            }
-          `),
-          client.fetch(`*[_type == "siteSettings"][0]{ heroImage }`)
-        ]);
-        setFeaturedWorks(works);
-        setSiteSettings(settings);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
-      }
+    let cancelled = false;
+    client
+      .fetch<SiteSettings>(`*[_type == "siteSettings"][0]{ heroImage }`)
+      .then((data) => !cancelled && setSettings(data))
+      .catch((err) => console.error('[Home] siteSettings fetch failed:', err));
+    return () => {
+      cancelled = true;
     };
-    fetchData();
   }, []);
 
-  const handleMouseEnter = (project: Project) => {
-    if (project.previewVideoUrl) {
-      setCursorType('media');
-      setCursorMedia(project.previewVideoUrl);
-    } else {
-      setCursorType('view-project');
-    }
-  };
-  const handleMouseLeave = () => {
-    setCursorType('default');
-    setCursorMedia(null);
-  };
-
   return (
-    <main className="page-wrapper page-home">
-
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
+    <main className="page-wrapper page-home" ref={scope}>
+      {/* ── Hero ────────────────────────────────────────────────────── */}
       <section className="hero-section">
         <div className="hero-row">
-          <h1 className="hero-title">
+          <h1 className="hero-title" data-reveal="text">
             <span className="text-muted">CHUKWUEBUKA</span>
             <br />
             <span className="text-muted">ARIN</span>ZE{' '}
             <span className="text-muted">NWAJU</span>
           </h1>
-          <p className="hero-subtitle">
+          <p className="hero-subtitle" data-reveal="text" data-reveal-delay="0.15">
             Multidisciplinary Creative,
             <br />
             Design Engineer, Art Director
@@ -92,26 +56,29 @@ export const Home: React.FC = () => {
           </p>
         </div>
 
-        <div className="hero-image-wrapper parallax-wrapper">
-          <div className="hero-blur-overlay" />
-          {siteSettings?.heroImage && (
-            <img
-              src={urlFor(siteSettings.heroImage).auto('format').quality(80).width(1920).url()}
-              alt="ZE"
+        <div className="hero-image-wrapper" data-reveal="image" data-parallax data-reveal-delay="0.25">
+          <div className="hero-blur-overlay" aria-hidden="true" />
+          {settings && Boolean(settings.heroImage) && (
+            <SanityImage
+              source={settings.heroImage}
+              alt="Chukwuebuka Arinze Nwaju"
               className="parallax-img"
+              sizes="100vw"
+              priority
+              maxWidth={1920}
             />
           )}
         </div>
       </section>
 
-      {/* ── Focus ─────────────────────────────────────────────────────── */}
+      {/* ── Focus ───────────────────────────────────────────────────── */}
       <section className="focus-section grid-12-col margin-top-huge">
         <div className="col-4">
-          <h2 className="focus-heading">FOCUS</h2>
+          <h2 className="focus-heading" data-reveal="text">FOCUS</h2>
         </div>
 
         <div className="col-6">
-          <p className="focus-body">
+          <p className="focus-body" data-reveal="text">
             Alongside that, I've worked across agencies and freelance roles,
             designing products for FinTech, EdTech, and marketplace startups —
             sometimes designing interfaces, sometimes shaping brands, sometimes
@@ -128,55 +95,23 @@ export const Home: React.FC = () => {
                 <span className="focus-skill">{left}</span>
                 <span className="focus-star" aria-hidden="true">✦</span>
                 <span className="focus-skill">{right}</span>
-                <span className="line-reveal" aria-hidden="true" />
+                <span className="line-reveal" data-reveal="line" aria-hidden="true" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Selected Works ────────────────────────────────────────────── */}
+      {/* ── Selected Works ──────────────────────────────────────────── */}
       <section className="selected-works margin-top-huge">
         <header className="works-header">
-          <h2>SELECTED WORKS</h2>
+          <h2 data-reveal="text">SELECTED WORKS</h2>
           <Link to="/work" className="font-sec-muted">SEE ALL</Link>
-          <span className="line-reveal" aria-hidden="true" />
+          <span className="line-reveal" data-reveal="line" aria-hidden="true" />
         </header>
 
-        <div className="work-grid">
-          {!loading &&
-            featuredWorks.map((project) => (
-              <Link
-                to={`/work/${project.slug}`}
-                key={project._id}
-                className="work-item"
-                onMouseEnter={() => handleMouseEnter(project)}
-                onMouseLeave={handleMouseLeave}
-                style={{ display: 'block' }}
-              >
-                <div className="work-img-wrapper parallax-wrapper">
-                  {project.thumbnailUrl && (
-                    <img
-                      src={project.thumbnailUrl}
-                      alt={project.brand}
-                      className="parallax-img"
-                    />
-                  )}
-                </div>
-                <div className="work-meta">
-                  <div className="work-meta-row">
-                    <span className="work-meta-category">
-                      {project.category || 'Case Study'}
-                    </span>
-                    <span className="work-meta-arrow" aria-hidden="true">↗</span>
-                  </div>
-                  <div className="work-meta-brand">{project.brand}</div>
-                </div>
-              </Link>
-            ))}
-        </div>
+        <WorkGrid projects={projects} loading={loading} />
       </section>
-
     </main>
   );
 };
