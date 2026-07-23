@@ -83,6 +83,16 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
           // `autoSplit: true` re-splits on font load and resize; creating the
           // tween inside onSplit means it re-binds to the NEW line elements
           // rather than orphaned ones from the previous split.
+          //
+          // The hidden state is set with an explicit gsap.set() BEFORE the
+          // parent is revealed and BEFORE the scroll-triggered tween is
+          // created, rather than leaning on .from()'s implicit
+          // immediateRender. Doing it explicitly means the lines are
+          // guaranteed to already be translated out of view the instant the
+          // parent becomes visible — no dependence on exactly when GSAP
+          // decides to apply a tween's starting values, which is what
+          // caused a visible "shutter" flash of already-revealed text
+          // before it animated back in.
           textEls.forEach((el) => {
             SplitText.create(el, {
               type: 'lines',
@@ -90,9 +100,10 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
               autoSplit: true,
               linesClass: 'reveal-line',
               onSplit(self) {
+                gsap.set(self.lines, { yPercent: 110 });
                 gsap.set(el, { autoAlpha: 1 });
-                return gsap.from(self.lines, {
-                  yPercent: 110,
+                return gsap.to(self.lines, {
+                  yPercent: 0,
                   duration: 1,
                   ease: 'power4.out',
                   stagger: 0.08,
@@ -114,13 +125,19 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
           // ── IMAGES ──────────────────────────────────────────────────────
           // clip-path is a compositor-friendly reveal on desktop but forces
           // repaints on mobile GPUs. Phones get opacity + translate instead.
+          // Same explicit-set-then-.to() pattern as text, for the same
+          // reason — no reliance on implicit initial-render timing.
           imageEls.forEach((el) => {
             const from = desktop
               ? { clipPath: 'inset(100% 0% 0% 0%)', autoAlpha: 0 }
               : { y: 24, autoAlpha: 0 };
+            const to = desktop
+              ? { clipPath: 'inset(0% 0% 0% 0%)', autoAlpha: 1 }
+              : { y: 0, autoAlpha: 1 };
 
-            gsap.from(el, {
-              ...from,
+            gsap.set(el, from);
+            gsap.to(el, {
+              ...to,
               duration: desktop ? 1.4 : 0.8,
               ease: 'power4.out',
               delay: delayOf(el),
@@ -135,8 +152,9 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
 
           // ── LINES (animated hairline dividers) ──────────────────────────
           lineEls.forEach((el) => {
-            gsap.from(el, {
-              scaleX: 0,
+            gsap.set(el, { scaleX: 0 });
+            gsap.to(el, {
+              scaleX: 1,
               duration: 0.9,
               ease: 'power3.out',
               delay: delayOf(el),
