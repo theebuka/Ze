@@ -61,7 +61,8 @@ export const useSmoothScroll = () => {
  */
 export const setScrollLocked = (locked: boolean) => {
   if (window.lenis) {
-    locked ? window.lenis.stop() : window.lenis.start();
+    if (locked) window.lenis.stop();
+    else window.lenis.start();
     return;
   }
   document.documentElement.style.overflow = locked ? 'hidden' : '';

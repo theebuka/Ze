@@ -1,26 +1,18 @@
 /* ============================================================
    INTERACTIONS.CSS
-   All micro-interaction styles. Import in main.tsx AFTER index.css
+   All micro-interaction styles. Import in App.tsx AFTER index.css
    ============================================================ */
 
 /* ── 1. INNER IMAGE PARALLAX ─────────────────────────────────
-   The wrapper clips. The image is taller than the wrapper,
-   and GSAP scrubs its Y position on scroll.
+   Moved to animation.css: [data-parallax] / .parallax-img there are
+   scoped to desktop only (mobile has no scrub, so the extra 15% height
+   just crops the image for nothing) and don't carry `!important`, which
+   this rule's `height: 115% !important` would otherwise have kept
+   winning over regardless of import order — .parallax-img is still an
+   actively used className (WorkGrid, Home), it just no longer has its
+   sizing/will-change rules here.
    ─────────────────────────────────────────────────────────── */
-   .parallax-wrapper {
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .parallax-img {
-    width: 100%;
-    height: 115% !important;   /* Extra 15% provides travel room */
-    object-fit: cover;
-    display: block;
-    will-change: transform;
-    transform-origin: center center;
-  }
-  
+
   /* ── 2. MAGNETIC ELEMENTS ────────────────────────────────────
      GSAP handles the transform. We just mark will-change.
      ─────────────────────────────────────────────────────────── */
