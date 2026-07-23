@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CursorProvider, useCursor } from './context/CursorContext';
 import { CustomCursor } from './components/common/CustomCursor';
@@ -51,12 +51,22 @@ import './styles/animation.css';
  * `setCursorType('default')` on every route change is preserved from the old
  * RouteTransitions — without it, navigating away while hovering a work item
  * (cursorType 'media' or 'view-project') leaves the enlarged cursor stuck.
+ *
+ * This runs in useLayoutEffect, not useEffect. useGSAP (in every page's
+ * useReveal/useParallax) sets up its ScrollTriggers in a layout effect too,
+ * and ALL layout effects in a commit run before ANY plain useEffect, full
+ * stop — regardless of where a component sits in the tree. If scrollToTop()
+ * were a plain useEffect, the newly-mounted page's ScrollTriggers would get
+ * created and measured against whatever scroll position was left over from
+ * the PREVIOUS page, before this one ever got a chance to reset it — and
+ * with `once: true` on those triggers, a wrong-context measurement sticks
+ * (that's why reveals silently failed to (re)trigger on navigation).
  */
 const RouteEffects: React.FC = () => {
   const { pathname } = useLocation();
   const { setCursorType } = useCursor();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     scrollToTop();
     setCursorType('default');
     const isCaseStudy = pathname.startsWith('/work/') && pathname !== '/work';

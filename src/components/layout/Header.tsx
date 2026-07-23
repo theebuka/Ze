@@ -38,15 +38,24 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
         </Link>
       </div>
 
-      <div className="header-time" data-reveal="text">
+      {/* No data-reveal="text" here: SplitText replaces this element's text
+          node with its own split/mask DOM structure. useLagosTime ticks this
+          content every second via React re-renders, which then fight
+          SplitText for ownership of the same nodes — the clock stops
+          rendering because React's reconciliation and SplitText's DOM
+          surgery are clobbering each other. */}
+      <div className="header-time">
         <span>LOCAL / </span>
         {lagosTime.toUpperCase()}
       </div>
 
+      {/* Same reason: this button's text toggles between MENU/CLOSE on every
+          click. Applying data-reveal="text" here caused the exact same
+          fight, which looked like the button flickering between the two
+          labels. */}
       <button
         ref={toggleRef}
         className="header-menu-toggle magnetic"
-        data-reveal="text"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         {isMenuOpen ? 'CLOSE' : 'MENU'}

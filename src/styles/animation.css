@@ -36,10 +36,24 @@ html.js [data-reveal='line'] {
   }
 }
 
-/* SplitText's mask wrapper. `overflow: clip` beats `hidden` here: it does not
+/* .reveal-line is the SplitText line element itself (linesClass: 'reveal-line'
+   in useReveal.ts). SplitText's `mask` option wraps EACH line in its own
+   generated element with class `reveal-line-mask` (line class + "-mask") and
+   `overflow: clip` inline — clip beats `hidden` here because it does not
    create a scroll container, so it cannot trap Lenis or break sticky. */
 .reveal-line {
   will-change: transform;
+}
+
+/* Without this, the mask clips flush to the line's own box, which slightly
+   cuts off descenders (g, y, p, q) and tall ascenders/accents. The old
+   hand-rolled reveal wrapper (in the deleted useGlobalTextReveal.ts) used
+   this exact padding + negative-margin trick to buy clipping room without
+   adding visible gaps between lines — margin cancels the padding's effect
+   on layout/line spacing, only the overflow clip box gets bigger. */
+.reveal-line-mask {
+  padding-block: 0.1em;
+  margin-block: -0.1em;
 }
 
 /* ── 2. LINE REVEAL ──────────────────────────────────────────

@@ -13,14 +13,19 @@ interface Props {
  *   + 400ms, + 1400ms exit  ≈  7 seconds, every single visit.
  *
  * Locally that hid the load. On a CDN the real load time stacks on top of it
- * instead of behind it, so deployment felt dramatically slower than dev.
- *
- * Now the counter is driven by actual readiness (fonts + window load, with a
- * 3s ceiling) and the whole thing caps out around 1.6s.
+ * instead of behind it, so a fixed schedule tuned for localhost either feels
+ * rushed on a fast connection or gets bulldozed by real load time on a slow
+ * one. The counter is still driven by actual readiness (fonts + window load,
+ * with a MAX_WAIT ceiling so a stalled connection never hangs it forever),
+ * but MIN_SHOW keeps the deliberate, unhurried pacing intentional here —
+ * this isn't just a loading indicator, it's a held first impression before
+ * the exit reveals the page. Slide-exit uses the same cubic-bezier and 1.4s
+ * duration as the original.
  */
 
-const MAX_WAIT = 3000;
-const MIN_SHOW = 700;
+const MAX_WAIT = 4000;
+const MIN_SHOW = 2800;
+const EASE_CUSTOM = 'cubic-bezier(0.76, 0, 0.24, 1)';
 
 export const SplashLoader: React.FC<Props> = ({ onComplete }) => {
   const [count, setCount] = useState(0);
@@ -40,7 +45,7 @@ export const SplashLoader: React.FC<Props> = ({ onComplete }) => {
       { v: 0 },
       {
         v: 90,
-        duration: 1.4,
+        duration: 2.4,
         ease: 'power2.out',
         onUpdate() {
           setCount(Math.round((this.targets()[0] as { v: number }).v));
@@ -72,7 +77,7 @@ export const SplashLoader: React.FC<Props> = ({ onComplete }) => {
           { v: count },
           {
             v: 100,
-            duration: 0.35,
+            duration: 0.6,
             ease: 'power2.out',
             onUpdate() {
               setCount(Math.round((this.targets()[0] as { v: number }).v));
@@ -81,10 +86,10 @@ export const SplashLoader: React.FC<Props> = ({ onComplete }) => {
         )
         .to(rootRef.current, {
           yPercent: -100,
-          duration: 0.9,
-          ease: 'expo.inOut',
+          duration: 1.4,
+          ease: EASE_CUSTOM,
           onComplete,
-        });
+        }, '+=0.4');
     });
 
     return () => {
