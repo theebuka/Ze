@@ -1,0 +1,271 @@
+/* ============================================================
+   ANIMATION.CSS
+   Import LAST, after index.css and interactions.css.
+
+   Everything the reveal system needs, plus the mobile performance
+   corrections. Rules here intentionally override the older files so the
+   migration can be done without gutting index.css in one go.
+   ============================================================ */
+
+/* ── 1. PRE-JS HIDING ─────────────────────────────────────────
+   The old approach put `opacity: 0` (and `transform: scaleX(0)`) directly in
+   the stylesheet, which means the content is permanently invisible if JS
+   never runs — the exact failure the code comments worried about.
+
+   Gate it on `html.js`, which is set by a one-line inline script in
+   index.html. No JS, no class, content visible.
+   ─────────────────────────────────────────────────────────── */
+html.js [data-reveal='text'],
+html.js [data-reveal='image'] {
+  visibility: hidden;
+}
+
+html.js [data-reveal='line'] {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* Reduced motion: never hide anything, even before JS boots. */
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal='text'],
+  html.js [data-reveal='image'] {
+    visibility: visible !important;
+  }
+  html.js [data-reveal='line'] {
+    transform: none !important;
+  }
+}
+
+/* SplitText's mask wrapper. `overflow: clip` beats `hidden` here: it does not
+   create a scroll container, so it cannot trap Lenis or break sticky. */
+.reveal-line {
+  will-change: transform;
+}
+
+/* ── 2. LINE REVEAL ──────────────────────────────────────────
+   `will-change: transform` removed from the base rule. There is one of these
+   per focus row plus several per page; each one was a separately promoted
+   compositor layer. Mobile Safari evicts layers under pressure and the
+   result is stutter. GSAP promotes elements itself via force3D while a tween
+   is running, which is the only time it is needed.
+   ─────────────────────────────────────────────────────────── */
+.line-reveal {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.1;
+  transform-origin: left center;
+  will-change: auto;
+}
+
+/* ── 3. PARALLAX ─────────────────────────────────────────────
+   Desktop only. The 115% height exists solely to give the scrub travel room;
+   on mobile there is no scrub, so the extra 15% just crops the image for no
+   reason. `!important` removed — nothing was overriding it.
+   ─────────────────────────────────────────────────────────── */
+[data-parallax] {
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  will-change: auto;
+}
+
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  .parallax-img {
+    height: 115%;
+  }
+}
+
+/* ── 4. CUSTOM CURSOR ────────────────────────────────────────
+   `* { cursor: none !important }` applied to touch devices too, and the
+   !important made it impossible to restore a pointer anywhere. Scope it to
+   devices that actually have a cursor.
+   ─────────────────────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  html.js * {
+    cursor: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  * {
+    cursor: auto;
+  }
+  a,
+  button {
+    cursor: pointer;
+  }
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--text-color);
+  mix-blend-mode: difference;
+  overflow: hidden;
+}
+
+.custom-cursor .cursor-fallback-label,
+.custom-cursor .cursor-media-wrapper {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.custom-cursor.cursor-view-project .cursor-fallback-label {
+  opacity: 1;
+}
+
+.custom-cursor.cursor-media .cursor-media-wrapper {
+  opacity: 1;
+}
+
+/* ── 5. MOBILE PERFORMANCE ───────────────────────────────────*/
+@media (max-width: 768px) {
+  /* backdrop-filter over half the hero forces a compositing layer that
+     re-rasterises every frame while anything animates underneath it. This is
+     the single most expensive rule on the mobile homepage. A gradient reads
+     nearly identically at phone scale. */
+  .hero-blur-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0) 100%
+    );
+    border-right: none;
+  }
+
+  /* Strip layer-promotion hints that are not paying for themselves. */
+  .magnetic,
+  .rolling-text .rt-top > span,
+  .rolling-text .rt-bot > span {
+    will-change: auto;
+  }
+}
+
+/* ── 6. VIEWPORT UNITS ───────────────────────────────────────
+   100vh on mobile is measured against the viewport WITH the address bar
+   collapsed, so a 100vh element is taller than the visible area on load and
+   the page jumps as the bar hides. dvh tracks the real value.
+   ─────────────────────────────────────────────────────────── */
+.page-wrapper {
+  min-height: 100svh;
+}
+
+@supports not (min-height: 100svh) {
+  .page-wrapper {
+    min-height: 100vh;
+  }
+}
+
+/* 100vw includes the scrollbar gutter, which pushes content wider than the
+   viewport. That horizontal overflow is currently masked by
+   `overflow-x: hidden` on body, which in turn breaks position: sticky. */
+html.lenis,
+html.lenis body {
+  width: 100%;
+}
+
+/* ── 7. CASE STUDY MEDIA ─────────────────────────────────────*/
+.cs-media-wrapper {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+}
+
+.cs-media-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+  overflow: hidden;
+}
+
+.cs-media-frame .cs-video,
+.cs-media-frame .cs-embed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.cs-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── 8. STATUS + SKELETON STATES ─────────────────────────────*/
+.cs-status {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.cs-status-text {
+  font-size: var(--font-home-sec);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.work-item--skeleton .work-img-wrapper {
+  background: currentColor;
+  opacity: 0.04;
+}
+
+.work-item--skeleton .work-meta {
+  min-height: 3em;
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.error-state a {
+  text-decoration: underline;
+}
+
+.error-detail {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  opacity: 0.6;
+  white-space: pre-wrap;
+}
+
+/* ── 9. GLOBAL REDUCED MOTION ────────────────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
