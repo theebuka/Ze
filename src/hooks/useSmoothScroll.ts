@@ -1,48 +1,77 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger, prefersReducedMotion } from '../lib/gsap';
 
-gsap.registerPlugin(ScrollTrigger);
-
-// Expose the lenis instance globally so other hooks (useImageParallax)
-// can access it for ScrollTrigger synchronisation without prop-drilling.
 declare global {
   interface Window {
     lenis: Lenis | null;
   }
 }
 
+/**
+ * Lenis + ScrollTrigger bridge.
+ *
+ * Changes from the previous version:
+ *   - Bails out entirely under prefers-reduced-motion. Smooth-scroll
+ *     hijacking is one of the things that setting exists for.
+ *   - `autoRaf: false` is explicit. Lenis is driven by the GSAP ticker; the
+ *     old code did this too but relied on the default, which changed between
+ *     Lenis majors and would silently give you two rAF loops.
+ *   - `syncTouch: false` (Lenis default, now explicit): touch scrolling stays
+ *     native. Synthesising momentum on a phone is the classic Lenis mobile
+ *     jank, and it is the reason iOS feels worse than desktop here.
+ *   - lagSmoothing moved to lib/gsap.ts so it is set once.
+ */
 export const useSmoothScroll = () => {
   useEffect(() => {
+    if (prefersReducedMotion()) {
+      window.lenis = null;
+      return;
+    }
+
     const lenis = new Lenis({
-      lerp: 0.08,
+      lerp: 0.1,
       smoothWheel: true,
+      syncTouch: false,
+      autoRaf: false,
     });
 
-    // Store globally so ScrollTrigger-based hooks can read scroll position
     window.lenis = lenis;
 
-    // ── CRITICAL BRIDGE ─────────────────────────────────────────────────
-    // Inform GSAP ScrollTrigger of every Lenis scroll tick.
-    // Without this, ScrollTrigger reads native scrollY which lags behind
-    // the Lenis-interpolated position, causing jitter on scrubbed tweens.
     lenis.on('scroll', ScrollTrigger.update);
 
-    // Drive Lenis from the GSAP ticker instead of requestAnimationFrame.
-    // This keeps both systems perfectly in sync on the same frame.
-    const tickerCallback = (time: number) => {
-      lenis.raf(time * 1000); // GSAP time is in seconds; Lenis expects ms
-    };
-
-    gsap.ticker.add(tickerCallback);
-    gsap.ticker.lagSmoothing(0); // Prevent GSAP from skipping frames on tab focus
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
 
     return () => {
-      gsap.ticker.remove(tickerCallback);
+      gsap.ticker.remove(tick);
       lenis.off('scroll', ScrollTrigger.update);
       lenis.destroy();
       window.lenis = null;
     };
   }, []);
+};
+
+/**
+ * Lock and unlock scroll.
+ *
+ * `document.body.style.overflow = 'hidden'` does NOT lock scrolling on iOS
+ * Safari, and it fights Lenis on every platform. Use Lenis' own stop/start,
+ * with the body rule kept only as the no-Lenis fallback.
+ */
+export const setScrollLocked = (locked: boolean) => {
+  if (window.lenis) {
+    locked ? window.lenis.stop() : window.lenis.start();
+    return;
+  }
+  document.documentElement.style.overflow = locked ? 'hidden' : '';
+};
+
+/** Jump to top on route change without fighting Lenis' interpolated position. */
+export const scrollToTop = () => {
+  if (window.lenis) {
+    window.lenis.scrollTo(0, { immediate: true });
+  } else {
+    window.scrollTo(0, 0);
+  }
 };
