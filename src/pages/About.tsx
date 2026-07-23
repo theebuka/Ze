@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { client, urlFor } from '../lib/sanity';
 import { useReveal } from '../hooks/useReveal';
+import { useAppReady } from '../context/AppReadyContext';
 
 interface SiteSettings {
   aboutImage1: any;
@@ -9,7 +10,11 @@ interface SiteSettings {
 
 export const About: React.FC = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const scope = useReveal<HTMLElement>({ deps: [siteSettings] });
+  const splashDone = useAppReady();
+
+  // About can be the entry route on a fresh load/refresh, mounting underneath
+  // the splash overlay same as Home — same gate, same reason.
+  const scope = useReveal<HTMLElement>({ deps: [siteSettings], enabled: splashDone });
 
   useEffect(() => {
     client.fetch(`*[_type == "siteSettings"][0]{ aboutImage1, aboutImage2 }`)

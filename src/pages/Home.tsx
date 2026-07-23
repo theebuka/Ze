@@ -6,6 +6,7 @@ import { WorkGrid } from '../components/work/WorkGrid';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
+import { useAppReady } from '../context/AppReadyContext';
 
 interface SiteSettings {
   heroImage: unknown;
@@ -21,8 +22,13 @@ const FOCUS_ROWS: [string, string][] = [
 export const Home: React.FC = () => {
   const { projects, loading } = useProjects('featured');
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const splashDone = useAppReady();
 
-  const scope = useReveal<HTMLElement>({ deps: [projects, settings] });
+  // Home mounts immediately, underneath the splash overlay, regardless of
+  // splash state — without this gate, ScrollTrigger would fire and complete
+  // the whole reveal while still covered, and the page would look static
+  // the instant the splash clears.
+  const scope = useReveal<HTMLElement>({ deps: [projects, settings], enabled: splashDone });
   useParallax(scope, [projects, settings]);
 
   useEffect(() => {

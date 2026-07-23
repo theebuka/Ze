@@ -4,6 +4,7 @@ import { client } from '../lib/sanity';
 import { BlockRenderer } from '../components/case-study/BlockRenderer';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
+import { useAppReady } from '../context/AppReadyContext';
 
 /**
  * CaseStudy
@@ -46,12 +47,14 @@ export const CaseStudy: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [project, setProject] = useState<ProjectData | null>(null);
   const [status, setStatus] = useState<Status>('loading');
+  const splashDone = useAppReady();
 
   // Reveals wait for data; the dep array re-runs setup once blocks are in the
-  // DOM. `enabled` prevents a pass over an empty container.
+  // DOM. `enabled` also requires splashDone: a case study can be the entry
+  // route on a fresh load/refresh, mounting underneath the splash overlay.
   const scope = useReveal<HTMLDivElement>({
     deps: [project],
-    enabled: status === 'ready',
+    enabled: status === 'ready' && splashDone,
   });
   useParallax(scope, [project]);
 

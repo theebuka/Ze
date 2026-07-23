@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useLagosTime } from '../../hooks/useLagosTime';
 import { useMagneticEffect } from '../../hooks/useMagneticEffect';
 import { useReveal } from '../../hooks/useReveal';
+import { useAppReady } from '../../context/AppReadyContext';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -24,8 +25,11 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
 
   // Header sits outside every page's <main>, so it needs its own reveal
   // scope — it used to be targeted by the same document-wide selector query
-  // regardless of route, which is what useReveal replaces here.
-  const scope = useReveal<HTMLElement>({ deps: [] });
+  // regardless of route, which is what useReveal replaces here. Header is
+  // always mounted from the very first paint, underneath the splash overlay,
+  // so it needs the same splashDone gate every page does.
+  const splashDone = useAppReady();
+  const scope = useReveal<HTMLElement>({ deps: [], enabled: splashDone });
 
   return (
     <header

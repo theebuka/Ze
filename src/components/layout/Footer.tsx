@@ -1,17 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RollingText } from '../common/RollingText';
+import { useReveal } from '../../hooks/useReveal';
+import { useAppReady } from '../../context/AppReadyContext';
 
 /*
   FOOTER
-  
+
   Nav links use RollingText for the rollover animation.
   onClick scrolls to the top — RouteTransitions in App.tsx also fires
   window.scrollTo(0,0) on pathname change, but this ensures it fires
   even if the user re-clicks the active page link.
-  
+
   Color inversion: interactions.css drives bg/color via body.theme-light.
   Hover states: dim on light bg, brighten on dark bg — handled by CSS.
+
+  Reveal: .footer-copyright and the .footer-col-label headings are plain
+  static text, safe for data-reveal="text". Every nav/social/CTA link is
+  wrapped in RollingText, which pre-splits its label into two stacked rows
+  of per-character spans for its hover-roll effect — same conflict as
+  Vault's .vault-link-label, so these get data-reveal="image" instead: a
+  plain fade/translate reveal on the outer <a>/<Link> that never touches
+  RollingText's own child markup.
 */
 
 const MARQUEE_COUNT = 6; // items per set — always exceeds viewport width
@@ -33,8 +43,13 @@ const SOCIAL_LINKS = [
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
 
 export const Footer: React.FC = () => {
+  const splashDone = useAppReady();
+  // Footer is always mounted from the very first paint, underneath the
+  // splash overlay, so it needs the same splashDone gate every page does.
+  const scope = useReveal<HTMLElement>({ deps: [], enabled: splashDone });
+
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" ref={scope}>
 
       {/* ── Marquee ────────────────────────────────────────────────────── */}
       {/*
@@ -63,7 +78,7 @@ export const Footer: React.FC = () => {
 
         {/* Left: copyright + social icon links */}
         <div className="footer-bottom-left">
-          <span className="footer-copyright">
+          <span className="footer-copyright" data-reveal="text">
             All Rights Reserved, Chukwuebuka Arinze Nwaju.
           </span>
           <div className="footer-social-icons">
@@ -75,6 +90,7 @@ export const Footer: React.FC = () => {
                 rel="noreferrer"
                 className="footer-social-link"
                 aria-label={aria}
+                data-reveal="image"
               >
                 <RollingText text={abbr} />
               </a>
@@ -87,13 +103,14 @@ export const Footer: React.FC = () => {
 
           {/* MENU */}
           <nav className="footer-col" aria-label="Site navigation">
-            <span className="footer-col-label">Menu</span>
+            <span className="footer-col-label" data-reveal="text">Menu</span>
             {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
                 className="footer-col-link"
                 onClick={scrollTop}
+                data-reveal="image"
               >
                 {/*
                   RollingText handles its own onMouseEnter/Leave.
@@ -106,8 +123,8 @@ export const Footer: React.FC = () => {
 
           {/* GOT A PROJECT? */}
           <div className="footer-col">
-            <span className="footer-col-label">Got a project?</span>
-            <a href="mailto:me@theebuka.com" className="footer-cta-email">
+            <span className="footer-col-label" data-reveal="text">Got a project?</span>
+            <a href="mailto:me@theebuka.com" className="footer-cta-email" data-reveal="image">
               <RollingText text="me@theebuka.com" />
             </a>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { RollingText } from '../components/common/RollingText';
 import { useReveal } from '../hooks/useReveal';
+import { useAppReady } from '../context/AppReadyContext';
 
 /*
   VAULT PAGE
@@ -38,7 +39,10 @@ const VAULT_CATEGORIES = [
 ] as const;
 
 export const Vault: React.FC = () => {
-  const scope = useReveal<HTMLElement>({ deps: [] });
+  const splashDone = useAppReady();
+  // Vault can be the entry route on a fresh load/refresh, mounting
+  // underneath the splash overlay same as Home — same gate, same reason.
+  const scope = useReveal<HTMLElement>({ deps: [], enabled: splashDone });
 
   return (
     <main className="page-wrapper page-vault" ref={scope}>

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useState, useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CursorProvider, useCursor } from './context/CursorContext';
+import { AppReadyProvider } from './context/AppReadyContext';
 import { CustomCursor } from './components/common/CustomCursor';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSmoothScroll, setScrollLocked, scrollToTop } from './hooks/useSmoothScroll';
@@ -107,7 +108,7 @@ const AppContent: React.FC = () => {
   }, [isMenuOpen, isLoaded]);
 
   return (
-    <>
+    <AppReadyProvider ready={isLoaded}>
       <CustomCursor />
       <RouteEffects />
 
@@ -137,7 +138,7 @@ const AppContent: React.FC = () => {
       </main>
 
       <Footer />
-    </>
+    </AppReadyProvider>
   );
 };
 
