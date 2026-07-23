@@ -1,5 +1,6 @@
 import React from 'react';
 import { RollingText } from '../components/common/RollingText';
+import { useReveal } from '../hooks/useReveal';
 
 /*
   VAULT PAGE
@@ -13,8 +14,13 @@ import { RollingText } from '../components/common/RollingText';
     </div>
 
   .line-reveal: animated border element, sits below the <a> inside
-  .vault-link-item. GSAP + ScrollTrigger in useGlobalTextReveal handles
+  .vault-link-item. useReveal (data-reveal="line") handles
   scaleX(0) → scaleX(1) left-to-right on scroll.
+
+  .vault-link-label deliberately does NOT get data-reveal="text": it's
+  rendered by RollingText, which pre-splits the label into two stacked rows
+  of per-character spans for its hover-roll effect. GSAP SplitText's line
+  splitting isn't aware of that convention and risks breaking it.
 
   Arrow rotation: CSS .vault-link:hover .vault-link-arrow { transform: rotate(-45deg) }
   rotates ↗ counter-clockwise 45° to point →.
@@ -32,18 +38,20 @@ const VAULT_CATEGORIES = [
 ] as const;
 
 export const Vault: React.FC = () => {
+  const scope = useReveal<HTMLElement>({ deps: [] });
+
   return (
-    <main className="page-wrapper page-vault">
+    <main className="page-wrapper page-vault" ref={scope}>
       <div className="vault-top">
 
         {/* Left col: heading (sticky on desktop) */}
         <div>
-          <h1 className="vault-heading">Vault</h1>
+          <h1 className="vault-heading" data-reveal="text">Vault</h1>
         </div>
 
         {/* Right col: intro + category links */}
         <div>
-          <p className="vault-intro">
+          <p className="vault-intro" data-reveal="text">
             A curated collection of experiments, explorations, and in-progress
             ideas. The Vault is where I test concepts, refine craft, and document
             iterations that don't always make the main stage — but shape the work
@@ -72,10 +80,10 @@ export const Vault: React.FC = () => {
                 </a>
                 {/*
                   .line-reveal replaces the CSS border-bottom.
-                  GSAP animates it left-to-right on scroll reveal.
+                  useReveal animates it left-to-right on scroll reveal.
                   Future preview image: add <div className="vault-link-preview" /> here.
                 */}
-                <span className="line-reveal" aria-hidden="true" />
+                <span className="line-reveal" data-reveal="line" aria-hidden="true" />
               </div>
             ))}
           </nav>

@@ -94,42 +94,61 @@
 ========================================= */
 @font-face {
   font-family: 'Nacelle';
-  src: url('../assets/fonts/Nacelle-Regular.otf') format('otf');
+  src: url('/fonts/Nacelle-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Nacelle';
-  src: url('../assets/fonts/Nacelle-Heavy.otf') format('otf');
-  font-weight: 700;
-  font-style: bold;
-}
-/* Nacelle Light — ensure Nacelle-Light.otf is in src/assets/fonts/ */
-@font-face {
-  font-family: 'Nacelle';
-  src: url('../assets/fonts/Nacelle-Light.otf') format('otf');
+  src: url('/fonts/Nacelle-Heavy.woff2') format('woff2');
+  font-weight: 700;          /* was `font-style: bold` — bold is a weight, not a style */
   font-style: normal;
+  font-display: swap;
+}
+/* Nacelle Light */
+@font-face {
+  font-family: 'Nacelle';
+  src: url('/fonts/Nacelle-Light.woff2') format('woff2');
+  font-weight: 300;          /* was unset — collided with Regular at the default 400 */
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Global Cursor Override */
-* { 
-  cursor: none !important; 
-  margin: 0; 
-  padding: 0; 
-  box-sizing: border-box; 
+/* Global reset. Cursor override moved to animation.css, scoped to
+   (hover: hover) and (pointer: fine) devices only — this used to be
+   `cursor: none !important` unconditionally, which hid a cursor that
+   doesn't exist on touch devices, and the !important made it impossible
+   for any narrower media-query rule to ever win. */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Re-enable pointer events for clickable items under the custom cursor */
-a, button { 
-  cursor: pointer; 
-}
+/* a/button cursor override now lives in animation.css, scoped to
+   (hover: none), (pointer: coarse) — on a fine-pointer device the custom
+   cursor fully replaces the native one over links/buttons too, so it must
+   NOT also get a native `cursor: pointer` here. */
 
 body {
-  font-family: 'Nacelle', sans-serif; /* Nacelle Light is the sitewide base weight */
+  font-family: 'Nacelle', sans-serif;
+  font-weight: 300; /* Nacelle Light is the sitewide base weight */
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* Case-study pages toggle this class on <body> (see App.tsx RouteEffects).
+   Previously this swap was done entirely via inline JS styles on
+   document.body — this rule replaces that, and is what makes the
+   `body.theme-light .cs-metadata` rule below (and the .footer-* overrides
+   further down) actually mean something. */
+body.theme-light {
+  background-color: var(--light-bg);
+  color: var(--light-text);
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 
@@ -306,7 +325,7 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .page-home .hero-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5vh; }
 .page-home .hero-title { font-size: var(--font-home-primary); line-height: var(--lh-home-primary); letter-spacing: var(--ls-home-primary); font-weight: normal; }
 .page-home .hero-subtitle { font-size: var(--font-home-exc); line-height: var(--lh-home-exc); letter-spacing: var(--ls-home-exc); text-align: right; }
-.hero-image-wrapper { position: relative; width: 100%; height: 60vh; backgrokund: #111; overflow: hidden; }
+.hero-image-wrapper { position: relative; width: 100%; height: 60vh; background: #111; overflow: hidden; }
 .hero-blur-overlay { position: absolute; top: 0; left: 0; width: 50%; height: 100%; backdrop-filter: blur(12px); border-right: 1px solid rgba(255,255,255,0.05); }
 .page-home .works-header h2 { font-size: var(--font-home-primary); line-height: var(--lh-home-primary); letter-spacing: var(--ls-home-primary); font-weight: 400 }
 /* WORK */
@@ -359,8 +378,8 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
   padding-top: clamp(24px, 2.5vw, 40px);
 }
 
-body[style*="background-color: var(--light-bg)"] .cs-metadata {
-  border-top: 1px solid rgba(0, 0, 0, 0.05); 
+body.theme-light .cs-metadata {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .meta-label {
@@ -1008,13 +1027,21 @@ body.theme-light .footer-cta-email:hover {
 
 /* =========================================
    MOBILE OVERRIDES — NEW COMPONENTS
-   These append to the existing
+   These append to the existing rules below.
+========================================= */
 
 /* =========================================
    LINE REVEAL — Animated borders
    All dividers/borders are replaced by .line-reveal elements.
    GSAP + ScrollTrigger animates scaleX(0) → scaleX(1) left-to-right.
-   useGlobalTextReveal.ts handles the trigger.
+   useReveal.ts handles the trigger. The permanent `transform: scaleX(0)`
+   this rule used to carry is gone — it collided with the data-attribute
+   based pre-JS hiding in animation.css (html.js [data-reveal='line']),
+   which is the one that's actually gated on JS having booted. Left in
+   place, this rule's own scaleX(0) had no counterpart to ever set it back
+   to scaleX(1): GSAP's `gsap.from(el, {scaleX: 0})` reads the *current*
+   computed transform as its end value, which was ALSO scaleX(0) here, so
+   the divider would never visibly animate in at all.
 ========================================= */
 .line-reveal {
   display: block;
@@ -1022,9 +1049,8 @@ body.theme-light .footer-cta-email:hover {
   height: 1px;
   background: currentColor;
   opacity: 0.1;
-  transform: scaleX(0);
   transform-origin: left center;
-  will-change: transform;
+  will-change: auto;
 }
 
 /* .works-header border: replaced by .line-reveal child — see rule above */
