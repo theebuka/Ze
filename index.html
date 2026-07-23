@@ -2,13 +2,56 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Sets html.js synchronously, before first paint. The reveal system
+         hides [data-reveal] elements ONLY under this class, so if JS is
+         disabled or the bundle fails to load, all content stays visible
+         instead of sitting at opacity 0 forever. -->
+    <script>document.documentElement.classList.add('js');</script>
+
+    <!-- Saves a full DNS + TLS handshake before the first image or query.
+         From Lagos that is worth 200-400ms on the critical path. -->
+    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
+    <link rel="preconnect" href="https://apicdn.sanity.io" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+
+    <!-- Update the filename to match your converted woff2. Preloading the one
+         face used above the fold prevents the reveal system from measuring
+         line breaks against a fallback font. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/Nacelle-Regular.woff2"
+      crossorigin
+    />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ze-portfolio</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>Chukwuebuka Arinze Nwaju — Multidisciplinary Creative & Design Engineer</title>
+    <meta
+      name="description"
+      content="Portfolio of Chukwuebuka Arinze Nwaju — product design, art direction and design engineering for FinTech, EdTech and marketplace startups."
+    />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="canonical" href="https://theebuka.com/" />
+
+    <!-- Shared links currently render as a bare URL on LinkedIn, X and
+         iMessage. These fix that. og-image.jpg should be 1200x630. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://theebuka.com/" />
+    <meta property="og:title" content="Chukwuebuka Arinze Nwaju — Multidisciplinary Creative" />
+    <meta
+      property="og:description"
+      content="Product design, art direction and design engineering. Selected work and case studies."
+    />
+    <meta property="og:image" content="https://theebuka.com/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
