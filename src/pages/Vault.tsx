@@ -1,4 +1,5 @@
 import React from 'react';
+import { Arrow } from '../components/common/Arrow';
 import { RollingText } from '../components/common/RollingText';
 import { useReveal } from '../hooks/useReveal';
 import { useAppReady } from '../context/AppReadyContext';
@@ -23,8 +24,10 @@ import { useAppReady } from '../context/AppReadyContext';
   of per-character spans for its hover-roll effect. GSAP SplitText's line
   splitting isn't aware of that convention and risks breaking it.
 
-  Arrow rotation: CSS .vault-link:hover .vault-link-arrow { transform: rotate(-45deg) }
-  rotates ↗ counter-clockwise 45° to point →.
+  Arrow: an inline SVG (components/common/Arrow), not a character — U+2197
+  has an emoji presentation variant and rendered in full colour on a lot of
+  platforms. CSS .vault-link:hover .vault-link-arrow { transform: rotate(45deg) }
+  swings it clockwise 45° from ↗ to →.
 
   RollingText: the rollover character animation. It manages its own
   onMouseEnter/Leave internally.
@@ -75,7 +78,7 @@ export const Vault: React.FC = () => {
                   className="vault-link"
                   aria-label={cat.label}
                 >
-                  <span className="vault-link-arrow" aria-hidden="true">↗</span>
+                  <Arrow className="vault-link-arrow" />
                   {/*
                     RollingText wraps the label. It handles mouse events itself.
                     The .vault-link:hover rule also brightens arrow + label via CSS.

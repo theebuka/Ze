@@ -16,6 +16,7 @@
    index.html. No JS, no class, content visible.
    ─────────────────────────────────────────────────────────── */
 html.js [data-reveal='text'],
+html.js [data-reveal='rise'],
 html.js [data-reveal='image'] {
   visibility: hidden;
 }
@@ -28,12 +29,52 @@ html.js [data-reveal='line'] {
 /* Reduced motion: never hide anything, even before JS boots. */
 @media (prefers-reduced-motion: reduce) {
   html.js [data-reveal='text'],
+  html.js [data-reveal='rise'],
   html.js [data-reveal='image'] {
     visibility: visible !important;
   }
   html.js [data-reveal='line'] {
     transform: none !important;
   }
+}
+
+/* The static counterpart to SplitText's generated line mask, for content
+   React owns and re-renders (see the RISE branch in useReveal.ts). The
+   padding/negative-margin pair is the same trick as .reveal-line-mask below:
+   it buys the clip box room for descenders without changing layout.
+
+   `clip` rather than `hidden` — hidden creates a scroll container, which can
+   trap Lenis and break position: sticky. */
+[data-reveal='rise'] {
+  overflow: clip;
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+
+/* The tween runs on these, not on the masking element itself. inline-block so
+   the transform applies at all — an inline box ignores translate. */
+[data-reveal='rise'] > * {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Tight-mask exception for the footer's RollingText links.
+
+   The descender headroom above is wrong for these two reasons. First,
+   .rolling-text is already a hard 1em / line-height:1 clip box (it has to be,
+   for the hover roll), so it clips its own descenders and needs no help.
+   Second — and this is the visible one — these anchors inherit
+   --lh-footer-body: 1.4, and that 0.4em of leading sits INSIDE the mask:
+   the label would be legible in the gap for the first stretch of its rise
+   instead of arriving out of a hard edge.
+
+   Mask flush to the text box, so the rise starts from genuinely hidden. */
+.footer-social-link[data-reveal='rise'],
+.footer-col-link[data-reveal='rise'],
+.footer-cta-email[data-reveal='rise'] {
+  padding-block: 0;
+  margin-block: 0;
+  line-height: 1;
 }
 
 /* .reveal-line is the SplitText line element itself (linesClass: 'reveal-line'
@@ -151,23 +192,13 @@ html.js [data-reveal='line'] {
 
 /* ── 5. MOBILE PERFORMANCE ───────────────────────────────────*/
 @media (max-width: 768px) {
-  /* backdrop-filter over half the hero forces a compositing layer that
-     re-rasterises every frame while anything animates underneath it. This is
-     the single most expensive rule on the mobile homepage. A gradient reads
-     nearly identically at phone scale. */
-  .hero-blur-overlay {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0.45),
-      rgba(0, 0, 0, 0) 100%
-    );
-    border-right: none;
-  }
+  /* The hero's backdrop-filter overlay is gone with the hero rebuild — it was
+     the single most expensive rule on the mobile homepage and the new layout
+     has nothing to blur.
 
-  /* Strip layer-promotion hints that are not paying for themselves. */
+     Strip layer-promotion hints that are not paying for themselves. */
   .magnetic,
+  .hero-media-inner,
   .rolling-text .rt-top > span,
   .rolling-text .rt-bot > span {
     will-change: auto;

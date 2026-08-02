@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCursor } from '../../context/CursorContext';
+import { Arrow } from '../common/Arrow';
 import { SanityImage } from '../common/SanityImage';
 import { isCoarsePointer } from '../../lib/gsap';
 import type { Project } from '../../hooks/useProjects';
@@ -78,7 +79,7 @@ export const WorkGrid: React.FC<Props> = ({ projects, loading }) => {
                 <span className="work-meta-category">
                   {project.category || 'Case Study'}
                 </span>
-                <span className="work-meta-arrow" aria-hidden="true">↗</span>
+                <Arrow className="work-meta-arrow" />
               </div>
               <div className="work-meta-brand" data-reveal="text">
                 {project.brand}

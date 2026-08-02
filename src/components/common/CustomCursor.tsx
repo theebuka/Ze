@@ -20,6 +20,7 @@ const SIZES: Record<string, number> = {
   default: 24,
   'view-project': 80,
   media: 120,
+  expand: 88,
 };
 
 export const CustomCursor: React.FC = () => {

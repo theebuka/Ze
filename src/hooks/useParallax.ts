@@ -29,6 +29,23 @@ export function useParallax(
           const img = wrapper.querySelector<HTMLElement>('[data-parallax-img]');
           if (!img) return;
 
+          // The drift needs somewhere to drift FROM, or it exposes an edge at
+          // the extremes. Two ways to buy that room:
+          //
+          //   default          .parallax-img's `height: 115%`. Resolves only
+          //                    against a frame with a definite height, i.e. a
+          //                    fixed aspect-ratio (Home, Work).
+          //   data-parallax    ="cover" — scale the image instead. For frames
+          //                    that have NO fixed ratio because the asset's
+          //                    own proportions are the point (About), where a
+          //                    percentage height has nothing to resolve
+          //                    against and would collapse to 0.
+          //
+          // 1.16 against ±7% of travel: 8% of overhang per edge covers 7%.
+          if (wrapper.dataset.parallax === 'cover') {
+            gsap.set(img, { scale: 1.16, transformOrigin: 'center center' });
+          }
+
           gsap.fromTo(
             img,
             { yPercent: -7 },

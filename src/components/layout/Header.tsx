@@ -38,31 +38,32 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
     >
       <div className="header-logo">
         <Link to="/" onClick={() => setIsMenuOpen(false)} data-reveal="text">
-          ZE
+          Chukwuebuka.
         </Link>
       </div>
 
-      {/* No data-reveal="text" here: SplitText replaces this element's text
-          node with its own split/mask DOM structure. useLagosTime ticks this
-          content every second via React re-renders, which then fight
-          SplitText for ownership of the same nodes — the clock stops
-          rendering because React's reconciliation and SplitText's DOM
-          surgery are clobbering each other. */}
-      <div className="header-time">
-        <span>LOCAL / </span>
-        {lagosTime.toUpperCase()}
+      {/* data-reveal="rise", not "text". SplitText replaces this element's
+          text node with its own split/mask DOM structure, and useLagosTime
+          ticks the content every second via React re-renders — the two then
+          fight for ownership of the same nodes and the clock stops rendering.
+          "rise" masks with a static CSS box and animates this inner <span>
+          instead, so React keeps the text node and re-renders into it freely
+          while the transform sits on the wrapper it never touches. */}
+      <div className="header-time" data-reveal="rise" data-reveal-delay="0.12">
+        <span>local / {lagosTime.toLowerCase()}</span>
       </div>
 
-      {/* Same reason: this button's text toggles between MENU/CLOSE on every
-          click. Applying data-reveal="text" here caused the exact same
-          fight, which looked like the button flickering between the two
-          labels. */}
+      {/* Same reason: this button's label toggles between menu/close on every
+          click, which under SplitText looked like the button flickering
+          between the two words. */}
       <button
         ref={toggleRef}
         className="header-menu-toggle magnetic"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
+        data-reveal="rise"
+        data-reveal-delay="0.22"
       >
-        {isMenuOpen ? 'CLOSE' : 'MENU'}
+        <span>{isMenuOpen ? 'close' : 'menu'}</span>
       </button>
     </header>
   );

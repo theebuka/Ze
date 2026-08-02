@@ -10,7 +10,7 @@ import { SplashLoader } from './components/layout/SplashLoader';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
-import { MenuOverlay } from './components/layout/MenuOverlay';
+import { MenuOverlay, MENU_REVEAL_LEAD_MS } from './components/layout/MenuOverlay';
 
 // Home stays in the main bundle — it is the entry point for most visits.
 import { Home } from './pages/Home';
@@ -86,6 +86,7 @@ const RouteFallback: React.FC = () => (
 const AppContent: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [menuCovering, setMenuCovering] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
   useSmoothScroll();
@@ -107,8 +108,26 @@ const AppContent: React.FC = () => {
     setScrollLocked(isMenuOpen || !isLoaded);
   }, [isMenuOpen, isLoaded]);
 
+  // Whether the menu overlay is still standing between the viewer and the
+  // page. It outlasts isMenuOpen: closing starts a slide-up that takes
+  // MENU_PANEL_DURATION, and a menu link mounts the next page instantly, so
+  // "is the menu open" is the wrong question for "can anyone see this page
+  // yet". Released at the halfway mark — see MENU_REVEAL_LEAD_MS.
+  // Opening is immediate and synchronous with the state that caused it, so it
+  // is a render-phase adjustment; only the release is genuinely time-based.
+  if (isMenuOpen && !menuCovering) setMenuCovering(true);
+
+  useEffect(() => {
+    if (isMenuOpen) return;
+    const timer = setTimeout(() => setMenuCovering(false), MENU_REVEAL_LEAD_MS);
+    return () => clearTimeout(timer);
+  }, [isMenuOpen]);
+
   return (
-    <AppReadyProvider ready={isLoaded}>
+    // A page may reveal once nothing is covering it: no splash, no overlay.
+    // useReveal latches this, so closing the menu over an already-revealed
+    // page cannot make it replay.
+    <AppReadyProvider ready={isLoaded && !menuCovering}>
       <CustomCursor />
       <RouteEffects />
 
