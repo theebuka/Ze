@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Font masters — licensed software, and unreferenced by the build.
+# Only the woff2 served from public/fonts are tracked.
+src/assets/fonts/

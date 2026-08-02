@@ -6,8 +6,11 @@ import type { ReactNode } from 'react';
  * - 'default'      → 24px dot with mix-blend-mode difference
  * - 'view-project' → 80px circle with "VIEW" label
  * - 'media'        → 120px circle playing a muted looping video from cursorMedia
+ * - 'expand'       → 88px unlabelled circle, same difference blend as default.
+ *                    Used over imagery that reacts to the pointer rather than
+ *                    navigating anywhere, so a "VIEW" label would be a lie.
  */
-export type CursorType = 'default' | 'view-project' | 'media';
+export type CursorType = 'default' | 'view-project' | 'media' | 'expand';
 
 interface CursorContextType {
   cursorType: CursorType;

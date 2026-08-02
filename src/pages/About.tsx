@@ -1,12 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import { client, urlFor } from '../lib/sanity';
+import type { ReactNode } from 'react';
+import { client } from '../lib/sanity';
+import { SanityImage } from '../components/common/SanityImage';
 import { useReveal } from '../hooks/useReveal';
+import { useParallax } from '../hooks/useParallax';
 import { useAppReady } from '../context/AppReadyContext';
 
-interface SiteSettings {
-  aboutImage1: any;
-  aboutImage2: any;
+/** Whole document, so a newly-added aboutImage3 needs no query change. */
+type SiteSettings = Record<string, unknown>;
+
+/**
+ * A stage is one beat of the page: the text block(s), then the image that
+ * scrolls up past them.
+ *
+ * ADDING MORE
+ *   1. Upload the image to the `siteSettings` document in Sanity.
+ *   2. Add an entry below: one or two paragraphs, the field name, a side.
+ * Nothing else. The parking, the release, the parallax and the word-fill are
+ * all driven off the markup this array produces — there are no per-stage
+ * measurements or magic numbers anywhere in the CSS or the hooks.
+ *
+ * `text` holds one or two blocks. One renders full width (the intro); two
+ * render side by side in the original 5-col / 5-col grid.
+ * Omit `image` for a trailing text-only stage — with nothing to align
+ * against, that stage simply scrolls.
+ */
+interface Stage {
+  text: [ReactNode] | [ReactNode, ReactNode];
+  image?: string;
+  alt?: string;
+  side?: 'left' | 'right';
 }
+
+const STAGES: Stage[] = [
+  {
+    text: [
+      <h1 className="about-intro-text" data-reveal="text">
+        I'm Chukwuebuka, <span className="text-muted">professionally known as</span> ZE, a product designer with a frontend streak. Is it curiosity or restlessness? I'm not sure. But I've learned to embrace the fact that I like building <span className="text-muted">across layers — design, code, research, strategy — making each part feel intentional, and human.</span>
+      </h1>,
+    ],
+    image: 'aboutImage1',
+    alt: 'ZE thinking',
+    side: 'right',
+  },
+  {
+    text: [
+      <p data-reveal="text" data-scrub="words">
+        I fell into creative tech through the usual route. I started in medical radiography, working around complex systems of care structure, out of pure passion, and the desire to build for the unknown. Somewhere in between managing care, understanding human patterns, and helping others make sense of what I learned, I realized I was deeply invested in systems. I fell in love with shaping how people experience them. From there, I joined tech startups, where I've spent the last few years designing products from the ground up—often as the first or sole designer, working closely with engineers and product teams. In that space, I led the design of core platform experiences from full design system and UI overhauls, navigation, onboarding, identity authentication, and cross-platform adaptations across mobile, tablet, and wearables. I like to stay close to the process, bridging the gap between design and engineering to ensure integrity and consistency across the delivery cycle.
+      </p>,
+      <p data-reveal="text" data-scrub="words">
+        A large chunk of my work is across product and freelance roles, designing products for FinTech, B2B enterprise solutions, and SaaS — I am always deeply inquisitive, sometimes deeply practical, sometimes making scrappy micro-moves to keep getting it right, bringing order to chaos, asking the right questions, and turning abstract ideas into system experiences. I heavily lean into product thought process, typography to orchestrate harmony in alignment and space, the gap between the intent and presentation.
+      </p>,
+    ],
+    image: 'aboutImage2',
+    alt: 'ZE smiling',
+    side: 'left',
+  },
+  {
+    text: [
+      <p data-reveal="text" data-scrub="words">
+        Outside of design, I'm probably fueled by three things: music, pop culture, and collecting pieces of repetitive bass which usually find their way onto my personal mood boards which I share. I've curated a solid, diverse, and somewhat surprising mix of strictly underground, lo-fi, and alternative rap/hip-hop artists. I'm deep into physical artifacts—books, magazines, accessories, and sneakers—where the tactile nature of material, form, and texture heavily, implicitly, explains my sensitivity to detail and systems. These days, I'm constantly learning, building, breaking, unbuilding elements—expanding where design, technology, and art/human interact across contexts, outside screens, into actual views, and how visual noise translates seamlessly, gently along the xy-board.
+      </p>,
+      <p data-reveal="text" data-scrub="words">
+        As you can already probably tell from this site, the center of my interests, my design philosophy leans toward brutalist minimalism and visual storytelling—a structural yet raw aesthetic, heavy entirely on the core, contrast, hierarchy, and commanding attention with intent. Living in a world of visual noise, one of the loudest or smoothest devices in the world, less cluttered, has inherent beauty in restraint, asymmetry and scale, the intersection where form, utility and strong character. This carries across up in my work. Less but sustained, functional yet expressive, unapologetic cut-through noise while retaining a human delay.
+      </p>,
+    ],
+  },
+];
+
+const MEDIA_SIZES = '(max-width: 768px) 100vw, 50vw';
 
 export const About: React.FC = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
@@ -15,77 +77,68 @@ export const About: React.FC = () => {
   // About can be the entry route on a fresh load/refresh, mounting underneath
   // the splash overlay same as Home — same gate, same reason.
   const scope = useReveal<HTMLElement>({ deps: [siteSettings], enabled: splashDone });
+  // The image's crop drifts inside its own frame, so the picture reads at a
+  // different speed from the page while its layout box — the thing the text
+  // aligns its bottom to — never moves.
+  useParallax(scope, [siteSettings]);
 
   useEffect(() => {
-    client.fetch(`*[_type == "siteSettings"][0]{ aboutImage1, aboutImage2 }`)
+    client.fetch<SiteSettings>(`*[_type == "siteSettings"][0]`)
       .then(setSiteSettings)
       .catch(console.error);
   }, []);
 
   return (
     <main className="page-wrapper page-about" ref={scope}>
-      {/* Hero Intro */}
-      <header className="about-hero">
-        <h1 className="about-intro-text" data-reveal="text">
-          I'm Chukwuebuka, <span className="text-muted">professionally known as</span> ZE, a product designer with a frontend streak. Is it curiosity or restlessness? I'm not sure. But I've learned to embrace the fact that I like building <span className="text-muted">across layers — design, code, research, strategy — making each part feel intentional, and human.</span>
-        </h1>
-      </header>
+      {/*
+        Each stage is one containing block holding [text, image]. The text is
+        sticky, so it parks under the header and — by the plain rules of
+        sticky positioning — is released exactly when its own bottom edge
+        reaches the bottom of that containing block, which is the bottom of
+        the image. Bottoms align, then the pair travels on together.
 
-      {/* Editorial Grid Section */}
-      <section className="about-grid grid-12">
+        The image carries a z-index so it passes IN FRONT of the parked text
+        rather than behind it. Behind would mean either text sitting on a
+        photograph, or the picture quietly disappearing under an opaque block.
 
-        {/* Row 1: Image Right */}
-        <div className="col-half-right">
-          {siteSettings?.aboutImage1 && (
-            <img
-              src={urlFor(siteSettings.aboutImage1).auto('format').quality(80).width(1200).url()}
-              alt="ZE thinking"
+        data-scrub-trigger points the word-fill at the stage, which never
+        moves, instead of at the <p>, which parks.
+      */}
+      {STAGES.map((stage, i) => (
+        <section className="about-stage" key={i} data-scrub-trigger>
+          <div className={`about-stage-text${stage.image ? ' is-parked' : ''}`}>
+            {stage.text.length === 1 ? (
+              <div className="about-text-full">{stage.text[0]}</div>
+            ) : (
+              <div className="grid-12">
+                <div className="text-span-left">{stage.text[0]}</div>
+                <div className="text-span-right">{stage.text[1]}</div>
+              </div>
+            )}
+          </div>
+
+          {stage.image && Boolean(siteSettings?.[stage.image]) && (
+            <div
+              className={`about-stage-media about-stage-media--${stage.side ?? 'right'}`}
               data-reveal="image"
-            />
+              data-parallax="cover"
+            >
+              <SanityImage
+                source={siteSettings![stage.image]}
+                alt={stage.alt ?? ''}
+                sizes={MEDIA_SIZES}
+                maxWidth={1600}
+              />
+            </div>
           )}
-        </div>
-
-        {/* Row 2: Text Left, Text Right */}
-        <div className="text-span-left">
-          <p data-reveal="text">
-            I fell into creative tech through the usual route. I started in medical radiography, working around complex systems of care structure, out of pure passion, and the desire to build for the unknown. Somewhere in between managing care, understanding human patterns, and helping others make sense of what I learned, I realized I was deeply invested in systems. I fell in love with shaping how people experience them. From there, I joined tech startups, where I've spent the last few years designing products from the ground up—often as the first or sole designer, working closely with engineers and product teams. In that space, I led the design of core platform experiences from full design system and UI overhauls, navigation, onboarding, identity authentication, and cross-platform adaptations across mobile, tablet, and wearables. I like to stay close to the process, bridging the gap between design and engineering to ensure integrity and consistency across the delivery cycle.
-          </p>
-        </div>
-        <div className="text-span-right">
-          <p data-reveal="text">
-            A large chunk of my work is across product and freelance roles, designing products for FinTech, B2B enterprise solutions, and SaaS — I am always deeply inquisitive, sometimes deeply practical, sometimes making scrappy micro-moves to keep getting it right, bringing order to chaos, asking the right questions, and turning abstract ideas into system experiences. I heavily lean into product thought process, typography to orchestrate harmony in alignment and space, the gap between the intent and presentation.
-          </p>
-        </div>
-
-        {/* Row 3: Image Left */}
-        <div className="col-half-left">
-          {siteSettings?.aboutImage2 && (
-            <img
-              src={urlFor(siteSettings.aboutImage2).auto('format').quality(80).width(1200).url()}
-              alt="ZE smiling"
-              data-reveal="image"
-            />
-          )}
-        </div>
-
-        {/* Row 4: Text Left, Text Right */}
-        <div className="text-span-left">
-          <p data-reveal="text">
-            Outside of design, I'm probably fueled by three things: music, pop culture, and collecting pieces of repetitive bass which usually find their way onto my personal mood boards which I share. I've curated a solid, diverse, and somewhat surprising mix of strictly underground, lo-fi, and alternative rap/hip-hop artists. I'm deep into physical artifacts—books, magazines, accessories, and sneakers—where the tactile nature of material, form, and texture heavily, implicitly, explains my sensitivity to detail and systems. These days, I'm constantly learning, building, breaking, unbuilding elements—expanding where design, technology, and art/human interact across contexts, outside screens, into actual views, and how visual noise translates seamlessly, gently along the xy-board.
-          </p>
-        </div>
-        <div className="text-span-right">
-          <p data-reveal="text">
-            As you can already probably tell from this site, the center of my interests, my design philosophy leans toward brutalist minimalism and visual storytelling—a structural yet raw aesthetic, heavy entirely on the core, contrast, hierarchy, and commanding attention with intent. Living in a world of visual noise, one of the loudest or smoothest devices in the world, less cluttered, has inherent beauty in restraint, asymmetry and scale, the intersection where form, utility and strong character. This carries across up in my work. Less but sustained, functional yet expressive, unapologetic cut-through noise while retaining a human delay.
-          </p>
-        </div>
-      </section>
+        </section>
+      ))}
 
       {/* Focus Section */}
       <section className="about-focus">
         <h2 className="focus-heading" data-reveal="text">FOCUS</h2>
         <div className="focus-list">
-          <span>Art & Creative Direction</span>
+          <span>Art &amp; Creative Direction</span>
           <span>Product thinking</span>
           <span>Strategy</span>
           <span>User Experience</span>

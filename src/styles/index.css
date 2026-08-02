@@ -20,9 +20,15 @@
 
   /* ── Easing ─────────────────────────────────────────────────────── */
   --ease-custom: cubic-bezier(0.76, 0, 0.24, 1);
+  /* CSS twin of MOTION.ease ('expo.out' in lib/gsap.ts) — the long-tailed
+     glide. Pair it with a duration well past the usual 0.3s; the point is
+     that it arrives fast and settles slowly, so length reads as composure
+     rather than lag. Keep the two definitions in sync. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── Home Typography ─────────────────────────────────────────────── */
   --font-home-primary: 5vw;       /* 96px / 1920  */
+  --font-home-primary-main: 9vw;       /* 96px / 1920  */
   --lh-home-primary: 1;
   --ls-home-primary: -0.04em;
 
@@ -79,7 +85,12 @@
   --lh-footer-label: 1.25;        /* 20 / 16      */
   --ls-footer: -0.02em;           /* -2% — em is correct: scales with font-size */
   --gap-footer-social: 1.25vw;    /* 24px / 1920  */
-  --gap-footer-col-items: 0.5208vw; /* 10px / 1920 */
+  /* 18px / 1920. Was 10px, which paired with the 1.4 line-height the footer
+     links used to carry. They are masked reveals now (line-height: 1, see
+     animation.css), so the leading that used to sit inside each link has to
+     come back as gap or the list pitch collapses from 1.9x the font size to
+     1.5x. Same rhythm, moved from inside the box to between boxes. */
+  --gap-footer-col-items: 0.9375vw;
   --pad-footer-top: 8.3333vw;     /* 160px / 1920 */
   --pad-footer-bottom: 3.75vw;    /* 72px / 1920  */
   --gap-footer-marquee: 7.5vw;    /* 144px / 1920 */
@@ -114,6 +125,49 @@
   font-style: normal;
   font-display: swap;
 }
+/* Neue Haas Grotesk Display — only Bold (700) and Black (900) exist as
+   source files (neuehaasgrotdisp-75bold.otf / -95black.otf). There is no
+   Regular or Medium Display file, so those two @font-face blocks that used
+   to sit here (referencing neuehaasgrotdisp-45regular.woff2 and
+   -65medium.woff2) pointed at files that were never converted or supplied —
+   removed rather than left 404ing. If a Display 400/500 weight is ever
+   actually needed, source that file first. */
+@font-face {
+  font-family: 'Neue Haas Grotesk Display';
+  src: url('/fonts/neuehaasgrotdisp-75bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;        /* was `font-style: bold` — bold is a weight, not a style */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk Display';
+  src: url('/fonts/neuehaasgrotdisp-95black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;        /* was `font-style: heavy` — not a valid font-style value */
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk Text';
+  src: url('/fonts/neuehaasgrottext-55roman.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk Text';
+  src: url('/fonts/neuehaasgrottext-65medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk Text';
+  src: url('/fonts/neuehaasgrottext-75bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 /* Global reset. Cursor override moved to animation.css, scoped to
    (hover: hover) and (pointer: fine) devices only — this used to be
@@ -132,8 +186,8 @@
    NOT also get a native `cursor: pointer` here. */
 
 body {
-  font-family: 'Nacelle', sans-serif;
-  font-weight: 300; /* Nacelle Light is the sitewide base weight */
+  font-family: 'Neue Haas Grotesk Text', sans-serif;
+  font-weight: 400; /* Nacelle Light is the sitewide base weight */
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
@@ -220,16 +274,32 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* =========================================
    4. LAYOUT COMPONENTS & MENU
 ========================================= */
+/* Grid, not `justify-content: space-between`.
+
+   space-between distributes the FREE space evenly, which centres the middle
+   item between its neighbours rather than in the viewport. With three items
+   of unequal width the clock lands off-centre by exactly
+   (logo − toggle) / 2 — about 30px right, since "Chukwuebuka." is far wider
+   than "menu". Two symmetric 1fr tracks either side of an auto one puts the
+   centre column on the viewport centre no matter what flanks it. */
 .site-header {
   position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
-  padding: 0 var(--grid-margin); display: flex; justify-content: space-between; align-items: center;
+  padding: 0 var(--grid-margin);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   z-index: 1000 !important;
   font-size: var(--font-home-sec); line-height: var(--lh-home-sec); letter-spacing: var(--ls-home-sec);
   transition: color 0.6s var(--ease-custom);
 }
 
+.header-logo { justify-self: start; }
+.header-time { justify-self: center; }
+.header-menu-toggle { justify-self: end; }
+
 .site-header.invert-text { color: var(--light-text); }
-.header-menu-toggle { background: none; border: none; color: inherit; font: inherit; cursor: pointer; text-transform: uppercase; }
+/* No text-transform: the label is authored lowercase in Header.tsx and an
+   uppercase transform here silently overrode it. Same for .header-time — its
+   copy is lowercased at the source, not in CSS. */
+.header-menu-toggle { background: none; border: none; color: inherit; font: inherit; cursor: pointer; }
 
 /* Menu Overlay */
 .menu-overlay {
@@ -238,11 +308,51 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
   z-index: 999; display: flex; align-items: center; justify-content: center;
 }
 
-.menu-nav { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 0.625vw, 12px); }
-.menu-link { font-weight: 900; font-size: clamp(48px, 7.5vw, 144px); line-height: 1; letter-spacing: -0.06em; position: relative; transition: opacity 0.6s var(--ease-custom), color 0.6s var(--ease-custom); }
+.menu-nav { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 0.625vw, 4px); }
+
+/* ── Menu item reveal frame (see MenuOverlay.tsx) ──────────────────────
+   .menu-item is the clip box the word rises out of; .menu-item-inner is what
+   framer-motion transforms. The perspective lives on the frame so the tilt is
+   a real 3D hinge rather than a flat scaleY.
+
+   padding-inline buys the clip box room for .menu-count, which sits at
+   right: -30px, OUTSIDE the link's own border box — without it the count is
+   sheared off by the mask. The negative margin cancels the padding's effect
+   on layout so the items stay optically centred.
+
+   `clip` over `hidden`: hidden creates a scroll container, which can trap
+   Lenis. Same reasoning as [data-reveal='rise'] in animation.css. */
+.menu-item {
+  overflow: clip;
+  perspective: 900px;
+  /* Vertical padding is only anti-aliasing headroom — the RollingText wrapper
+     is already an exact 1em clip box, so there are no descenders to rescue. */
+  padding: 4px 44px;
+  margin: -4px -44px;
+}
+
+.menu-item-inner {
+  /* Hinges on its own bottom edge — the word tips up into place. */
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+.menu-link { font-family: 'Neue Haas Grotesk Display', sans-serif; font-weight: 700; font-size: clamp(48px, 7.5vw, 144px); line-height: 1; letter-spacing: -0.02em; position: relative; transition: opacity 0.6s var(--ease-custom), color 0.6s var(--ease-custom); }
 /* RollingText wrapper inherits line-height: 1 so the clip masks one row of text exactly */
 .menu-link .rolling-text { line-height: 1; }
-.menu-count { font-size: var(--font-body); color: var(--text-muted); font-weight: 400; letter-spacing: normal; position: absolute; top: 0; right: -30px; }
+
+/* Rollover colour: the resting row is muted, the incoming row is white, so
+   the character-by-character roll and the grey→white change are the same
+   gesture — no separate :hover colour transition to run out of sync with it.
+   .menu-link itself stays muted so the outgoing row dims back out on leave. */
+.menu-link { color: var(--text-muted); }
+.menu-link .rt-bot { color: var(--text-color); }
+/* Keyboard users get no roll (it is pointer-driven), so give focus the plain
+   colour change instead of leaving it indistinguishable from the rest. */
+.menu-link:focus-visible { color: var(--text-color); }
+
+.menu-count { font-size: var(--font-body); color: var(--text-muted); font-weight: 400; letter-spacing: normal; position: absolute; top: 0; right: -30px; transition: color 0.6s var(--ease-custom); }
+.menu-link:hover .menu-count { color: var(--text-color); }
 
 /* =========================================
    SPLASH LOADER (THE CURTAIN)
@@ -257,15 +367,18 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
   color: #ffffff;
   z-index: 9999; /* Absolute highest layer */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 .splash-counter {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
   font-size: clamp(80px, 15vw, 240px);
   font-weight: 900;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
+  margin-bottom: 4vh;
+  margin-right: 4vw;
 }
 
 /* Footer */
@@ -299,7 +412,7 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* =========================================
    5. COMPONENT UTILITIES (Removes Inline Styles)
 ========================================= */
-.margin-top-huge { margin-top: clamp(80px, 10vw, 160px); }
+.margin-top-huge { margin-top: clamp(80px, 16vw, 320px); }
 .works-header {
   display: flex;
   flex-wrap: wrap;
@@ -320,13 +433,7 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* =========================================
    6. PAGE SPECIFICS
 ========================================= */
-/* HOME */
-.page-home .hero-section { margin-top: 20vw; }
-.page-home .hero-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5vh; }
-.page-home .hero-title { font-size: var(--font-home-primary); line-height: var(--lh-home-primary); letter-spacing: var(--ls-home-primary); font-weight: normal; }
-.page-home .hero-subtitle { font-size: var(--font-home-exc); line-height: var(--lh-home-exc); letter-spacing: var(--ls-home-exc); text-align: right; }
-.hero-image-wrapper { position: relative; width: 100%; height: 60vh; background: #111; overflow: hidden; }
-.hero-blur-overlay { position: absolute; top: 0; left: 0; width: 50%; height: 100%; backdrop-filter: blur(12px); border-right: 1px solid rgba(255,255,255,0.05); }
+/* HOME — see section 6b for the hero and 9 for the focus section */
 .page-home .works-header h2 { font-size: var(--font-home-primary); line-height: var(--lh-home-primary); letter-spacing: var(--ls-home-primary); font-weight: 400 }
 /* WORK */
 .work-page-header { margin-bottom: 13.33vh; }
@@ -339,12 +446,190 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* ABOUT */
 .about-hero { margin-bottom: 15vh; }
 .about-intro-text { font-size: var(--font-int-main); line-height: var(--lh-about-main); letter-spacing: var(--ls-int-main); font-weight: 400; }
-.about-grid { row-gap: 15vh; margin-bottom: 15vh; }
-.about-grid p { font-size: var(--font-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); color: var(--text-primary); }
 .about-img-placeholder { width: 100%; aspect-ratio: 16/10; background: #111; }
+
+/* =========================================
+   ABOUT — STICKY TEXT / PASSING IMAGE STAGES
+
+   One stage = one containing block holding [text, image], stacked, in the
+   original column rhythm: full-width or 5+5 text, then a half-width image
+   offset to one side.
+
+   The whole mechanic is `position: sticky` and nothing else. The text parks
+   under the header; a sticky box may not leave its containing block, so it
+   is released at the exact scroll position where its own bottom edge meets
+   the block's bottom edge — which is the image's bottom edge. Bottoms align,
+   then the pair moves off together. No measuring, no ScrollTrigger, and it
+   holds for any number of stages of any height.
+
+   Two things are load-bearing:
+     - `.about-stage` must stay a plain block. Make it a grid and each child
+       gets its own grid area for a containing block, which caps the sticky
+       travel at the text's own row.
+     - The image needs its z-index. Sticky text is positioned, so by default
+       it paints ABOVE later in-flow siblings — the image would slide behind
+       it and vanish under an opaque block.
+========================================= */
+.about-stage {
+  position: relative;
+  margin-bottom: 15vh;
+}
+
+.about-stage-text.is-parked {
+  position: sticky;
+  top: calc(var(--header-height) + var(--pad-page-top));
+}
+
+.about-stage p,
+.about-stage .about-text-full p {
+  font-size: var(--font-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  margin: 0;
+}
+
+/* Exactly 6 of the 12 columns, gutters included — the same span the original
+   .col-half-left / .col-half-right occupied, expressed for a block parent
+   rather than a grid one. */
+.about-stage-media {
+  position: relative;
+  z-index: 1;
+  margin-top: 15vh;
+  width: calc((100% - 11 * var(--grid-gutter)) / 12 * 6 + 5 * var(--grid-gutter));
+}
+
+.about-stage-media--right { margin-left: auto; }
+.about-stage-media--left { margin-right: auto; }
+
+/* No aspect-ratio: the asset keeps its own proportions, and SanityImage's
+   width/height attributes reserve the right box before it loads. The drift
+   room comes from a scale on the image itself (data-parallax="cover" in
+   useParallax), which is why this can stay ratio-agnostic. */
+.about-stage-media img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Parking a block while the page moves is exactly the kind of motion this
+     setting is asking us not to do. */
+  .about-stage-text.is-parked {
+    position: static;
+  }
+}
 .about-focus { display: flex; flex-direction: column; align-items: flex-end; }
 .focus-heading { font-size: var(--font-home-primary); font-weight: 400; margin-bottom: 4vh; }
 .focus-list { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 20px 40px; max-width: 60%; font-size: var(--font-home-exc); }
+
+/* =========================================
+   6b. HOME — HERO (SIDE-BY-SIDE → OPEN-OUT)
+
+   Structure:
+     .hero-section     tall scroll track. Its surplus height over the stage
+                       IS the animation's scroll budget (useHomeMotion maps
+                       `top top` → `bottom bottom` onto the timeline).
+     .hero-stage       sticky viewport-sized frame. Sticky, not a
+                       ScrollTrigger pin — no generated spacer to fight the
+                       full-bleed negative margin, and it releases exactly
+                       at the section bottom with no jump.
+     .hero-title-col   left, vertically centred, painted under the media.
+     .hero-media-frame right-aligns the media across the full stage width, so
+                       animating the media's WIDTH moves only its left edge —
+                       the "opening out leftward".
+
+   The section breaks out of the page gutter so the opened frame can reach
+   the viewport edges; `overflow: clip` on the stage then crops the frame
+   when a 16:9 at full width is taller than a squarer viewport.
+========================================= */
+.page-home {
+  /* The hero owns the first screen outright; the header floats over it. */
+  padding-top: 0;
+}
+
+.page-home .hero-section {
+  position: relative;
+  height: 230svh;
+  width: calc(100% + var(--grid-margin) * 2);
+  margin-left: calc(-1 * var(--grid-margin));
+}
+
+.hero-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+
+.hero-title-col {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--grid-margin);
+  width: 46%;
+  display: flex;
+  align-items: flex-start;
+  z-index: 1;
+  padding-top: 70vh;
+}
+
+.page-home .hero-title {
+  font-family: 'Neue Haas Grotesk Text', sans-serif;
+  font-size: var(--font-home-primary-main);
+  line-height: 0.75;
+  letter-spacing: var(--ls-home-primary);
+  font-weight: 400;
+}
+
+.hero-media-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+  /* The frame covers the whole stage; without this it would swallow every
+     pointer event meant for the title underneath it. */
+  pointer-events: none;
+  /* padding-top: 70vh; */
+}
+
+.hero-media {
+  position: relative;
+  pointer-events: auto;
+  margin-right: var(--grid-margin);
+  /* Height-driven so a short viewport can never let the portrait overflow.
+     GSAP writes explicit width AND height during the open-out, at which
+     point aspect-ratio stops applying — which is what we want. */
+  height: min(66svh, 42vw);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #111;
+}
+
+/* Separate layer from the image itself: the open-out animates a scale on the
+   <img>, the pointer-tracked hover animates this. Same element for both would
+   mean one tween clobbering the other's transform. */
+.hero-media-inner {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No open-out means no budget to spend — collapse the track so the page
+     doesn't scroll through 130svh of nothing. */
+  .page-home .hero-section {
+    height: 100svh;
+  }
+}
 
 /* =========================================
    CASE STUDY (HERO & METADATA)
@@ -558,15 +843,19 @@ body.theme-light .cs-metadata {
 }
 
 /* Arrow rotates ↗ → → on card hover */
+/* An inline SVG sits on the text baseline and leaves a descender gap below
+   it; block takes it out of the line box entirely. font-size still drives the
+   size — the svg is width/height: 1em (see components/common/Arrow). */
 .work-meta-arrow {
   font-size: var(--font-work-category);
   color: var(--text-muted);
-  display: inline-block;
+  display: block;
   transition: transform 0.4s var(--ease-custom), color 0.4s var(--ease-custom);
 }
 
+/* +45deg — see the note on .vault-link:hover .vault-link-arrow. */
 .work-item:hover .work-meta-arrow {
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
   color: var(--text-color);
 }
 
@@ -580,102 +869,102 @@ body.theme-light .cs-metadata {
 
 /* =========================================
    9. HOME — FOCUS SECTION
-   Layout: left col = "FOCUS" heading, right col = body + skill rows
-   Skills grid: each row has [skill ✦ skill] with bottom border.
-   ✦ spins 360° once on row hover.
+   Layout: specialties left (cols 1-6), summary right (cols 8-12).
+
+   The summary parks itself 15% clear of the viewport bottom and holds there
+   while the specialty list keeps scrolling underneath the playhead; the whole
+   section then leaves together. That is plain CSS sticky — the only thing JS
+   contributes is --focus-sticky-top, because the offset is defined from the
+   element's BOTTOM edge (85vh - height) and CSS cannot read its own height.
 ========================================= */
 .focus-section {
-  margin-top: clamp(80px, 10vw, 160px);
-  margin-bottom: clamp(80px, 10vw, 160px);
-}
-
-/* 12-col: heading=col 1-4 | content=col 7-12 (6 cols, 2-col gap between) */
-.focus-section > .col-4 {
-  grid-column: 1 / span 4;
-}
-
-.focus-section > .col-6 {
-  grid-column: 7 / span 6;
-}
-
-.focus-section .focus-heading {
-  font-size: var(--font-home-primary);
-  font-weight: 400;
-  letter-spacing: var(--ls-home-primary);
-  line-height: 1;
-  position: sticky;
-  top: calc(var(--header-height) + 24px);
-}
-
-.focus-body {
-  font-size: var(--font-body);
-  line-height: var(--lh-body);
-  letter-spacing: var(--ls-body);
-  color: var(--text-muted);
-  margin-bottom: clamp(32px, 4vw, 64px);
-}
-
-.focus-skills {
-  width: 100%;
-}
-
-.focus-row {
-  /* 3-col sub-grid: [skill] [✦] [skill], plus .line-reveal spans all 3 cols at bottom */
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-rows: auto 1px;
-  align-items: center;
-  gap: var(--gap-focus-cols);
-  row-gap: 0;
-  padding-top: var(--pad-focus-row);
-  padding-bottom: var(--pad-focus-row);
-  /* border-bottom replaced by .line-reveal as 4th grid child */
-  cursor: default;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  /* Stretch, not start: the summary's sticky travel is bounded by its column
+     box, so that box has to span the full height of the row. */
+  align-items: stretch;
+  /* The hero's opened frame ends flush against the viewport edges, so this
+     gap is the only thing separating the two sections. */
+  margin-top: clamp(80px, 16vw, 320px);
+  margin-bottom: clamp(80px, 10vw, 160px);
+  /* Room past the last specialty for it to reach the playhead while the
+     summary is still parked. */
+  padding-bottom: 25vh;
 }
 
-/* .line-reveal spans all 3 columns, sits in the second row */
-.focus-row .line-reveal {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  align-self: end;
+.focus-col-specialties {
+  grid-column: 1 / span 6;
 }
 
-.focus-skill {
+.focus-col-summary {
+  grid-column: 8 / span 5;
+}
+
+.focus-label {
+  display: inline-block;
   font-size: var(--font-cs-sub);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
-  transition: color 0.35s var(--ease-custom);
-  line-height: 1;
+  margin-bottom: clamp(24px, 3vw, 56px);
 }
 
-/* Second skill in each row aligns right */
-.focus-skill:last-child {
-  text-align: right;
+.specialty-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.focus-star {
-  font-size: var(--font-focus-star);
-  color: var(--text-muted);
+/* Padding rather than gap, deliberately: the items must be contiguous so the
+   playhead line is always inside exactly one of them. A gap would produce a
+   dead band between items where nothing is lit. */
+.specialty-item {
+  padding-block: clamp(6px, 0.55vw, 14px);
+  line-height: 0.95;
+}
+
+.specialty-text {
   display: inline-block;
-  transition: color 0.35s var(--ease-custom);
-  line-height: 1;
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 700;
+  font-size: clamp(30px, 4vw, 78px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.16);
+  /* Scale, not font-size: the active item grows without reflowing the list
+     or nudging its neighbours. Left origin keeps the column edge honest. */
+  transform-origin: left center;
+  transition: color 0.9s var(--ease-out-expo), transform 1.1s var(--ease-out-expo);
 }
 
-/* Hover: brighten everything in the row */
-.focus-row:hover .focus-skill {
+.specialty-item.is-active .specialty-text {
   color: var(--text-color);
+  transform: scale(1.08);
 }
 
-.focus-row:hover .focus-star {
-  color: var(--text-color);
-  animation: starSpin 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* No playhead under reduced motion, so nothing would ever light up. */
+@media (prefers-reduced-motion: reduce) {
+  .specialty-text {
+    color: var(--text-color);
+  }
 }
 
-@keyframes starSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+.page-home .focus-summary {
+  position: sticky;
+  /* Fallback covers reduced-motion and the frame before JS measures. */
+  top: var(--focus-sticky-top, 30vh);
+  font-size: clamp(22px, 2.1vw, 42px);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  margin: 0;
 }
+
+/* .reveal-word (data-scrub="words" in useReveal) carries no styles on purpose.
+   The resting 40% and the fill are both GSAP-owned, and a `will-change` here
+   would promote every word in the paragraph to its own layer — the exact
+   thing section 5 of animation.css strips out elsewhere. */
 
 /* =========================================
    10. CONTACT PAGE — REBUILT
@@ -818,9 +1107,11 @@ body.theme-light .cs-metadata {
   transition: opacity 0.4s var(--ease-custom);
 }
 
+/* display: block for the same reason as .work-meta-arrow — it is an inline
+   SVG now, not a character. */
 .vault-link-arrow {
   font-size: var(--font-vault-arrow);
-  display: inline-block;
+  display: block;
   color: var(--text-muted);
   transition: transform 0.45s var(--ease-custom), color 0.35s var(--ease-custom);
   flex-shrink: 0;
@@ -836,8 +1127,12 @@ body.theme-light .cs-metadata {
 }
 
 /* Hover: brighten both arrow + label, arrow rotates ↗ → → */
+/* +45deg, not -45. CSS rotation is clockwise, so the negative value swung the
+   northeast arrow counter-clockwise to point straight UP — never the → the
+   rule was written for. Wrong since before the glyph became an SVG; the
+   emoji just made it hard to see what the mark was actually doing. */
 .vault-link:hover .vault-link-arrow {
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
   color: var(--text-color);
 }
 
@@ -861,7 +1156,7 @@ body.theme-light .cs-metadata {
 .site-footer {
   display: flex;
   flex-direction: column;
-  padding: 0;
+  padding-top: var(--pad-footer-top);
   gap: 0;
 }
 
@@ -1056,13 +1351,72 @@ body.theme-light .footer-cta-email:hover {
 /* .works-header border: replaced by .line-reveal child — see rule above */
 
 /* =========================================
+   RESPONSIVE — TABLET / SMALL LAPTOP ( 769px – 1279px )
+
+   Type only, no layout. The desktop scale is written as vw against a 1920
+   canvas, and vw keeps shrinking below it: --font-body is 1.0417vw, which
+   is the intended 20px at 1920 but 10.7px at 1024 and 8.5px on an iPad in
+   portrait. The composition survives that band fine — the 12-column grid
+   and the hero open-out both hold — but the copy inside it does not.
+
+   So the small tokens get a px floor and the display ones do not: a
+   headline is allowed to scale with the viewport because that is the
+   design, while body copy, labels and captions have a size below which
+   they simply stop working regardless of canvas.
+
+   Deliberately capped at 1279px: from 1280 up every vw here already
+   exceeds its floor, so the ≥1280 rendering — the source of truth — is
+   byte-for-byte what it was.
+========================================= */
+@media (min-width: 769px) and (max-width: 1279px) {
+  :root {
+    --font-home-sec: max(15px, 1.0417vw);
+    --font-body: max(16px, 1.0417vw);
+    --font-home-exc: max(20px, 1.6667vw);
+    --font-cs-sub: max(12px, 0.8333vw);
+
+    --font-work-category: max(12px, 0.8333vw);
+    --font-work-brand: max(16px, 1.25vw);
+
+    --font-focus-star: max(9px, 0.5208vw);
+
+    --font-vault-label: max(14px, 0.9375vw);
+    --font-vault-arrow: max(12px, 0.7813vw);
+
+    --font-footer-body: max(15px, 1.0417vw);
+    --font-footer-label: max(12px, 0.8333vw);
+    --gap-footer-col-items: max(14px, 0.9375vw);
+    --gap-footer-social: max(16px, 1.25vw);
+  }
+}
+
+/* =========================================
    RESPONSIVE — MOBILE ( ≤ 768px )
-   Single merged block. Variable overrides at :root level so every
-   component that references a token gets the correct mobile value.
+
+   The desktop scale is vw-locked to a 1920 canvas: 20px body copy is
+   written as 1.0417vw, a 160px footer pad as 8.3333vw. Carried straight
+   onto a 390px screen every one of those resolves to about a fifth of
+   its intent — 4px body copy, a 32px pad — which is why the phone used
+   to read as a different, collapsed site rather than the same one.
+
+   So this block is not a set of patches. It re-derives the SAME design
+   for a 390–430px canvas:
+
+     - Type keeps the desktop hierarchy (hero > section heading > page
+       headline > lede > body) but on a mobile vw scale, with px floors
+       wherever legibility rather than proportion decides the size.
+     - Every raw vw length in a desktop rule that has no token behind it
+       is restated here in px. Those are the ones that silently collapse.
+     - Structure only changes where a phone cannot hold the desktop
+       composition: 12 columns become 1, side-by-side becomes stacked,
+       and the scroll choreography that needs two axes is dropped (the
+       hero open-out is already gated to ≥769px in useHomeMotion).
+
+   Anything not listed here is deliberately inherited from desktop.
 ========================================= */
 @media (max-width: 768px) {
 
-  /* ── Variable overrides ────────────────────────────────────── */
+  /* ── 0. TOKENS ──────────────────────────────────────────────── */
   :root {
     --grid-margin: 16px;
     --grid-gutter: 16px;
@@ -1071,57 +1425,56 @@ body.theme-light .footer-cta-email:hover {
     --pad-page-bottom: 64px;
     --gap-nav-heading: 24px;
 
-    /* Type scale for 402px design viewport */
-    --font-home-primary: 10.26vw;
-    --font-int-main:      7.69vw;
-    --font-home-exc:      5.13vw;
-    --font-home-sec:      max(13px, 3.59vw);
-    --font-body:          max(14px, 4.10vw);
-    --font-cs-sub:        max(11px, 3.08vw);
+    /* Display scale. The steps between these are what carries the
+       desktop hierarchy across — the hero has to stay clearly bigger
+       than a section heading, which stays bigger than a page headline. */
+    --font-home-primary-main: 15vw;   /* hero name — fills the measure   */
+    --font-home-primary: 10.5vw;      /* section headings, case-study h1 */
+    --font-int-main: 9.5vw;           /* page headlines                  */
+    --font-home-exc: 5.8vw;           /* ledes, focus list               */
+    --font-home-sec: max(13px, 3.59vw);
+    --font-body: max(15px, 4.1vw);
+    --font-cs-sub: max(11px, 3.08vw);
 
     /* Work card */
     --font-work-category: max(11px, 3.08vw);
-    --font-work-brand:    max(14px, 4.1vw);
+    --font-work-brand: max(15px, 4.1vw);
 
     /* Focus */
     --pad-focus-row: 14px;
     --gap-focus-cols: 12px;
     --font-focus-star: max(8px, 2vw);
 
+    /* Contact */
+    --gap-contact-top: 48px;
+
     /* Vault */
     --pad-vault-link: 18px;
-    --font-vault-label: max(12px, 3.59vw);
+    --font-vault-label: max(14px, 4.1vw);
     --font-vault-arrow: max(11px, 2.74vw);
 
-    /* Footer */
+    /* Footer. --gap-footer-col-items is the one that bit hardest: the
+       desktop 0.9375vw resolves to 4px on a phone, so the footer link
+       lists had no rhythm at all. 14px keeps the same ~1.9x pitch the
+       desktop column has against a 16px link. */
     --font-marquee: max(60px, 18vw);
-    --font-footer-body:  max(14px, 4.1vw);
+    --font-footer-body: max(14px, 4.1vw);
     --font-footer-label: max(12px, 3.59vw);
-    --pad-footer-top: 48px;
-    --pad-footer-bottom: 24px;
+    --pad-footer-top: 56px;
+    --pad-footer-bottom: 28px;
     --gap-footer-marquee: 32px;
-    --gap-footer-social: 16px;
+    --gap-footer-social: 20px;
+    --gap-footer-col-items: 14px;
   }
 
-/* ── 0. VARIABLE OVERRIDES ──────────────────────────────────────
-     The desktop :root clamp() values have minimums (48px, 40px…)
-     that are larger than the designed mobile sizes. We must override
-     them here so mobile viewports get the correct vw-scaled values.
-  ──────────────────────────────────────────────────────────────── */
-
-
   /* ── 1. HEADER ──────────────────────────────────────────────── */
-  /* Header stays 3-col (ZE | TIME | MENU) — just tighter spacing */
+  /* Stays the desktop three-up (wordmark | clock | menu). At 13px the
+     three together measure ~215px of a 358px line, so it holds. */
   .site-header {
     padding: 0 var(--grid-margin);
   }
 
   /* ── 2. MENU OVERLAY ────────────────────────────────────────── */
-  /*
-    Design: items are centered, font fills the screen.
-    "CONTACT" (7 chars) at 18.5vw fills ~390px at -0.06em tracking.
-    Count superscript repositioned to top-right of word.
-  */
   .menu-nav {
     align-items: center;
     gap: 0;
@@ -1133,84 +1486,156 @@ body.theme-light .footer-cta-email:hover {
     text-align: center;
   }
 
-  .menu-link .rolling-text {
-    line-height: 1;
-  }
-
   .menu-count {
     font-size: max(11px, 3vw);
     right: -24px;
     top: 4px;
   }
 
-  /* ── 3. HOME PAGE ───────────────────────────────────────────── */
-  .page-home .hero-section {
-    margin-top: 0;
-    padding-top: calc(var(--header-height) + 24px);
+  /* The reveal frame's horizontal padding exists to keep .menu-count
+     inside the clip box; the count sits closer on mobile, so the frame
+     can be tighter too. */
+  .menu-item {
+    padding: 4px 32px;
+    margin: -4px -32px;
   }
 
+  /* ── 3. HOME — HERO ─────────────────────────────────────────── */
   /*
-    Design: subtitle sits ABOVE the name on mobile.
-    Desktop is a flex-row (name left, subtitle right).
-    Mobile is flex-column with subtitle reordered to the top.
+    The desktop hero is a two-axis composition: a title parked low on the
+    left, a portrait on the right that opens out to full bleed as you
+    scroll. Neither axis exists on a phone, so the stage unsticks and the
+    two halves stack — title, then the portrait at full bleed, which is
+    where the desktop animation ends up anyway.
+
+    .hero-title-col MUST have its padding-top zeroed. It is 70vh on
+    desktop (the title rides low against the media); left in place on a
+    static mobile stage it is just 560px of empty black above the fold,
+    which was the single most broken thing on the phone.
   */
-  .page-home .hero-row {
+  .page-home {
+    padding-top: calc(var(--header-height) + var(--pad-page-top));
+  }
+
+  .page-home .hero-section {
+    height: auto;
+    width: 100%;
+    margin-left: 0;
+    /* Enough that the title reads as a composition starting below the
+       header rather than as a caption hanging off it. */
+    padding-top: 6vh;
+  }
+
+  .hero-stage {
+    position: static;
+    height: auto;
+    overflow: visible;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 28px;
+  }
+  
+  .hero-title-col,
+  .hero-media-frame {
+    position: static;
+    display: block;
+    width: 100%;
+    padding-top: 0;
+    pointer-events: auto;
+  }
+  .hero-title-col {
+    padding-top: 50vh;
   }
 
-  .page-home .hero-subtitle {
-    order: -1; /* floats above the h1 */
-    text-align: left;
-    font-size: var(--font-home-exc);
-    line-height: 1.4;
-    max-width: 100%;
-  }
-
+  /* 0.75 is a desktop leading — it only clears at 150px+. At 58px the
+     ascenders of the second line would touch the first. */
   .page-home .hero-title {
-    font-size: var(--font-home-primary);
-    line-height: 0.92;
-    letter-spacing: -0.03em;
+    font-size: var(--font-home-primary-main);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
   }
 
-  .hero-image-wrapper {
-    height: 56vw; /* ~218px at 390px — 9:16 crop feel */
+  /* Full bleed past the page gutter, matching where the desktop
+     open-out finishes. */
+  .hero-media {
+    width: calc(100% + var(--grid-margin) * 2);
     margin-left: calc(-1 * var(--grid-margin));
     margin-right: calc(-1 * var(--grid-margin));
-    width: calc(100% + var(--grid-margin) * 2);
+    height: auto;
+    aspect-ratio: 4 / 5;
   }
 
-  /* Selected works header */
-  .selected-works .works-header {
-    margin-bottom: 24px;
+  /* ── 4. HOME — FOCUS / SPECIALTIES ──────────────────────────── */
+  /* Summary leads, specialties follow. Nothing sticks: a parked block
+     plus a collapsing address bar is how you get a paragraph that
+     jitters. (The sticky offset JS is gated to ≥769px too.) */
+  .focus-section {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    margin-top: 72px;
+    margin-bottom: 56px;
+    padding-bottom: 0;
   }
 
-  .page-home .works-header h2 {
-    font-size: 7.69vw;
+  .focus-col-summary {
+    order: -1;
   }
 
-  /* ── 4. WORK GRID (shared by Home + Work page) ──────────────── */
+  .page-home .focus-summary {
+    position: static;
+    font-size: var(--font-home-exc);
+    line-height: 1.3;
+  }
+
+  /* Sized to the longest item ("Usability Research") so no specialty
+     wraps — a wrapped item would break the contiguous run the playhead
+     depends on. */
+  .specialty-text {
+    font-size: 10vw;
+  }
+
+  .focus-label {
+    margin-bottom: 20px;
+  }
+
+  /* ── 5. WORK GRID (Home + Work page) ────────────────────────── */
+  /* One column, and the desktop 4:3 card ratio is kept — at full bleed
+     it is the difference between a card and a banner. */
   .work-grid {
     grid-template-columns: 1fr;
     gap: 0;
-    row-gap: 48px;
+    row-gap: 56px;
   }
 
   .work-img-wrapper {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
   }
 
   .work-meta {
-    font-size: var(--font-home-sec);
     margin-top: 12px;
+    gap: 4px;
   }
 
-  /* ── 5. WORK PAGE ───────────────────────────────────────────── */
+  /* ── 6. SECTION HEADERS ─────────────────────────────────────── */
+  /* .works-header stays a single space-between row exactly as on
+     desktop: at 10.5vw the heading measures ~275px and "See all" ~62px,
+     which fits the 358px line. */
+  .works-header {
+    margin-bottom: 24px;
+  }
+
+  .works-header .line-reveal {
+    margin-top: 16px;
+  }
+
+  .margin-top-huge {
+    margin-top: 56px;
+  }
+
+  /* ── 7. WORK PAGE ───────────────────────────────────────────── */
   .work-page-header {
-    margin-bottom: 40px;
+    margin-bottom: 56px;
   }
 
   .work-title {
@@ -1219,29 +1644,43 @@ body.theme-light .footer-cta-email:hover {
     max-width: 100%;
   }
 
-  /* ── 6. ABOUT PAGE ──────────────────────────────────────────── */
-  .about-hero {
-    margin-bottom: 8vh;
-  }
-
+  /* ── 8. ABOUT PAGE ──────────────────────────────────────────── */
   .about-intro-text {
     font-size: var(--font-int-main);
     line-height: 1.15;
   }
 
-  .about-grid {
-    row-gap: 8vh;
-    margin-bottom: 8vh;
+  /* Stages stay stacked, but nothing parks: an image passing over a
+     stuck block needs room either side of it to still read as a layer,
+     and a phone has none. Text, then its image, at full width. */
+  .about-stage {
+    margin-bottom: 10vh;
   }
 
-  .about-img-placeholder {
-    aspect-ratio: 4 / 3;
+  .about-stage-text.is-parked {
+    position: static;
   }
 
-  /*
-    Design: FOCUS heading is large — "FOCUS" at ~19vw fills the line.
-    Focus list switches to left-aligned wrapping chips.
-  */
+  .about-stage-media,
+  .about-stage-media--left,
+  .about-stage-media--right {
+    width: 100%;
+    margin-top: 6vh;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* The 12-col prose split collapses; the two halves become two
+     paragraphs in sequence. */
+  .about-stage .grid-12 {
+    display: block;
+  }
+
+  .about-stage .text-span-left + .text-span-right {
+    margin-top: 24px;
+  }
+
+  /* FOCUS heading fills the line, list wraps left-aligned beneath it. */
   .about-focus {
     align-items: flex-start;
   }
@@ -1261,47 +1700,74 @@ body.theme-light .footer-cta-email:hover {
     font-size: var(--font-home-exc);
   }
 
-  /* ── 7. CONTACT PAGE ────────────────────────────────────────── */
-  /*
-    Design: headline fills width, links section is right-aligned
-    with stacked social links.
-  */
-  .contact-headline {
+  /* ── 9. CONTACT PAGE ────────────────────────────────────────── */
+  /* The 4-col heading / 6-col content split stacks. The heading also
+     stops being sticky: with one column there is nothing for it to
+     anchor against. */
+  .contact-top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .contact-top > :first-child,
+  .contact-top > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .contact-heading {
     font-size: var(--font-int-main);
-    line-height: 1.1;
-    margin-bottom: 10vh;
-    max-width: 100%;
+    position: static;
   }
 
-  .contact-links {
-    gap: 5vh;
-    align-items: flex-end; /* keep right-aligned */
-    width: 100%;
+  .contact-cols {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 
-  .link-group {
-    align-items: flex-end;
-  }
-
-  .contact-label {
-    font-size: var(--font-cs-sub);
+  /* Both were raw vw with no token behind them — 2px and 16px on a
+     phone, which read as a typo rather than a rhythm. */
+  .contact-col-label {
     margin-bottom: 8px;
   }
 
-  .contact-big-link {
-    font-size: var(--font-int-main);
-    line-height: 1.1;
-    text-align: right;
+  .contact-divider-line {
+    margin-top: 40px;
+    margin-bottom: 32px;
   }
 
-  /* ── 8. CASE STUDY ──────────────────────────────────────────── */
-  /*
-    Design: title is large, metadata unstacks from the 12-col grid
-    into a single-column vertical list. Each metadata field shows
-    its label above its value, full width.
-  */
+  /* These are tap targets, not captions — 13px is too small to hit. */
+  .contact-link {
+    font-size: var(--font-body);
+  }
+
+  /* ── 10. VAULT PAGE ─────────────────────────────────────────── */
+  .vault-top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .vault-top > :first-child,
+  .vault-top > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .vault-heading {
+    font-size: var(--font-int-main);
+    position: static;
+  }
+
+  .vault-intro {
+    margin-bottom: 40px;
+  }
+
+  /* 1.25vw = 5px between the arrow and its label. */
+  .vault-link {
+    gap: 12px;
+  }
+
+  /* ── 11. CASE STUDY ─────────────────────────────────────────── */
   .cs-hero {
-    padding-top: calc(var(--header-height) + 24px);
+    padding-top: calc(var(--header-height) + 32px);
   }
 
   .cs-title {
@@ -1315,14 +1781,14 @@ body.theme-light .footer-cta-email:hover {
   }
 
   .cs-metadata {
-    padding-top: 20px;
+    padding-top: 24px;
   }
 
-  /* Unstack the grid metadata into a single column */
+  /* Metadata unstacks from the 12-col grid into a labelled list. */
   .cs-metadata.grid-12-col {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
   }
 
   .cs-metadata .col-2,
@@ -1333,7 +1799,7 @@ body.theme-light .footer-cta-email:hover {
 
   .meta-label {
     font-size: var(--font-cs-sub);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .meta-value {
@@ -1341,11 +1807,11 @@ body.theme-light .footer-cta-email:hover {
   }
 
   .cs-section-title {
-    font-size: 5.13vw;
+    font-size: max(20px, 5.6vw);
   }
 
   .cs-block-title {
-    font-size: max(14px, 4.1vw);
+    font-size: max(15px, 4.1vw);
   }
 
   .cs-text-body {
@@ -1356,7 +1822,7 @@ body.theme-light .footer-cta-email:hover {
     font-size: var(--font-cs-sub);
   }
 
-  /* Content blocks: all full-width on mobile */
+  /* Every content block goes full width. */
   .grid-12-col {
     display: flex;
     flex-direction: column;
@@ -1369,7 +1835,7 @@ body.theme-light .footer-cta-email:hover {
   }
 
   .section-padding {
-    margin-bottom: 48px;
+    margin-bottom: 64px;
   }
 
   /* Flex-based 3-col text blocks collapse to single column */
@@ -1382,123 +1848,44 @@ body.theme-light .footer-cta-email:hover {
     width: 100%;
   }
 
-  /* ── 9. FOOTER ──────────────────────────────────────────────── */
+  /* ── 12. FOOTER ─────────────────────────────────────────────── */
   /*
-    Design: CTA block stacks — heading on left, email below it.
-    Desktop has them side-by-side (space-between).
-    Bottom row stays space-between (copyright | IG X LI).
+    NO padding or gap on .site-footer itself. The rebuilt footer (section
+    12 above) is a flush full-bleed marquee followed by a bottom bar that
+    carries its own padding — the old mobile rule here still described
+    the footer that came BEFORE that rebuild, and its padding-top pushed
+    the marquee off its own top edge.
   */
   .site-footer {
-    padding-top: 48px;
-    padding-bottom: 24px;
+    padding-top: var(--header-height);
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 40px;
   }
 
-  .footer-cta {
-    flex-direction: column;
+  .footer-bottom-left {
+    gap: 12px;
+  }
+
+  .footer-bottom-right {
+    flex-direction: row;
+    justify-content: space-between;
     align-items: flex-start;
-    gap: 16px;
+    gap: 24px;
+    width: 100%;
   }
 
-  .footer-cta h2 {
-    font-size: var(--font-home-primary);
-    line-height: 1;
-  }
-
-  .footer-email {
-    font-size: var(--font-home-exc);
-    line-height: 1.3;
-  }
-
-  .footer-bottom {
-    font-size: var(--font-home-sec);
-  }
-
-  .footer-socials {
-    gap: 16px;
-  }
-
-  /* ── 10. PAGE WRAPPER ───────────────────────────────────────── */
+  /* ── 13. SHARED GRID UTILITIES ──────────────────────────────── */
   .page-wrapper {
     padding-left: var(--grid-margin);
     padding-right: var(--grid-margin);
   }
 
-  /* Shared grid utilities */
   .col-half-left, .col-half-right,
   .text-span-left, .text-span-right {
     grid-column: 1 / -1;
-  }
-
-  /* Margin helpers */
-  .margin-top-huge {
-    margin-top: 56px;
-  }
-
-  .works-header {
-    margin-bottom: 24px;
-  }
-
-  /* ── Work card ─────────────────────────────────────────────── */
-  .work-meta {
-    gap: 4px;
-    margin-top: 10px;
-  }
-
-  /* ── Focus section ─────────────────────────────────────────── */
-  .focus-section {
-    margin-top: 56px;
-    margin-bottom: 56px;
-  }
-  .focus-section.grid-12-col {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-  .focus-section .focus-heading {
-    font-size: 19vw;
-    position: static;
-  }
-
-  /* ── Contact ───────────────────────────────────────────────── */
-  .contact-top {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .contact-top > :first-child,
-  .contact-top > :last-child {
-    grid-column: 1 / -1;
-  }
-  .contact-heading {
-    font-size: var(--font-int-main);
-    position: static;
-  }
-  .contact-cols {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  /* ── Vault ─────────────────────────────────────────────────── */
-  .vault-top {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .vault-top > :first-child,
-  .vault-top > :last-child {
-    grid-column: 1 / -1;
-  }
-  .vault-heading {
-    font-size: var(--font-int-main);
-    position: static;
-  }
-
-  /* ── Footer ────────────────────────────────────────────────── */
-  .footer-bottom-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
-  }
-  .footer-bottom-right {
-    gap: 24px;
   }
 }

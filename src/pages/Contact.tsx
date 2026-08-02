@@ -48,9 +48,9 @@ export const Contact: React.FC = () => {
             <div className="contact-col">
               <span className="contact-col-label">Socials</span>
               {[
-                { href: 'https://instagram.com/theebuka', label: 'Instagram' },
-                { href: 'https://x.com/theebuka',         label: 'X (Twitter)' },
-                { href: 'https://linkedin.com/in/theebuka', label: 'LinkedIn' },
+                { href: 'https://instagram.com/rin.ze', label: 'Instagram' },
+                { href: 'https://x.com/ebxkaa',         label: 'X (Twitter)' },
+                { href: 'https://linkedin.com/in/chukwuebuka-nwaju', label: 'LinkedIn' },
               ].map(({ href, label }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link" data-reveal="text">
                   {label}
@@ -63,10 +63,10 @@ export const Contact: React.FC = () => {
               <span className="contact-col-label">Craft</span>
               {[
                 { href: 'https://theebuka.substack.com',   label: 'Substack' },
-                { href: 'https://medium.com/@theebuka',    label: 'Medium'   },
+                { href: 'https://medium.com/@ebxka',    label: 'Medium'   },
                 { href: 'https://behance.net/theebuka',    label: 'Behance'  },
-                { href: 'https://dribbble.com/theebuka',   label: 'Dribbble' },
-                { href: 'https://are.na/theebuka',         label: 'Are.na'   },
+                { href: 'https://dribbble.com/ebukaa',   label: 'Dribbble' },
+                { href: 'https://are.na/chukwuebuka-nwaju',         label: 'Are.na'   },
               ].map(({ href, label }) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link" data-reveal="text">
                   {label}
