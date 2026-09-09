@@ -67,11 +67,26 @@ export const Home: React.FC = () => {
           .hero-stage is stuck. See useHomeMotion. */}
       <section className="hero-section">
         <div className="hero-stage">
+          {/* The only place on the site that says whether the work is
+              available. Everything in it is a fact, so it is set in the
+              utility face. */}
+          <div className="hero-meta u">
+            <span>
+              <i className="hero-status-dot" aria-hidden="true" />
+              <b>Available</b> for work
+            </span>
+            <span>Product design, art direction and design engineering</span>
+            <span>Five case studies, 2021&ndash;2025</span>
+          </div>
+
           <div className="hero-title-col">
+            {/* Both lines used to carry .text-muted, which is why the
+                largest thing on the site was also its lightest and greyest.
+                The given name takes Display Black, the surname drops to
+                Light: the contrast is weight first, colour second. */}
             <h1 className="hero-title" data-reveal="text">
-              <span className="text-muted">Chukwuebuka</span>
+              <span className="hero-title-strong">Chukwuebuka</span>
               <br />
-              {/* <span className="text-muted">Arin</span>ze{' '} */}
               <span className="text-muted">Nwaju</span>
             </h1>
           </div>
@@ -106,8 +121,8 @@ export const Home: React.FC = () => {
       {/* ── Focus ───────────────────────────────────────────────────── */}
       <section className="focus-section">
         <div className="focus-col focus-col-specialties">
-          <span className="focus-label" data-reveal="text">
-            Specialties
+          <span className="focus-label u" data-reveal="text">
+            01 &mdash; Specialties
           </span>
 
           <ul className="specialty-list">
@@ -137,10 +152,15 @@ export const Home: React.FC = () => {
 
       {/* ── Selected Works ──────────────────────────────────────────── */}
       <section className="selected-works margin-top-huge">
-        <header className="works-header">
-          <h2 data-reveal="text">Selected Works</h2>
-          <Link to="/work" className="font-sec-muted">SEE ALL</Link>
-          <span className="line-reveal" data-reveal="line" aria-hidden="true" />
+        {/* A rule with its label set inside it, rather than a heading with a
+            separate full-width line under it. The count is real: it comes
+            from the same query that fills the grid. */}
+        <header className="sec-rule u">
+          <span>02</span>
+          <span className="sec-name" data-reveal="text">Selected works</span>
+          <span className="sec-line" aria-hidden="true" />
+          <span>{loading ? '\u2014' : String(projects.length).padStart(3, '0')}</span>
+          <Link to="/work">All work &rarr;</Link>
         </header>
 
         <WorkGrid projects={projects} loading={loading} />

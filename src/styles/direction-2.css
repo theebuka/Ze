@@ -1,0 +1,474 @@
+/* ============================================================
+   DIRECTION 2 — RE-COMPOSE
+   Import LAST, after animation.css.
+
+   Two jobs, kept separate below:
+
+   A. TYPE. The site has one weight doing every job. Display Black 900
+      takes the name, the brand names and the specialty list; a mono
+      utility face takes every label, index, year and coordinate. The
+      gap between those two is where the brutalism actually lives, and
+      it costs no new font files: both faces are already loaded.
+
+   B. COMPOSITION. The hero name moves to the bottom edge in difference
+      blend so the expanding portrait passes THROUGH it rather than
+      replacing it, a numbered rail holds the left margin, section
+      headers become rules with the label set inside them, and the work
+      grid stops being two matching cards.
+
+   Nothing here touches the reveal system, Lenis, or the sticky
+   mechanics. The one JS change is in useHomeMotion, where the title
+   no longer fades out at the end of the open-out.
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   A1. UTILITY TYPE ROLE
+
+   Everything that is a fact rather than a voice: labels, indices,
+   years, counts, coordinates. Uppercase, tracked out, tabular.
+   ───────────────────────────────────────────────────────────── */
+.u {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.6250vw, 12px);   /* 12px / 1920 */
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.u-dim { color: var(--text-muted); }
+
+/* The existing label classes join the same role rather than keeping
+   their own near-miss settings. */
+.focus-label,
+.contact-col-label,
+.meta-label,
+.cs-caption,
+.footer-col-label,
+.work-meta-category {
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-header {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.625vw, 12px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* The wordmark is the one thing in the header that is a name, not data. */
+.header-logo a {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 0.8333vw, 16px);
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   A2. DISPLAY WEIGHT
+
+   The name was set in Neue Haas Grotesk TEXT at 400. It is the
+   largest thing on the site and it was also the lightest.
+   ───────────────────────────────────────────────────────────── */
+.page-home .hero-title,
+.page-home .works-header h2,
+.work-title,
+.about-intro-text,
+.contact-heading,
+.vault-heading,
+.cs-title {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+
+/* Two tracking values, chosen by how much text is set in the face rather
+   than by which element it is. A one- or two-word name can take -0.045em
+   and reads as a mark; a sentence set at Black 900 and the same tracking
+   closes up until the words stop separating. */
+.work-title,
+.about-intro-text,
+.cs-title {
+  letter-spacing: -0.028em;
+  line-height: 1.02;
+}
+
+.work-meta-brand {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 900;
+  font-size: clamp(20px, 1.875vw, 36px);   /* 36px / 1920 */
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* The muted half of a display heading swaps FAMILY, not just weight.
+   Neue Haas Display exists here in Bold and Black only (see the @font-face
+   block in index.css), so asking it for 300 gets a synthesised face that
+   still reads heavy. Text Roman 400 next to Display Black 900 is a real
+   drop, and both files are already loaded. */
+.contact-heading .contact-muted,
+.page-home .hero-title .text-muted,
+.about-intro-text .text-muted {
+  font-family: 'Neue Haas Grotesk Text', sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   B1. HERO
+
+   The stage, the sticky, the scroll budget and the open-out
+   timeline are all unchanged. What changes is where the two
+   elements sit inside the stage.
+
+   The title spans the full stage width along the bottom edge and
+   paints in difference blend ABOVE the media, so as the portrait
+   opens out to full bleed it passes through the letterforms and
+   inverts them instead of sliding underneath and being hidden.
+   That is why useHomeMotion no longer fades it out: there is
+   nothing left to rescue it from.
+   ───────────────────────────────────────────────────────────── */
+.page-home .hero-title-col {
+  /* Full bleed rather than a 46% left column. */
+  left: 0;
+  right: 0;
+  width: auto;
+  padding-left: var(--grid-margin);
+  padding-right: var(--grid-margin);
+  padding-top: 0;
+  align-items: flex-end;
+  padding-bottom: 2.2vw;
+  /* Above .hero-media-frame (z-index: 2). */
+  z-index: 3;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+.page-home .hero-title {
+  font-size: 13vw;
+  line-height: 0.78;
+  letter-spacing: -0.055em;
+  /* difference against black is white; against the photograph it
+     inverts whatever is behind each stroke. */
+  color: #fff;
+}
+
+.hero-title-strong {
+  font-weight: 900;
+  color: #fff;
+}
+
+/* The surname is the quiet half: lighter family, lower value. A colour
+   change on its own reads as an accident; a family change reads as a
+   decision. #6b6b6e rather than --text-muted because this paints in
+   difference blend, so what lands on screen is the inverse of whatever
+   is behind each stroke. */
+.page-home .hero-title .text-muted {
+  color: #6b6b6e;
+}
+
+/* Left rail. Rendered once in App.tsx and present on every route, so the
+   46px gutter every page reserves below is never empty. */
+.site-rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 46px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--header-height) + 12px) 0 24px;
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  mix-blend-mode: difference;
+  pointer-events: none;
+  color: #fff;
+}
+
+.site-rail span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+}
+
+.site-rail .is-dim { color: rgba(255, 255, 255, 0.55); }
+
+/* main.app-main sits at z-index 1 over the fixed footer; the rail has to
+   clear both, and the header (z-index 1000) has to clear the rail. */
+.site-header { z-index: 1000 !important; }
+
+/* The rail occupies the left gutter, so the page it sits over moves
+   clear of it. */
+.page-home,
+.page-work,
+.page-about,
+.page-contact,
+.page-vault {
+  padding-left: calc(var(--grid-margin) + 46px);
+}
+.page-home .hero-section {
+  width: calc(100% + var(--grid-margin) * 2 + 46px);
+  margin-left: calc(-1 * (var(--grid-margin) + 46px));
+}
+.page-home .hero-title-col {
+  padding-left: calc(var(--grid-margin) + 46px);
+}
+.site-header { padding-left: calc(var(--grid-margin) + 46px); }
+
+/* Status / discipline block, top of the hero. Small, factual, and the
+   only place on the page that says the work is available. */
+.hero-meta {
+  position: absolute;
+  left: calc(var(--grid-margin) + 46px);
+  top: calc(var(--header-height) + 2vw);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55vw;
+  max-width: 24ch;
+  color: var(--text-muted);
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+.hero-meta b { color: #fff; font-weight: 400; }
+
+.hero-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   B2. SECTION RULES
+
+   A section header is a rule with its label set inside it: index on
+   the left, name next to it, hairline spanning the gap, count on the
+   right. It replaces .works-header's space-between plus a separate
+   full-width line element.
+   ───────────────────────────────────────────────────────────── */
+.sec-rule {
+  display: flex;
+  align-items: center;
+  gap: 1.4vw;
+  padding-top: 0.9vw;
+  border-top: 1px solid rgba(255, 255, 255, 0.32);
+  color: var(--text-muted);
+  margin-bottom: 2.4vw;
+}
+
+.sec-rule .sec-name { color: var(--text-color); }
+.sec-rule .sec-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.sec-rule a { color: var(--text-muted); transition: color 0.4s var(--ease-custom); }
+.sec-rule a:hover { color: var(--text-color); }
+
+/* ─────────────────────────────────────────────────────────────
+   B3. WORK — STAGGERED
+
+   Two identical 4:3 cards side by side is the flattest possible
+   arrangement of two images. These land on a 12-column grid at three
+   different widths, three different ratios and three different
+   vertical offsets, so the eye has somewhere to travel.
+   ───────────────────────────────────────────────────────────── */
+.work-grid--stagger {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  row-gap: 0;
+  align-items: start;
+}
+
+.work-grid--stagger .work-item { display: flex; flex-direction: column; }
+
+/* A four-step cycle, so the rhythm holds for any number of projects
+   rather than only for the two on the homepage. */
+.work-grid--stagger .work-item:nth-child(4n + 1) { grid-column: 1 / span 7; }
+.work-grid--stagger .work-item:nth-child(4n + 2) { grid-column: 9 / span 4;  margin-top: 12vw; }
+.work-grid--stagger .work-item:nth-child(4n + 3) { grid-column: 2 / span 5;  margin-top: 6vw; }
+.work-grid--stagger .work-item:nth-child(4n + 4) { grid-column: 8 / span 5;  margin-top: 2vw; }
+
+.work-grid--stagger .work-item:nth-child(4n + 1) .work-img-wrapper { aspect-ratio: 16 / 10; }
+.work-grid--stagger .work-item:nth-child(4n + 2) .work-img-wrapper { aspect-ratio: 3 / 4; }
+.work-grid--stagger .work-item:nth-child(4n + 3) .work-img-wrapper { aspect-ratio: 1 / 1; }
+.work-grid--stagger .work-item:nth-child(4n + 4) .work-img-wrapper { aspect-ratio: 4 / 5; }
+
+/* Cards after the first row need clearance from the one above them. */
+.work-grid--stagger .work-item:nth-child(n + 3) { margin-bottom: 0; }
+.work-grid--stagger .work-item { margin-bottom: 8vw; }
+
+/* Card metadata. The index and year bracket a hairline, the way a
+   caption sits under a plate in a catalogue. */
+.work-meta {
+  margin-top: 0;
+  gap: 0;
+}
+
+.work-index-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8vw;
+  padding-top: 0.7vw;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--text-muted);
+}
+.work-index-row .idx { color: var(--text-color); }
+.work-index-row .rule { flex: 1; height: 1px; background: rgba(255, 255, 255, 0.16); }
+
+.work-meta-brand { margin-top: 0.7vw; }
+
+.work-meta-sub {
+  margin-top: 0.5vw;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35vw 1vw;
+}
+
+/* The old single row went away with the markup; keep the arrow's
+   hover behaviour on its new home. */
+.work-meta-arrow { color: var(--text-muted); }
+.work-item:hover .work-meta-arrow { transform: rotate(45deg); color: var(--text-color); }
+
+/* Image response on hover, not just an opacity dip. */
+.work-img-wrapper { position: relative; }
+.work-item .parallax-img,
+.work-item .work-img-wrapper img {
+  transition: transform 0.9s var(--ease-out-expo), filter 0.6s var(--ease-custom);
+}
+.work-item:hover .work-img-wrapper img { transform: scale(1.035); }
+.work-item:hover .work-img-wrapper { opacity: 1; }
+
+/* ─────────────────────────────────────────────────────────────
+   B4. SPECIALTIES
+
+   Contiguity is load-bearing for the playhead (see useHomeMotion), so
+   the padding rhythm is untouched. Only the type and the active
+   marker change.
+   ───────────────────────────────────────────────────────────── */
+.specialty-item { position: relative; }
+
+.specialty-text {
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+
+/* A rule that draws itself across the row as the item lights up. It
+   is a transform on a hairline, so it costs nothing and it cannot
+   reflow the contiguous run the playhead depends on. */
+.specialty-item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--text-color);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s var(--ease-out-expo);
+}
+.specialty-item.is-active::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .specialty-item::after { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   B5. FOOTER
+
+   The marquee was the loudest thing on the site and said nothing.
+   Same mechanic, real content.
+   ───────────────────────────────────────────────────────────── */
+.footer-marquee-item {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE
+
+   The rail, the difference-blend name and the stagger are all
+   two-axis ideas. A phone has one axis, so they unwind: the rail
+   becomes a top strip, the name goes back inline above the portrait,
+   and the stagger collapses to a single column with the ratios kept
+   (the ratios are the part that still reads at 390px).
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-home,
+  .page-work,
+  .page-about,
+  .page-contact,
+  .page-vault {
+    padding-left: var(--grid-margin);
+  }
+  .site-header { padding-left: var(--grid-margin); }
+
+  .site-rail { display: none; }
+
+  .page-home .hero-section {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .page-home .hero-title-col {
+    position: static;
+    padding: 0;
+    mix-blend-mode: normal;
+    pointer-events: auto;
+  }
+
+  .page-home .hero-title {
+    font-size: 15.5vw;
+    line-height: 0.86;
+    color: var(--text-color);
+  }
+
+  .hero-meta {
+    position: static;
+    max-width: none;
+    margin-bottom: 24px;
+    mix-blend-mode: normal;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+
+  .sec-rule {
+    gap: 12px;
+    padding-top: 12px;
+    margin-bottom: 24px;
+  }
+
+  .work-grid--stagger {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .work-grid--stagger .work-item {
+    grid-column: auto;
+    margin-top: 0;
+    margin-bottom: 56px;
+  }
+  .work-grid--stagger .work-item:nth-child(4n + 2) .work-img-wrapper,
+  .work-grid--stagger .work-item:nth-child(4n + 4) .work-img-wrapper {
+    aspect-ratio: 4 / 5;
+  }
+
+  .work-index-row { gap: 10px; padding-top: 10px; }
+  .work-meta-brand { margin-top: 10px; }
+  .work-meta-sub { margin-top: 6px; gap: 4px 14px; }
+}

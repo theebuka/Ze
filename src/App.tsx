@@ -34,6 +34,10 @@ const Vault = lazy(() => import('./pages/Vault').then((m) => ({ default: m.Vault
 import './styles/index.css';
 import './styles/interactions.css';
 import './styles/animation.css';
+// Direction 2 overrides land after animation.css, which is the last file in
+// the base cascade. Everything it changes is type, colour and composition;
+// nothing in it touches the reveal or scroll systems.
+import './styles/direction-2.css';
 
 /**
  * Theme + scroll reset on route change.
@@ -132,6 +136,16 @@ const AppContent: React.FC = () => {
       <RouteEffects />
 
       {!isLoaded && <SplashLoader onComplete={() => setIsLoaded(true)} />}
+
+      {/* Holds the left margin on every route, the way a page number holds
+          a book's. Fixed, so it survives the hero stage unsticking; painted
+          in difference blend so it stays legible over the full-bleed
+          portrait and over the light case-study theme alike.
+          aria-hidden: it is furniture, not content. */}
+      <div className="site-rail u" aria-hidden="true">
+        <span>ZE</span>
+        <span className="is-dim">Lagos, NG</span>
+      </div>
 
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <MenuOverlay isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />

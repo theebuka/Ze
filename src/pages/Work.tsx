@@ -18,15 +18,17 @@ export const Work: React.FC = () => {
     <main className="page-wrapper page-work" ref={scope}>
       <header className="work-page-header">
         <h1 className="work-title" data-reveal="text">
-          Take a look at a few projects that i've
+          Take a look at a few projects I&rsquo;ve
           <br />
           hashed out in recent years
         </h1>
       </header>
 
-      <header className="works-header">
-        <span />
-        <span className="line-reveal" data-reveal="line" aria-hidden="true" />
+      <header className="sec-rule u">
+        <span>01</span>
+        <span className="sec-name" data-reveal="text">Index</span>
+        <span className="sec-line" aria-hidden="true" />
+        <span>{loading ? '\u2014' : String(projects.length).padStart(3, '0')}</span>
       </header>
 
       {error ? (

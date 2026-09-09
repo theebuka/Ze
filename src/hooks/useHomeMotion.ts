@@ -122,9 +122,15 @@ export function useHomeMotion(
     CATCH_UP_END
   )
   .to(img ?? {}, { scale: 1, duration: EXPAND_DURATION, ease: MOTION.easeInOut }, CATCH_UP_END)
+  // The title used to fade to nothing here, because it sat BEHIND the
+  // opening frame and would otherwise have been buried by it. It now paints
+  // above the media in difference blend (direction-2.css), so the portrait
+  // passes through the letterforms instead of over them and there is nothing
+  // to rescue it from. It keeps the small rise, which is what stopped the
+  // name sitting dead still while everything else moved.
   .to(
     title,
-    { autoAlpha: 0, y: () => titleCatchUpY() - stageH() * 0.07, duration: FADE_DURATION, ease: 'power2.in' },
+    { y: () => titleCatchUpY() - stageH() * 0.07, duration: FADE_DURATION, ease: 'power2.out' },
     FADE_START
   )
   .to({}, { duration: 1 - EXPAND_END }, EXPAND_END);
