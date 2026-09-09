@@ -40,7 +40,7 @@ export const Home: React.FC = () => {
   // splash state — without this gate, ScrollTrigger would fire and complete
   // the whole reveal while still covered, and the page would look static
   // the instant the splash clears.
-  const scope = useReveal<HTMLElement>({ deps: [projects, settings], enabled: splashDone });
+  const scope = useReveal<HTMLDivElement>({ deps: [projects, settings], enabled: splashDone });
   useParallax(scope, [projects, settings]);
   useHomeMotion(scope, [projects, settings, splashDone]);
 
@@ -60,7 +60,7 @@ export const Home: React.FC = () => {
   }, []);
 
   return (
-    <main className="page-wrapper page-home" ref={scope}>
+    <div className="page-wrapper page-home" ref={scope}>
       {/* ── Hero ─────────────────────────────────────────────────────
           .hero-section is deliberately taller than the viewport: the
           surplus is the scroll budget the open-out animation spends while
@@ -165,6 +165,6 @@ export const Home: React.FC = () => {
 
         <WorkGrid projects={projects} loading={loading} />
       </section>
-    </main>
+    </div>
   );
 };

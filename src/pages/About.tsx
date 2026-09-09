@@ -76,7 +76,7 @@ export const About: React.FC = () => {
 
   // About can be the entry route on a fresh load/refresh, mounting underneath
   // the splash overlay same as Home — same gate, same reason.
-  const scope = useReveal<HTMLElement>({ deps: [siteSettings], enabled: splashDone });
+  const scope = useReveal<HTMLDivElement>({ deps: [siteSettings], enabled: splashDone });
   // The image's crop drifts inside its own frame, so the picture reads at a
   // different speed from the page while its layout box — the thing the text
   // aligns its bottom to — never moves.
@@ -89,7 +89,7 @@ export const About: React.FC = () => {
   }, []);
 
   return (
-    <main className="page-wrapper page-about" ref={scope}>
+    <div className="page-wrapper page-about" ref={scope}>
       {/*
         Each stage is one containing block holding [text, image]. The text is
         sticky, so it parks under the header and — by the plain rules of
@@ -149,6 +149,6 @@ export const About: React.FC = () => {
           <span>Growth Design</span>
         </div>
       </section>
-    </main>
+    </div>
   );
 };

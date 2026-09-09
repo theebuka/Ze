@@ -45,10 +45,10 @@ export const Vault: React.FC = () => {
   const splashDone = useAppReady();
   // Vault can be the entry route on a fresh load/refresh, mounting
   // underneath the splash overlay same as Home — same gate, same reason.
-  const scope = useReveal<HTMLElement>({ deps: [], enabled: splashDone });
+  const scope = useReveal<HTMLDivElement>({ deps: [], enabled: splashDone });
 
   return (
-    <main className="page-wrapper page-vault" ref={scope}>
+    <div className="page-wrapper page-vault" ref={scope}>
       <div className="vault-top">
 
         {/* Left col: heading (sticky on desktop) */}
@@ -97,6 +97,6 @@ export const Vault: React.FC = () => {
         </div>
 
       </div>
-    </main>
+    </div>
   );
 };

@@ -11,11 +11,11 @@ export const Work: React.FC = () => {
 
   // Work can be the entry route on a fresh load/refresh, mounting underneath
   // the splash overlay same as Home — same gate, same reason.
-  const scope = useReveal<HTMLElement>({ deps: [projects], enabled: splashDone });
+  const scope = useReveal<HTMLDivElement>({ deps: [projects], enabled: splashDone });
   useParallax(scope, [projects]);
 
   return (
-    <main className="page-wrapper page-work" ref={scope}>
+    <div className="page-wrapper page-work" ref={scope}>
       <header className="work-page-header">
         <h1 className="work-title" data-reveal="text">
           Take a look at a few projects I&rsquo;ve
@@ -38,6 +38,6 @@ export const Work: React.FC = () => {
       ) : (
         <WorkGrid projects={projects} loading={loading} />
       )}
-    </main>
+    </div>
   );
 };
