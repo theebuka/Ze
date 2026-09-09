@@ -4,9 +4,21 @@
 :root {
   --bg-color: #000000;
   --text-color: #ffffff;
-  --text-muted: #888888;
+  /* #888 on black is 5.4:1. Fine for a label, too weak for a resting state
+     that has to read as text — see --text-rest below. */
+  --text-muted: #8f8f92;
+  /* Was referenced by .contact-intro and .vault-intro and never declared, so
+     both rules resolved to nothing and the colour fell through to inherit. */
+  --text-primary: var(--text-color);
+  /* The resting colour for a list whose active item is white. 0.16 alpha was
+     1.7:1 — invisible on any screen not in a dark room. */
+  --text-rest: rgba(255, 255, 255, 0.38);
   --light-bg: #f3f3f3;
   --light-text: #111111;
+
+  /* Utility face. Every label, index, year and coordinate on the site is
+     data, not voice, and gets set in this. */
+  --font-mono: 'Nacelle', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
 
   /* ── Grid ──────────────────────────────────────────────────────── */
   --grid-margin: 20px;
@@ -191,7 +203,11 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* overflow-x: hidden removed. It was masking a 100vw scrollbar overflow that
+     animation.css already fixed properly (html.lenis { width: 100% }), and an
+     overflow value other than visible on the body turns it into a scroll
+     container, which silently kills every position: sticky on the page —
+     the hero stage, the About stages, the focus summary, both page headings. */
 }
 
 /* Case-study pages toggle this class on <body> (see App.tsx RouteEffects).
@@ -931,7 +947,7 @@ body.theme-light .cs-metadata {
   font-size: clamp(30px, 4vw, 78px);
   line-height: 0.95;
   letter-spacing: -0.03em;
-  color: rgba(255, 255, 255, 0.16);
+  color: var(--text-rest);
   /* Scale, not font-size: the active item grows without reflowing the list
      or nudging its neighbours. Left origin keeps the column edge honest. */
   transform-origin: left center;
@@ -1234,7 +1250,7 @@ body.theme-light .cs-metadata {
   font-size: var(--font-footer-body);
   line-height: var(--lh-footer-body);
   letter-spacing: var(--ls-footer);
-  opacity: 0.5;
+  opacity: 0.66;
 }
 
 .footer-social-icons {
@@ -1280,7 +1296,8 @@ body.theme-light .footer-social-link:hover {
   font-size: var(--font-footer-label);
   line-height: var(--lh-footer-label);
   letter-spacing: var(--ls-footer);
-  opacity: 0.4;
+  /* 0.4 on #f3f3f3 was 2.3:1. 0.62 clears AA for a label at this size. */
+  opacity: 0.62;
   margin-bottom: var(--gap-footer-col-items);
 }
 

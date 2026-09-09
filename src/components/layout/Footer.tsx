@@ -35,6 +35,9 @@ import { useAppReady } from '../../context/AppReadyContext';
 
 const MARQUEE_COUNT = 6; // items per set — always exceeds viewport width
 
+/** Was hardcoded to 2026 in two places. */
+const YEAR = new Date().getFullYear();
+
 const NAV_LINKS = [
   { to: '/',        label: '/Home'    },
   { to: '/about',   label: '/About'   },
@@ -43,10 +46,13 @@ const NAV_LINKS = [
   { to: '/vault',   label: '/Vault'   },
 ];
 
+// Kept in step with the Contact page, which is the source of truth for these.
+// The footer used to carry a different, non-existent set (/theebuka on all
+// three), so half the social links on the site 404'd.
 const SOCIAL_LINKS = [
-  { href: 'https://instagram.com/theebuka',   aria: 'Instagram',   abbr: 'IG' },
-  { href: 'https://x.com/theebuka',           aria: 'X / Twitter', abbr: 'X'  },
-  { href: 'https://linkedin.com/in/theebuka', aria: 'LinkedIn',    abbr: 'LI' },
+  { href: 'https://instagram.com/rin.ze',                 aria: 'Instagram',   abbr: 'IG' },
+  { href: 'https://x.com/ebxkaa',                         aria: 'X / Twitter', abbr: 'X'  },
+  { href: 'https://linkedin.com/in/chukwuebuka-nwaju',    aria: 'LinkedIn',    abbr: 'LI' },
 ];
 
 const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
@@ -112,7 +118,7 @@ export const Footer: React.FC = () => {
             <div className="footer-marquee-set" key={setIdx}>
               {Array.from({ length: MARQUEE_COUNT }).map((_, i) => (
                 <React.Fragment key={i}>
-                  <span className="footer-marquee-item">ZE ©2026</span>
+                  <span className="footer-marquee-item">ZE ©{YEAR}</span>
                   <span className="footer-marquee-sep">&nbsp;•&nbsp;</span>
                 </React.Fragment>
               ))}

@@ -128,9 +128,9 @@ export const Home: React.FC = () => {
             word-fill scrub measures against this stable wrapper instead. */}
         <div className="focus-col focus-col-summary" data-scrub-trigger>
           <p className="focus-summary" data-reveal="text" data-scrub="words">
-            Creative Design engineer with a design background, crafting
-            immersive digital experiences that combine creativity and
-            functionality.
+            I design systems, then build them. Radiography trained, startup
+            taught. Usually the first designer in the room, and close enough
+            to the code that the intent survives delivery.
           </p>
         </div>
       </section>

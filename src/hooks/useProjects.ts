@@ -12,6 +12,9 @@ export interface Project {
   brand: string;
   slug: string;
   category?: string;
+  projectType?: string;
+  role?: string;
+  timeline?: string;
   thumbnailUrl: string;
   previewVideoUrl?: string;
 }
@@ -19,10 +22,30 @@ export interface Project {
 const PROJECTION = `
   _id, brand,
   "slug": slug.current,
-  category,
+  category, projectType, role, timeline,
   "thumbnailUrl": thumbnail.asset->url,
   "previewVideoUrl": previewVideo.asset->url
 `;
+
+/**
+ * The year a project actually ran.
+ *
+ * NOT publishedAt — every document in the dataset carries a 2026 publish
+ * date, because that field records when the case study was entered, not when
+ * the work happened. `timeline` is the field with the real dates in it
+ * ("Oct - Dec 2021"), so take the last four-digit year it contains.
+ */
+export const yearOf = (p: Project): string | null => {
+  const years = p.timeline?.match(/\b(19|20)\d{2}\b/g);
+  return years?.[years.length - 1] ?? null;
+};
+
+/** "Product Designer, Developer" is too long for a card. Compress it. */
+export const roleOf = (p: Project): string | null => {
+  if (!p.role) return null;
+  const parts = p.role.split(',').map((r) => r.trim()).filter(Boolean);
+  return parts.length > 1 ? 'Design + Build' : parts[0] ?? null;
+};
 
 type Mode = 'all' | 'featured';
 
