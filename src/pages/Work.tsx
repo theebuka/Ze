@@ -1,8 +1,7 @@
 import React from 'react';
-import { WorkGrid } from '../components/work/WorkGrid';
+import { WorkIndex } from '../components/work/WorkIndex';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
-import { useParallax } from '../hooks/useParallax';
 import { useAppReady } from '../context/AppReadyContext';
 
 export const Work: React.FC = () => {
@@ -11,22 +10,23 @@ export const Work: React.FC = () => {
 
   // Work can be the entry route on a fresh load/refresh, mounting underneath
   // the splash overlay same as Home — same gate, same reason.
-  const scope = useReveal<HTMLElement>({ deps: [projects], enabled: splashDone });
-  useParallax(scope, [projects]);
+  const scope = useReveal<HTMLDivElement>({ deps: [projects], enabled: splashDone });
 
   return (
-    <main className="page-wrapper page-work" ref={scope}>
+    <div className="page-wrapper page-work" ref={scope}>
       <header className="work-page-header">
         <h1 className="work-title" data-reveal="text">
-          Take a look at a few projects that i've
+          Take a look at a few projects I&rsquo;ve
           <br />
           hashed out in recent years
         </h1>
       </header>
 
-      <header className="works-header">
-        <span />
-        <span className="line-reveal" data-reveal="line" aria-hidden="true" />
+      <header className="sec-rule u">
+        <span>01</span>
+        <span className="sec-name" data-reveal="text">Index</span>
+        <span className="sec-line" aria-hidden="true" />
+        <span>{loading ? '\u2014' : String(projects.length).padStart(3, '0')}</span>
       </header>
 
       {error ? (
@@ -34,8 +34,8 @@ export const Work: React.FC = () => {
           Couldn't load the work list right now. Please refresh.
         </p>
       ) : (
-        <WorkGrid projects={projects} loading={loading} />
+        <WorkIndex projects={projects} loading={loading} />
       )}
-    </main>
+    </div>
   );
 };

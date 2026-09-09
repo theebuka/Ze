@@ -1,0 +1,452 @@
+/* ============================================================
+   DIRECTION 3 — DOCUMENT
+   Import LAST, after animation.css.
+
+   A different visual language, not a sharpening of the old one.
+
+   PALETTE. The whole site inverts, and it does it by redefining five
+   tokens rather than by rewriting rules. index.css and interactions.css
+   already express every surface in terms of --bg-color / --text-color
+   and the "inverted surface" pair --light-bg / --light-text, so
+   swapping the values swaps the site: the index is paper, the footer is
+   ink, and case studies (which set body.theme-light) become ink with a
+   paper footer. The alternation is the point. You always know which
+   kind of page you are on.
+
+   GRID. Twelve column rules, drawn once and fixed behind everything.
+   The layout was always on a 12-column grid; this is that grid made
+   visible, which is what separates brutalist minimal from plain dark
+   minimal.
+
+   INDEX. The homepage stops being a showcase and becomes a table. Each
+   project is a row of hard data with the image held back until hover.
+   Nothing on the first screen is decorative.
+   ============================================================ */
+
+:root {
+  /* Paper and ink. Both are true neutrals, picked rather than
+     inherited: #ECECEA is a shade off white so the ink reads as
+     printed rather than emitted, and #0B0B0C carries a faint cool
+     bias so it does not go brown against the paper. */
+  --bg-color: #ECECEA;
+  --text-color: #0B0B0C;
+  --text-muted: #6B6B70;
+  --text-primary: var(--text-color);
+  --text-rest: rgba(11, 11, 12, 0.34);
+
+  /* The "inverted surface" pair. Everything that used to be the light
+     panel on a dark site is now the dark panel on a light one, with no
+     rule changes anywhere: the footer, the case-study theme and the
+     header's invert-text state all read these. */
+  --light-bg: #0B0B0C;
+  --light-text: #ECECEA;
+
+  --rule-ink: rgba(11, 11, 12, 0.22);
+  --rule-faint: rgba(11, 11, 12, 0.10);
+  --rule-hard: rgba(11, 11, 12, 0.42);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TYPE ROLES
+   ───────────────────────────────────────────────────────────── */
+.u {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.6250vw, 12px);
+  line-height: 1.3;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.focus-label,
+.contact-col-label,
+.meta-label,
+.cs-caption,
+.footer-col-label,
+.work-meta-category {
+  font-family: var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-header {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.625vw, 12px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* The header is part of the ruled page, not a floating bar. */
+  border-bottom: 1px solid var(--rule-hard);
+  background: var(--bg-color);
+}
+body.theme-light .site-header {
+  border-bottom-color: rgba(236, 236, 234, 0.42);
+  background: var(--light-bg);
+}
+.header-logo a {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Display type. The face carries the page, so it is used at one weight
+   and one job: statements. Everything else is the mono. */
+.doc-statement,
+.work-title,
+.about-intro-text,
+.contact-heading,
+.vault-heading,
+.cs-title,
+.index-brand,
+.focus-heading {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.042em;
+  line-height: 0.9;
+}
+
+.work-title,
+.about-intro-text,
+.cs-title {
+  letter-spacing: -0.026em;
+  line-height: 1.02;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   THE COLUMN RULES
+
+   Twelve tracks with a hairline on each boundary, inset to the page
+   gutter so they line up with the content sitting on them.
+
+   Drawn as a background on the page itself rather than as an overlay. main.app-main is opaque and sits above the footer at z-index
+   1, so anything painted behind it is invisible and anything painted
+   over it also covers the content. As a background on .page-wrapper the
+   rules sit under the type, scroll with it, and need no z-index at all.
+
+   background-origin: content-box makes the gradient's 100% resolve to
+   the padding box interior, which IS the twelve-column area — so the
+   pitch stays correct at every viewport without a single measurement. */
+.page-wrapper {
+  background-image:
+    /* the closing rule on column 12 */
+    linear-gradient(to left, var(--rule-faint) 0 1px, transparent 1px),
+    /* the opening rule of each of the twelve columns */
+    repeating-linear-gradient(
+      to right,
+      var(--rule-faint) 0 1px,
+      transparent 1px calc(100% / 12)
+    );
+  background-origin: content-box;
+  background-clip: content-box;
+  background-repeat: no-repeat;
+}
+
+body.theme-light .page-wrapper {
+  --rule-faint: rgba(236, 236, 234, 0.10);
+}
+
+@media (max-width: 768px) {
+  /* Twelve rules across 390px is a hatch pattern, not a grid. */
+  .page-wrapper { background-image: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MASTHEAD
+
+   No hero image and no open-out. The first screen is a statement of
+   what the practice does, the facts that qualify it, and the index.
+   The portrait is an inset at the size a passport photo is printed,
+   because on this page it is a credential, not a feature.
+   ───────────────────────────────────────────────────────────── */
+/* index.css zeroes .page-home's padding-top so the old hero could own the
+   first screen. There is no hero here, so the masthead was starting
+   underneath the fixed header. Put the page padding back. */
+.page-doc {
+  position: relative;
+  padding-top: calc(var(--header-height) + var(--pad-page-top) + var(--gap-nav-heading));
+}
+
+.doc-mast { position: relative; padding-bottom: clamp(28px, 3vw, 56px); }
+
+.doc-statement {
+  font-size: clamp(38px, 7.4vw, 142px);
+  margin: 0;
+  max-width: 15ch;
+  /* A sentence, not a mark. Display Black at -0.042em closes the word
+     gaps until "Product design, art" reads as one word; the tracking
+     backs off and the word space is put back explicitly. */
+  letter-spacing: -0.028em;
+  word-spacing: 0.06em;
+  line-height: 0.92;
+}
+.doc-statement .dim {
+  font-family: 'Neue Haas Grotesk Text', sans-serif;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: -0.03em;
+}
+
+.doc-portrait {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: clamp(96px, 11vw, 210px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #d8d8d6;
+  filter: grayscale(1) contrast(1.08);
+  border: 1px solid var(--rule-hard);
+}
+.doc-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.doc-lede {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gutter);
+  margin-top: clamp(28px, 3.4vw, 64px);
+  padding-top: clamp(14px, 1.2vw, 22px);
+  border-top: 1px solid var(--rule-hard);
+  align-items: start;
+}
+.doc-lede-label { grid-column: 1 / span 2; color: var(--text-muted); }
+.doc-lede-body {
+  grid-column: 3 / span 6;
+  font-size: clamp(15px, 1.15vw, 22px);
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.doc-facts {
+  grid-column: 10 / span 3;
+  display: grid;
+  gap: 0;
+  align-self: start;
+}
+.doc-fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule-faint);
+  color: var(--text-muted);
+}
+.doc-fact b { color: var(--text-color); font-weight: 400; }
+
+/* ─────────────────────────────────────────────────────────────
+   THE INDEX
+
+   A table, laid out on the same twelve columns the rules draw, so the
+   data snaps to the visible grid rather than floating over it.
+   ───────────────────────────────────────────────────────────── */
+.index-section { position: relative; margin-top: clamp(40px, 5vw, 96px); }
+
+.index-head,
+.index-row {
+  display: grid;
+  grid-template-columns:
+    minmax(48px, 0.6fr)   /* no.        */
+    minmax(0, 3.4fr)      /* client     */
+    minmax(0, 2.6fr)      /* discipline */
+    minmax(0, 2fr)        /* role       */
+    minmax(56px, 0.8fr)   /* year       */
+    28px;                 /* arrow      */
+  gap: var(--grid-gutter);
+  align-items: center;
+}
+
+.index-head {
+  color: var(--text-muted);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-hard);
+}
+
+.index-row {
+  padding: clamp(12px, 1.15vw, 24px) 0;
+  border-bottom: 1px solid var(--rule-ink);
+  color: var(--text-color);
+  transition: background-color 0.35s var(--ease-custom),
+              color 0.35s var(--ease-custom),
+              padding-left 0.45s var(--ease-out-expo);
+}
+
+.index-brand {
+  font-size: clamp(20px, 2.2vw, 42px);
+  margin: 0;
+}
+
+.index-row .u { color: var(--text-muted); transition: color 0.35s var(--ease-custom); }
+.index-arrow { justify-self: end; color: var(--text-muted); transition: transform 0.45s var(--ease-custom), color 0.35s var(--ease-custom); }
+
+/* The row inverts on hover: ink block, paper type. It is the same
+   gesture the footer and the case-study pages make, so the site has
+   one idea about emphasis rather than three. */
+@media (hover: hover) and (pointer: fine) {
+  .index-row:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding-left: clamp(10px, 0.8vw, 18px);
+  }
+  .index-row:hover .u,
+  .index-row:hover .index-arrow { color: rgba(236, 236, 234, 0.72); }
+  .index-row:hover .index-arrow { transform: rotate(45deg); }
+}
+.index-row:focus-visible {
+  outline: 2px solid var(--text-color);
+  outline-offset: -2px;
+}
+
+/* Hover preview. Held back until the pointer is on a row, so the first
+   screen stays a document and the images stay a reward. */
+.index-preview {
+  position: fixed;
+  right: var(--grid-margin);
+  bottom: var(--grid-margin);
+  width: clamp(200px, 22vw, 380px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #d8d8d6;
+  border: 1px solid var(--rule-hard);
+  z-index: 40;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s var(--ease-custom), transform 0.5s var(--ease-out-expo);
+  pointer-events: none;
+  filter: grayscale(1);
+}
+.index-preview.is-on { opacity: 1; transform: translateY(0); }
+.index-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  /* No pointer to hover with, and a preview that appears on tap is just
+     a second thing to dismiss. */
+  .index-preview { display: none; }
+}
+
+/* On a phone the table stops being a table: six columns at 390px is
+   four unreadable ones. Each project becomes a stacked record. */
+@media (max-width: 768px) {
+  .index-head { display: none; }
+  .index-row {
+    grid-template-columns: 44px 1fr auto;
+    grid-template-areas:
+      "no brand year"
+      "no disc arrow"
+      "no role arrow";
+    gap: 4px 12px;
+    align-items: baseline;
+    padding: 18px 0;
+  }
+  .index-row > :nth-child(1) { grid-area: no; }
+  .index-row > :nth-child(2) { grid-area: brand; margin-bottom: 6px; }
+  .index-row > :nth-child(3) { grid-area: disc; }
+  .index-row > :nth-child(4) { grid-area: role; }
+  .index-row > :nth-child(5) { grid-area: year; justify-self: end; }
+  .index-row > :nth-child(6) { grid-area: arrow; align-self: center; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION RULES
+   ───────────────────────────────────────────────────────────── */
+.sec-rule {
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  padding-top: 0.8vw;
+  border-top: 1px solid var(--rule-hard);
+  color: var(--text-muted);
+  margin-bottom: 1.6vw;
+}
+.sec-rule .sec-name { color: var(--text-color); }
+.sec-rule .sec-line { flex: 1; height: 1px; background: var(--rule-ink); }
+.sec-rule a { color: var(--text-muted); transition: color 0.35s var(--ease-custom); }
+.sec-rule a:hover { color: var(--text-color); }
+
+@media (max-width: 768px) {
+  .sec-rule { gap: 12px; padding-top: 12px; margin-bottom: 18px; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPECIALTIES
+
+   Kept, because the playhead is real content and it works. Re-set for
+   paper: the resting state is a genuine grey rather than a near-
+   invisible one, and the active item gets a filled marker instead of
+   a scale, which a table-shaped page has no room for.
+   ───────────────────────────────────────────────────────────── */
+.specialty-item { position: relative; padding-left: 0; }
+
+.specialty-text {
+  font-weight: 900;
+  letter-spacing: -0.042em;
+  color: var(--text-rest);
+}
+.specialty-item.is-active .specialty-text {
+  color: var(--text-color);
+  transform: none;
+}
+
+.specialty-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--text-color);
+  transform: translateY(-50%);
+  transition: width 0.8s var(--ease-out-expo);
+}
+.specialty-item.is-active::before { width: clamp(16px, 1.6vw, 34px); }
+.specialty-item.is-active .specialty-text { padding-left: clamp(24px, 2.4vw, 48px); }
+.specialty-text { transition: color 0.7s var(--ease-out-expo), padding-left 0.8s var(--ease-out-expo); }
+
+@media (prefers-reduced-motion: reduce) {
+  .specialty-item::before { display: none; }
+  .specialty-item.is-active .specialty-text { padding-left: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SURFACES THAT ASSUMED A DARK GROUND
+
+   A handful of rules in index.css hardcode a dark placeholder or a
+   white-alpha hairline. Those are the only places the inversion does
+   not carry itself.
+   ───────────────────────────────────────────────────────────── */
+.work-img-wrapper,
+.cs-media-frame { background: #d8d8d6; }
+
+.cs-metadata { border-top: 1px solid var(--rule-ink); }
+body.theme-light .cs-metadata { border-top-color: rgba(236, 236, 234, 0.22); }
+
+.vault-link-item { border-bottom: 1px solid var(--rule-ink); }
+
+.line-reveal { opacity: 0.28; }
+
+.work-item--skeleton .work-img-wrapper { background: currentColor; opacity: 0.07; }
+
+/* The custom cursor is an ink disc in difference blend, which reads on
+   paper and on the ink case-study pages both. */
+.custom-cursor { background: var(--text-color); }
+
+/* main casts a shadow onto the revealed footer. Tuned for a dark card
+   on a light ground; the card is now light on a dark one. */
+main.app-main {
+  box-shadow: 0 8px 48px rgba(11, 11, 12, 0.12), 0 2px 12px rgba(11, 11, 12, 0.08);
+}
+
+/* The marquee is the one loud thing on the site and it sits on ink. */
+.footer-marquee-item {
+  font-family: 'Neue Haas Grotesk Display', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MENU
+
+   Paper ground, ink type, and the same alternation as everything else.
+   ───────────────────────────────────────────────────────────── */
+.menu-overlay { background-color: var(--bg-color); color: var(--text-color); }
+.menu-link { color: var(--text-rest); font-weight: 900; letter-spacing: -0.045em; }
+.menu-link .rt-bot { color: var(--text-color); }
+.menu-count { font-family: var(--font-mono); color: var(--text-muted); }

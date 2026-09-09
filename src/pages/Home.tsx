@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { client } from '../lib/sanity';
-import { isCoarsePointer } from '../lib/gsap';
 import { SanityImage } from '../components/common/SanityImage';
-import { WorkGrid } from '../components/work/WorkGrid';
+import { WorkIndex } from '../components/work/WorkIndex';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
-import { useParallax } from '../hooks/useParallax';
 import { useHomeMotion } from '../hooks/useHomeMotion';
 import { useAppReady } from '../context/AppReadyContext';
-import { useCursor } from '../context/CursorContext';
 
 interface SiteSettings {
   heroImage: unknown;
@@ -31,22 +28,20 @@ const SPECIALTIES = [
 ];
 
 export const Home: React.FC = () => {
-  const { projects, loading } = useProjects('featured');
+  const { projects, loading } = useProjects('all');
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const splashDone = useAppReady();
-  const { setCursorType } = useCursor();
 
   // Home mounts immediately, underneath the splash overlay, regardless of
   // splash state — without this gate, ScrollTrigger would fire and complete
   // the whole reveal while still covered, and the page would look static
   // the instant the splash clears.
-  const scope = useReveal<HTMLElement>({ deps: [projects, settings], enabled: splashDone });
-  useParallax(scope, [projects, settings]);
-  useHomeMotion(scope, [projects, settings, splashDone]);
+  const scope = useReveal<HTMLDivElement>({ deps: [projects, settings], enabled: splashDone });
 
-  // Hover cursor state is meaningless on touch, and phones synthesise mouse
-  // events on tap — the same guard WorkGrid uses.
-  const touch = isCoarsePointer();
+  // The hero open-out is gone with the masthead, so useHomeMotion's first
+  // block finds no .hero-section and returns early. It still runs the
+  // specialty playhead, which is the part this page keeps.
+  useHomeMotion(scope, [projects, settings, splashDone]);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,55 +54,87 @@ export const Home: React.FC = () => {
     };
   }, []);
 
-  return (
-    <main className="page-wrapper page-home" ref={scope}>
-      {/* ── Hero ─────────────────────────────────────────────────────
-          .hero-section is deliberately taller than the viewport: the
-          surplus is the scroll budget the open-out animation spends while
-          .hero-stage is stuck. See useHomeMotion. */}
-      <section className="hero-section">
-        <div className="hero-stage">
-          <div className="hero-title-col">
-            <h1 className="hero-title" data-reveal="text">
-              <span className="text-muted">Chukwuebuka</span>
-              <br />
-              {/* <span className="text-muted">Arin</span>ze{' '} */}
-              <span className="text-muted">Nwaju</span>
-            </h1>
-          </div>
+  const firstYear = 2019;
+  const count = String(projects.length).padStart(3, '0');
 
-          {/* The frame spans the stage and right-aligns the media, so growing
-              the media's width is what carries its left edge outward. */}
-          <div className="hero-media-frame">
-            <div
-              className="hero-media"
-              data-reveal="image"
-              data-reveal-delay="0.25"
-              onMouseEnter={() => !touch && setCursorType('expand')}
-              onMouseLeave={() => !touch && setCursorType('default')}
-            >
-              <div className="hero-media-inner">
-                {settings && Boolean(settings.heroImage) && (
-                  <SanityImage
-                    source={settings.heroImage}
-                    alt="Chukwuebuka Arinze Nwaju"
-                    className="hero-img"
-                    sizes="(max-width: 768px) 100vw, 60vw"
-                    priority
-                    maxWidth={2560}
-                  />
-                )}
-              </div>
+  return (
+    <div className="page-wrapper page-home page-doc" ref={scope}>
+      {/* ── Masthead ─────────────────────────────────────────────────
+          No image and no open-out. The opening statement is what the
+          practice does; the portrait is an inset at credential size,
+          because on a page shaped like a document that is what it is. */}
+      <header className="doc-mast">
+        <h1 className="doc-statement" data-reveal="text">
+          Product design, art direction <span className="dim">&amp;</span> design
+          engineering
+        </h1>
+
+        {settings && Boolean(settings.heroImage) && (
+          <div className="doc-portrait" data-reveal="image" data-reveal-delay="0.2">
+            <SanityImage
+              source={settings.heroImage}
+              alt="Chukwuebuka Arinze Nwaju"
+              sizes="210px"
+              priority
+              maxWidth={640}
+            />
+          </div>
+        )}
+
+        <div className="doc-lede">
+          <span className="doc-lede-label u" data-reveal="text">
+            Practice
+          </span>
+
+          <p className="doc-lede-body" data-reveal="text" data-scrub="words">
+            I design systems, then build them. Radiography trained, startup
+            taught. Usually the first designer in the room, and close enough to
+            the code that the intent survives delivery.
+          </p>
+
+          {/* Facts, not claims. Each one is checkable against the rest of
+              the site. */}
+          <div className="doc-facts u">
+            <div className="doc-fact">
+              <span>Practising</span>
+              <b>since {firstYear}</b>
+            </div>
+            <div className="doc-fact">
+              <span>Case studies</span>
+              <b>{loading ? '—' : count}</b>
+            </div>
+            <div className="doc-fact">
+              <span>Based</span>
+              <b>Lagos, NG</b>
+            </div>
+            <div className="doc-fact">
+              <span>Status</span>
+              <b>Open to work</b>
             </div>
           </div>
         </div>
+      </header>
+
+      {/* ── Index ───────────────────────────────────────────────────── */}
+      <section className="index-section">
+        <header className="sec-rule u">
+          <span>01</span>
+          <span className="sec-name" data-reveal="text">
+            Index
+          </span>
+          <span className="sec-line" aria-hidden="true" />
+          <span>{loading ? '—' : count}</span>
+          <Link to="/work">All work &rarr;</Link>
+        </header>
+
+        <WorkIndex projects={projects} loading={loading} />
       </section>
 
       {/* ── Focus ───────────────────────────────────────────────────── */}
       <section className="focus-section">
         <div className="focus-col focus-col-specialties">
-          <span className="focus-label" data-reveal="text">
-            Specialties
+          <span className="focus-label u" data-reveal="text">
+            02 &mdash; Specialties
           </span>
 
           <ul className="specialty-list">
@@ -115,7 +142,7 @@ export const Home: React.FC = () => {
               <li className="specialty-item" key={item}>
                 {/* data-reveal sits on the inner span, not the <li>: the line
                     mask it generates has overflow:clip, and the active-state
-                    scale must live OUTSIDE that box or it gets clipped. */}
+                    treatment must live OUTSIDE that box or it gets clipped. */}
                 <span className="specialty-text" data-reveal="text">
                   {item}
                 </span>
@@ -128,23 +155,12 @@ export const Home: React.FC = () => {
             word-fill scrub measures against this stable wrapper instead. */}
         <div className="focus-col focus-col-summary" data-scrub-trigger>
           <p className="focus-summary" data-reveal="text" data-scrub="words">
-            I design systems, then build them. Radiography trained, startup
-            taught. Usually the first designer in the room, and close enough
-            to the code that the intent survives delivery.
+            I lean toward brutalist minimalism: structure left visible,
+            contrast doing the work, and restraint where a system would
+            otherwise start shouting.
           </p>
         </div>
       </section>
-
-      {/* ── Selected Works ──────────────────────────────────────────── */}
-      <section className="selected-works margin-top-huge">
-        <header className="works-header">
-          <h2 data-reveal="text">Selected Works</h2>
-          <Link to="/work" className="font-sec-muted">SEE ALL</Link>
-          <span className="line-reveal" data-reveal="line" aria-hidden="true" />
-        </header>
-
-        <WorkGrid projects={projects} loading={loading} />
-      </section>
-    </main>
+    </div>
   );
 };

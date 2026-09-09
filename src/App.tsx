@@ -34,6 +34,10 @@ const Vault = lazy(() => import('./pages/Vault').then((m) => ({ default: m.Vault
 import './styles/index.css';
 import './styles/interactions.css';
 import './styles/animation.css';
+// Direction 3 overrides land after animation.css, the last file in the base
+// cascade. It inverts the palette by redefining five tokens, so every rule
+// in the two files above it follows without being touched.
+import './styles/direction-3.css';
 
 /**
  * Theme + scroll reset on route change.
