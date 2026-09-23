@@ -1,452 +1,532 @@
 /* ============================================================
-   DIRECTION 3 — DOCUMENT
+   DIRECTION 3 — QUIET
    Import LAST, after animation.css.
 
-   A different visual language, not a sharpening of the old one.
+   Rebuilt from measuring seven senior product designer and design
+   engineer sites (Paco Coursey, Emil Kowalski, Rauno Freiberg, Jakub
+   Krehel, Karolis Kosas, Dan Eden, plus van Schneider as the loud
+   counter-example). What they share, and what this file does about it:
 
-   PALETTE. The whole site inverts, and it does it by redefining five
-   tokens rather than by rewriting rules. index.css and interactions.css
-   already express every surface in terms of --bg-color / --text-color
-   and the "inverted surface" pair --light-bg / --light-text, so
-   swapping the values swaps the site: the index is paper, the footer is
-   ink, and case studies (which set body.theme-light) become ink with a
-   paper footer. The alternation is the point. You always know which
-   kind of page you are on.
+   WEIGHT. None of them set their largest type heavier than 400; Kosas's
+   72px statement is Aeonik at 300. The first pass of this direction put
+   everything in Display Black 900, which is most of why it read as a
+   gimmick. Here there is one family, Neue Haas Grotesk Text, at 400 and
+   500. Display is not used at all.
 
-   GRID. Twelve column rules, drawn once and fixed behind everything.
-   The layout was always on a 12-column grid; this is that grid made
-   visible, which is what separates brutalist minimal from plain dark
-   minimal.
+   SCALE. Two to five sizes per site. Emil and Paco run almost the whole
+   page at 16px. This uses four: meta, body, title, statement.
 
-   INDEX. The homepage stops being a showcase and becomes a table. Each
-   project is a row of hard data with the image held back until hover.
-   Nothing on the first screen is decorative.
+   LINES. 0 to 2 bordered elements on the pages that read as most
+   refined (Emil 0, Rauno 1, Kosas 1, Paco 2). The column rules, header
+   rule, fact rules and table rules are all gone. Space separates things.
+
+   LABELS. No uppercase and no monospace on any of them. The tracked
+   mono label was the other half of the gimmick. Labels are sentence
+   case, the body face, one step down and grey.
+
+   COLOUR. Exactly two text tones: ink and one grey. Grounds sit just
+   off white (#FDFDFC, #FCFCFC, #EDEDED).
+
+   MOTION. Hover transitions of 0.15–0.3s everywhere, no custom cursor
+   on any of them. The cursor goes back to native here.
+
+   The palette still inverts through the same five tokens, so the footer
+   and menu follow without touching index.css or interactions.css.
    ============================================================ */
 
 :root {
-  /* Paper and ink. Both are true neutrals, picked rather than
-     inherited: #ECECEA is a shade off white so the ink reads as
-     printed rather than emitted, and #0B0B0C carries a faint cool
-     bias so it does not go brown against the paper. */
-  --bg-color: #ECECEA;
-  --text-color: #0B0B0C;
-  --text-muted: #6B6B70;
+  /* A neutral just off white. Not cream: no yellow in it. */
+  --bg-color: #F4F4F2;
+  /* Ink with the faintest warmth so it sits on the paper rather than
+     punching through it. */
+  --text-color: #111110;
+  /* The only other text tone. 5.0:1 on the paper. */
+  --text-muted: #6F6F6B;
   --text-primary: var(--text-color);
-  --text-rest: rgba(11, 11, 12, 0.34);
+  --text-rest: var(--text-muted);
 
-  /* The "inverted surface" pair. Everything that used to be the light
-     panel on a dark site is now the dark panel on a light one, with no
-     rule changes anywhere: the footer, the case-study theme and the
-     header's invert-text state all read these. */
-  --light-bg: #0B0B0C;
-  --light-text: #ECECEA;
+  --light-bg: #111110;
+  --light-text: #F4F4F2;
 
-  --rule-ink: rgba(11, 11, 12, 0.22);
-  --rule-faint: rgba(11, 11, 12, 0.10);
-  --rule-hard: rgba(11, 11, 12, 0.42);
+  --hairline: rgba(17, 17, 16, 0.12);
+
+  /* Wider page margin. 20px at 1440 put the type almost against the
+     viewport edge; every site measured sits further in. */
+  --grid-margin: clamp(20px, 3.4vw, 64px);
+  --grid-gutter: clamp(16px, 1.4vw, 24px);
+  --header-height: 64px;
+
+  /* ── Type scale: four steps ─────────────────────────────── */
+  --t-meta: 14px;
+  --t-body: clamp(16px, 1.2vw, 19px);
+  --t-title: clamp(20px, 1.7vw, 30px);
+  --t-statement: clamp(34px, 4.3vw, 78px);
+
+  /* Tokens index.css reads. Body copy was tracked at -0.04em and the
+     header at -0.08em, which pinches a text face; every site measured
+     sets body at normal tracking. */
+  --font-body: var(--t-body);
+  --lh-body: 1.55;
+  --ls-body: -0.005em;
+  --font-home-sec: var(--t-meta);
+  --ls-home-sec: 0;
+  --font-int-main: var(--t-statement);
+  --ls-int-main: -0.032em;
+  --lh-int-main: 1.04;
+  --lh-about-main: 1.08;
+  --font-home-exc: var(--t-title);
+  --ls-footer: -0.005em;
+  --font-footer-body: var(--t-meta);
+  --font-footer-label: var(--t-meta);
+  --font-cs-sub: var(--t-meta);
+  --font-vault-label: var(--t-title);
 }
+
+::selection { background: var(--text-color); color: var(--bg-color); }
 
 /* ─────────────────────────────────────────────────────────────
-   TYPE ROLES
+   ONE FAMILY
    ───────────────────────────────────────────────────────────── */
-.u {
-  font-family: var(--font-mono);
-  font-size: clamp(10px, 0.6250vw, 12px);
-  line-height: 1.3;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
+body,
+.menu-link,
+.cs-title,
+.work-title,
+.about-intro-text,
+.contact-heading,
+.vault-heading,
+.focus-heading,
+.splash-counter,
+.footer-marquee-item {
+  font-family: 'Neue Haas Grotesk Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-.focus-label,
-.contact-col-label,
-.meta-label,
-.cs-caption,
-.footer-col-label,
-.work-meta-category {
-  font-family: var(--font-mono);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
-
-.site-header {
-  font-family: var(--font-mono);
-  font-size: clamp(10px, 0.625vw, 12px);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  /* The header is part of the ruled page, not a floating bar. */
-  border-bottom: 1px solid var(--rule-hard);
-  background: var(--bg-color);
-}
-body.theme-light .site-header {
-  border-bottom-color: rgba(236, 236, 234, 0.42);
-  background: var(--light-bg);
-}
-.header-logo a {
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-/* Display type. The face carries the page, so it is used at one weight
-   and one job: statements. Everything else is the mono. */
-.doc-statement,
 .work-title,
 .about-intro-text,
 .contact-heading,
 .vault-heading,
 .cs-title,
-.index-brand,
-.focus-heading {
-  font-family: 'Neue Haas Grotesk Display', sans-serif;
-  font-weight: 900;
-  letter-spacing: -0.042em;
-  line-height: 0.9;
+.d3-statement {
+  font-weight: 400;
+  font-size: var(--t-statement);
+  letter-spacing: -0.032em;
+  line-height: 1.04;
+  text-wrap: balance;
 }
 
-.work-title,
-.about-intro-text,
-.cs-title {
-  letter-spacing: -0.026em;
-  line-height: 1.02;
+/* The muted half of a heading is grey, same weight. */
+.text-muted,
+.contact-heading .contact-muted,
+.cs-title .font-sec-muted {
+  color: var(--text-muted);
+  font-weight: 400;
+  opacity: 1;
+}
+
+/* Every label on the site: sentence case, body face, grey. */
+.focus-label,
+.contact-col-label,
+.meta-label,
+.cs-caption,
+.footer-col-label,
+.work-meta-category,
+.cs-status-text,
+.d3-label {
+  font-family: inherit;
+  font-size: var(--t-meta);
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.cs-section-title {
+  text-transform: none;
+  letter-spacing: -0.01em;
+  opacity: 1;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   THE COLUMN RULES
+   NATIVE CURSOR
 
-   Twelve tracks with a hairline on each boundary, inset to the page
-   gutter so they line up with the content sitting on them.
+   None of the seven replace the cursor. A disc that follows the pointer
+   and grows over links is the most recognisable portfolio-template move
+   there is, so it goes. index.css and animation.css hide the native one
+   on fine pointers; this puts it back.
+   ───────────────────────────────────────────────────────────── */
+.custom-cursor { display: none !important; }
 
-   Drawn as a background on the page itself rather than as an overlay. main.app-main is opaque and sits above the footer at z-index
-   1, so anything painted behind it is invisible and anything painted
-   over it also covers the content. As a background on .page-wrapper the
-   rules sit under the type, scroll with it, and need no z-index at all.
+@media (hover: hover) and (pointer: fine) {
+  html.js * { cursor: auto; }
+  html.js a,
+  html.js button,
+  html.js [role='button'],
+  html.js .rolling-text { cursor: pointer; }
+}
 
-   background-origin: content-box makes the gradient's 100% resolve to
-   the padding box interior, which IS the twelve-column area — so the
-   pitch stays correct at every viewport without a single measurement. */
+/* ─────────────────────────────────────────────────────────────
+   HEADER
+
+   Name left, clock centre, menu right, all at meta size, no rule, no
+   uppercase. Same ground as the page so it reads as the top of the
+   sheet rather than a bar laid over it.
+   ───────────────────────────────────────────────────────────── */
+.site-header {
+  font-size: var(--t-meta);
+  letter-spacing: 0;
+  text-transform: none;
+  background: var(--bg-color);
+  border-bottom: 0;
+  transition: color var(--dur-theme) var(--ease-out), background-color var(--dur-theme) var(--ease-out);
+}
+.header-logo a { font-weight: 500; }
+.header-time { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.site-header.invert-text { color: var(--text-color); }
+
+/* ─────────────────────────────────────────────────────────────
+   CASE STUDIES STAY ON THE SAME GROUND
+
+   The base site flips case studies to the light theme. With one quiet
+   palette that flip is a second visual language for no reason, so it is
+   neutralised: same paper, same ink, footer still the one dark surface.
+   ───────────────────────────────────────────────────────────── */
+body.theme-light,
+body.theme-light main.app-main {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+body.theme-light .site-footer {
+  background-color: var(--light-bg);
+  color: var(--light-text);
+}
+body.theme-light .footer-social-link,
+body.theme-light .footer-col-link,
+body.theme-light .footer-cta-email { opacity: 1; }
+body.theme-light .footer-social-link:hover,
+body.theme-light .footer-col-link:hover,
+body.theme-light .footer-cta-email:hover { opacity: 0.55; }
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE FRAME
+   ───────────────────────────────────────────────────────────── */
 .page-wrapper {
-  background-image:
-    /* the closing rule on column 12 */
-    linear-gradient(to left, var(--rule-faint) 0 1px, transparent 1px),
-    /* the opening rule of each of the twelve columns */
-    repeating-linear-gradient(
-      to right,
-      var(--rule-faint) 0 1px,
-      transparent 1px calc(100% / 12)
-    );
-  background-origin: content-box;
-  background-clip: content-box;
-  background-repeat: no-repeat;
+  padding-bottom: clamp(96px, 10vw, 180px);
 }
 
-body.theme-light .page-wrapper {
-  --rule-faint: rgba(236, 236, 234, 0.10);
+/* index.css zeroes .page-home's padding-top so the old hero could own
+   the first screen. There is no hero here. */
+.page-doc {
+  padding-top: calc(var(--header-height) + clamp(56px, 7vw, 128px));
 }
 
-@media (max-width: 768px) {
-  /* Twelve rules across 390px is a hatch pattern, not a grid. */
-  .page-wrapper { background-image: none; }
+main.app-main {
+  /* The card casting a shadow onto the revealed footer was tuned for a
+     dark card. On paper a soft shadow reads as a drop shadow on a web
+     page, which is the one thing none of the references do. */
+  box-shadow: none;
 }
+
+/* The shared row: label in columns 1–3, content in 4–12. */
+.d3-row {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+}
+.d3-label {
+  grid-column: 1 / span 3;
+  margin: 0;
+  /* Sits on the first line of the content beside it. */
+  padding-top: 0.2em;
+}
+.d3-body { grid-column: 4 / -1; min-width: 0; }
+
+.d3-section { margin-top: clamp(96px, 10vw, 180px); }
+.d3-section--first { margin-top: clamp(40px, 4.5vw, 80px); }
 
 /* ─────────────────────────────────────────────────────────────
    MASTHEAD
-
-   No hero image and no open-out. The first screen is a statement of
-   what the practice does, the facts that qualify it, and the index.
-   The portrait is an inset at the size a passport photo is printed,
-   because on this page it is a credential, not a feature.
    ───────────────────────────────────────────────────────────── */
-/* index.css zeroes .page-home's padding-top so the old hero could own the
-   first screen. There is no hero here, so the masthead was starting
-   underneath the fixed header. Put the page padding back. */
-.page-doc {
-  position: relative;
-  padding-top: calc(var(--header-height) + var(--pad-page-top) + var(--gap-nav-heading));
-}
-
-.doc-mast { position: relative; padding-bottom: clamp(28px, 3vw, 56px); }
-
-.doc-statement {
-  font-size: clamp(38px, 7.4vw, 142px);
+.d3-statement {
   margin: 0;
-  max-width: 15ch;
-  /* A sentence, not a mark. Display Black at -0.042em closes the word
-     gaps until "Product design, art" reads as one word; the tracking
-     backs off and the word space is put back explicitly. */
-  letter-spacing: -0.028em;
-  word-spacing: 0.06em;
-  line-height: 0.92;
-}
-.doc-statement .dim {
-  font-family: 'Neue Haas Grotesk Text', sans-serif;
-  font-weight: 400;
-  color: var(--text-muted);
-  letter-spacing: -0.03em;
+  max-width: 19ch;
 }
 
-.doc-portrait {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: clamp(96px, 11vw, 210px);
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  background: #d8d8d6;
-  filter: grayscale(1) contrast(1.08);
-  border: 1px solid var(--rule-hard);
-}
-.doc-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.doc-lede {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--grid-gutter);
-  margin-top: clamp(28px, 3.4vw, 64px);
-  padding-top: clamp(14px, 1.2vw, 22px);
-  border-top: 1px solid var(--rule-hard);
+.d3-mast-sub {
+  margin-top: clamp(28px, 3vw, 56px);
   align-items: start;
 }
-.doc-lede-label { grid-column: 1 / span 2; color: var(--text-muted); }
-.doc-lede-body {
-  grid-column: 3 / span 6;
-  font-size: clamp(15px, 1.15vw, 22px);
-  line-height: 1.45;
-  letter-spacing: -0.015em;
+.d3-lede {
+  grid-column: 4 / span 5;
   margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 34em;
 }
-.doc-facts {
-  grid-column: 10 / span 3;
-  display: grid;
-  gap: 0;
-  align-self: start;
-}
-.doc-fact {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--rule-faint);
+.d3-meta {
+  grid-column: 10 / -1;
+  margin: 0;
+  font-size: var(--t-meta);
+  line-height: 1.6;
   color: var(--text-muted);
 }
-.doc-fact b { color: var(--text-color); font-weight: 400; }
+.d3-meta a {
+  color: var(--text-color);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--hairline);
+  transition: text-decoration-color var(--dur-hover) var(--ease-out);
+}
+.d3-meta a:hover { text-decoration-color: currentColor; }
 
 /* ─────────────────────────────────────────────────────────────
-   THE INDEX
+   WORK
 
-   A table, laid out on the same twelve columns the rules draw, so the
-   data snaps to the visible grid rather than floating over it.
+   Pictures with captions under them. The image is the case study's
+   cover at full content width; the caption is the brand in ink and the
+   one-line description in grey, set as one sentence, with category and
+   year on the right. Same pattern as a plate in a monograph.
    ───────────────────────────────────────────────────────────── */
-.index-section { position: relative; margin-top: clamp(40px, 5vw, 96px); }
-
-.index-head,
-.index-row {
-  display: grid;
-  grid-template-columns:
-    minmax(48px, 0.6fr)   /* no.        */
-    minmax(0, 3.4fr)      /* client     */
-    minmax(0, 2.6fr)      /* discipline */
-    minmax(0, 2fr)        /* role       */
-    minmax(56px, 0.8fr)   /* year       */
-    28px;                 /* arrow      */
-  gap: var(--grid-gutter);
-  align-items: center;
-}
-
-.index-head {
-  color: var(--text-muted);
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--rule-hard);
-}
-
-.index-row {
-  padding: clamp(12px, 1.15vw, 24px) 0;
-  border-bottom: 1px solid var(--rule-ink);
-  color: var(--text-color);
-  transition: background-color 0.35s var(--ease-custom),
-              color 0.35s var(--ease-custom),
-              padding-left 0.45s var(--ease-out-expo);
-}
-
-.index-brand {
-  font-size: clamp(20px, 2.2vw, 42px);
+.work-list {
+  list-style: none;
   margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(64px, 7vw, 128px);
 }
 
-.index-row .u { color: var(--text-muted); transition: color 0.35s var(--ease-custom); }
-.index-arrow { justify-self: end; color: var(--text-muted); transition: transform 0.45s var(--ease-custom), color 0.35s var(--ease-custom); }
+.work-entry-link { display: block; color: inherit; }
 
-/* The row inverts on hover: ink block, paper type. It is the same
-   gesture the footer and the case-study pages make, so the site has
-   one idea about emphasis rather than three. */
-@media (hover: hover) and (pointer: fine) {
-  .index-row:hover {
-    background: var(--text-color);
-    color: var(--bg-color);
-    padding-left: clamp(10px, 0.8vw, 18px);
-  }
-  .index-row:hover .u,
-  .index-row:hover .index-arrow { color: rgba(236, 236, 234, 0.72); }
-  .index-row:hover .index-arrow { transform: rotate(45deg); }
-}
-.index-row:focus-visible {
-  outline: 2px solid var(--text-color);
-  outline-offset: -2px;
-}
-
-/* Hover preview. Held back until the pointer is on a row, so the first
-   screen stays a document and the images stay a reward. */
-.index-preview {
-  position: fixed;
-  right: var(--grid-margin);
-  bottom: var(--grid-margin);
-  width: clamp(200px, 22vw, 380px);
-  aspect-ratio: 4 / 3;
+.work-entry-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #d8d8d6;
-  border: 1px solid var(--rule-hard);
-  z-index: 40;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.4s var(--ease-custom), transform 0.5s var(--ease-out-expo);
-  pointer-events: none;
-  filter: grayscale(1);
+  background: #E7E7E4;
 }
-.index-preview.is-on { opacity: 1; transform: translateY(0); }
-.index-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-  /* No pointer to hover with, and a preview that appears on tap is just
-     a second thing to dismiss. */
-  .index-preview { display: none; }
+.work-entry-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* On a phone the table stops being a table: six columns at 390px is
-   four unreadable ones. Each project becomes a stacked record. */
-@media (max-width: 768px) {
-  .index-head { display: none; }
-  .index-row {
-    grid-template-columns: 44px 1fr auto;
-    grid-template-areas:
-      "no brand year"
-      "no disc arrow"
-      "no role arrow";
-    gap: 4px 12px;
-    align-items: baseline;
-    padding: 18px 0;
-  }
-  .index-row > :nth-child(1) { grid-area: no; }
-  .index-row > :nth-child(2) { grid-area: brand; margin-bottom: 6px; }
-  .index-row > :nth-child(3) { grid-area: disc; }
-  .index-row > :nth-child(4) { grid-area: role; }
-  .index-row > :nth-child(5) { grid-area: year; justify-self: end; }
-  .index-row > :nth-child(6) { grid-area: arrow; align-self: center; }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   SECTION RULES
-   ───────────────────────────────────────────────────────────── */
-.sec-rule {
-  display: flex;
-  align-items: center;
-  gap: 1.2vw;
-  padding-top: 0.8vw;
-  border-top: 1px solid var(--rule-hard);
-  color: var(--text-muted);
-  margin-bottom: 1.6vw;
-}
-.sec-rule .sec-name { color: var(--text-color); }
-.sec-rule .sec-line { flex: 1; height: 1px; background: var(--rule-ink); }
-.sec-rule a { color: var(--text-muted); transition: color 0.35s var(--ease-custom); }
-.sec-rule a:hover { color: var(--text-color); }
-
-@media (max-width: 768px) {
-  .sec-rule { gap: 12px; padding-top: 12px; margin-bottom: 18px; }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   SPECIALTIES
-
-   Kept, because the playhead is real content and it works. Re-set for
-   paper: the resting state is a genuine grey rather than a near-
-   invisible one, and the active item gets a filled marker instead of
-   a scale, which a table-shaped page has no room for.
-   ───────────────────────────────────────────────────────────── */
-.specialty-item { position: relative; padding-left: 0; }
-
-.specialty-text {
-  font-weight: 900;
-  letter-spacing: -0.042em;
-  color: var(--text-rest);
-}
-.specialty-item.is-active .specialty-text {
-  color: var(--text-color);
-  transform: none;
-}
-
-.specialty-item::before {
+/* Most covers are screenshots of white interfaces, and white on #F4F4F2
+   loses its edge entirely: the picture bleeds into the page. A 6% inset
+   edge defines it without reading as a border. It is a pseudo-element
+   rather than an outline because the image carries a GSAP transform
+   (parallax), which promotes it above anything the wrapper paints. */
+.work-entry-media::after {
   content: '';
   position: absolute;
-  left: 0;
-  top: 50%;
-  width: 0;
-  height: 2px;
-  background: var(--text-color);
-  transform: translateY(-50%);
-  transition: width 0.8s var(--ease-out-expo);
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 16, 0.07);
+  pointer-events: none;
+  z-index: 1;
 }
-.specialty-item.is-active::before { width: clamp(16px, 1.6vw, 34px); }
-.specialty-item.is-active .specialty-text { padding-left: clamp(24px, 2.4vw, 48px); }
-.specialty-text { transition: color 0.7s var(--ease-out-expo), padding-left 0.8s var(--ease-out-expo); }
 
-@media (prefers-reduced-motion: reduce) {
-  .specialty-item::before { display: none; }
-  .specialty-item.is-active .specialty-text { padding-left: 0; }
+.work-entry-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--grid-gutter);
+  margin-top: clamp(14px, 1.2vw, 20px);
+}
+
+.work-entry-title {
+  margin: 0;
+  font-size: var(--t-title);
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+  max-width: 36ch;
+  text-wrap: pretty;
+}
+.work-entry-brand {
+  font-weight: 500;
+  color: var(--text-color);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--dur-hover) var(--ease-out);
+}
+.work-entry-desc { color: var(--text-muted); }
+.work-entry-desc::before { content: ' '; }
+
+.work-entry-meta {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: var(--t-meta);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The whole hover: the name underlines. Nothing moves. */
+.work-entry-link:hover .work-entry-brand,
+.work-entry-link:focus-visible .work-entry-brand {
+  text-decoration-color: currentColor;
+}
+.work-entry-link:focus-visible { outline: none; }
+.work-entry-link:focus-visible .work-entry-media {
+  outline: 2px solid var(--text-color);
+  outline-offset: 4px;
+}
+
+.work-entry--skeleton .work-entry-media { background: rgba(17, 17, 16, 0.05); }
+
+/* ─────────────────────────────────────────────────────────────
+   APPROACH
+   ───────────────────────────────────────────────────────────── */
+.d3-prose {
+  margin: 0;
+  font-size: var(--t-title);
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  max-width: 30em;
+  text-wrap: pretty;
+}
+
+.d3-list {
+  list-style: none;
+  margin: clamp(32px, 3.4vw, 56px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35em var(--grid-gutter);
+  max-width: 40em;
+  font-size: var(--t-body);
+  color: var(--text-muted);
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SURFACES THAT ASSUMED A DARK GROUND
+   OTHER PAGES
 
-   A handful of rules in index.css hardcode a dark placeholder or a
-   white-alpha hairline. Those are the only places the inversion does
-   not carry itself.
+   They inherit the tokens above. What follows is only what the tokens
+   cannot reach: a few rules in index.css that hardcode a size, a
+   transform or a hairline.
    ───────────────────────────────────────────────────────────── */
-.work-img-wrapper,
-.cs-media-frame { background: #d8d8d6; }
+.page-work .work-page-header { margin-bottom: 0; }
 
-.cs-metadata { border-top: 1px solid var(--rule-ink); }
-body.theme-light .cs-metadata { border-top-color: rgba(236, 236, 234, 0.22); }
+/* About */
+.about-stage p { color: var(--text-color); }
+.focus-list { font-size: var(--t-body); color: var(--text-muted); gap: 0.4em 2em; }
+.focus-heading { font-size: var(--t-meta); color: var(--text-muted); letter-spacing: 0; margin-bottom: 1.2em; }
 
-.vault-link-item { border-bottom: 1px solid var(--rule-ink); }
+/* Contact */
+.contact-divider-line { visibility: hidden; margin-top: 2.4vw; margin-bottom: 2.4vw; }
+.contact-link { font-size: var(--t-body); letter-spacing: -0.005em; line-height: 1.5; }
+.contact-col { gap: 0.35em; }
+.contact-col-label { margin-bottom: 0.6em; }
 
-.line-reveal { opacity: 0.28; }
-
-.work-item--skeleton .work-img-wrapper { background: currentColor; opacity: 0.07; }
-
-/* The custom cursor is an ink disc in difference blend, which reads on
-   paper and on the ink case-study pages both. */
-.custom-cursor { background: var(--text-color); }
-
-/* main casts a shadow onto the revealed footer. Tuned for a dark card
-   on a light ground; the card is now light on a dark one. */
-main.app-main {
-  box-shadow: 0 8px 48px rgba(11, 11, 12, 0.12), 0 2px 12px rgba(11, 11, 12, 0.08);
+/* Vault: a list, so the rows keep a divider. It is the one place on the
+   site where a line separates things. */
+.vault-link-item { border-bottom: 1px solid var(--hairline); }
+.vault-link-label {
+  text-transform: none;
+  letter-spacing: -0.015em;
+  color: var(--text-color);
 }
+.vault-link-arrow { color: var(--text-muted); }
+.vault-link:hover .vault-link-label { color: var(--text-muted); }
 
-/* The marquee is the one loud thing on the site and it sits on ink. */
-.footer-marquee-item {
-  font-family: 'Neue Haas Grotesk Display', sans-serif;
-  font-weight: 900;
-  letter-spacing: -0.045em;
-}
+/* Case study. index.css draws the metadata rule at two specificities
+   (plain and under body.theme-light); both go. */
+.cs-metadata,
+body.theme-light .cs-metadata { border-top: 0; }
+.cs-media-frame,
+.work-img-wrapper { background: #E7E7E4; }
+
+.line-reveal { opacity: 0.12; }
 
 /* ─────────────────────────────────────────────────────────────
    MENU
 
-   Paper ground, ink type, and the same alternation as everything else.
+   Same paper as the page, the words at statement size and regular
+   weight. Large type is the one flourish the references allow, and the
+   menu is where it goes.
    ───────────────────────────────────────────────────────────── */
 .menu-overlay { background-color: var(--bg-color); color: var(--text-color); }
-.menu-link { color: var(--text-rest); font-weight: 900; letter-spacing: -0.045em; }
+.menu-nav { gap: 0.1em; }
+.menu-link {
+  font-weight: 400;
+  font-size: clamp(44px, 6.6vw, 124px);
+  letter-spacing: -0.035em;
+  color: var(--text-muted);
+}
 .menu-link .rt-bot { color: var(--text-color); }
-.menu-count { font-family: var(--font-mono); color: var(--text-muted); }
+.menu-count {
+  font-size: var(--t-meta);
+  letter-spacing: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOOTER
+
+   The marquee goes: a 256px black word scrolling forever is the loudest
+   object on the site and it says nothing. What is left is the one thing
+   a footer on a portfolio is for, the email, at title size.
+   ───────────────────────────────────────────────────────────── */
+.footer-marquee { display: none; }
+
+.site-footer { padding-top: 0; }
+
+.footer-bottom-bar {
+  margin-top: 0;
+  padding-top: clamp(72px, 8vw, 144px);
+  padding-bottom: clamp(32px, 3.4vw, 56px);
+  padding-left: var(--grid-margin);
+  padding-right: var(--grid-margin);
+  align-items: flex-end;
+}
+
+.footer-copyright { opacity: 0.6; }
+.footer-col-label { color: inherit; opacity: 0.6; margin-bottom: 0.4em; }
+
+.footer-cta-email {
+  font-size: var(--t-statement);
+  letter-spacing: -0.032em;
+  line-height: 1;
+}
+
+.footer-col-link,
+.footer-social-link,
+.footer-cta-email { opacity: 1; }
+.footer-col-link:hover,
+.footer-social-link:hover,
+.footer-cta-email:hover { opacity: 0.55; }
+
+/* The splash counter keeps its job, loses the Black weight. */
+.splash-screen { background-color: var(--bg-color); color: var(--text-color); }
+.splash-counter { font-weight: 400; letter-spacing: -0.04em; }
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --t-meta: 13px;
+    --t-title: 19px;
+    --t-statement: 34px;
+  }
+
+  .d3-row { display: block; }
+  .d3-label { padding-top: 0; margin-bottom: 20px; }
+  .d3-mast-sub > * + * { margin-top: 20px; }
+
+  .d3-section { margin-top: 88px; }
+  .d3-section--first { margin-top: 40px; }
+
+  .work-list { gap: 56px; }
+  .work-entry-media { aspect-ratio: 4 / 3; }
+  .work-entry-caption { flex-direction: column; gap: 6px; margin-top: 12px; }
+
+  .d3-list { grid-template-columns: 1fr 1fr; }
+
+  .footer-cta-email { font-size: 28px; }
+}

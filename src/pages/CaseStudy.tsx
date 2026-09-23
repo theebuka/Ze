@@ -131,15 +131,15 @@ export const CaseStudy: React.FC = () => {
 
         <div className="cs-metadata grid-12-col">
           <div className="col-2">
-            <span className="meta-label" data-reveal="text">TIMELINE</span>
+            <span className="meta-label" data-reveal="text">Timeline</span>
             <span className="meta-value" data-reveal="text">{project.timeline}</span>
           </div>
           <div className="col-3">
-            <span className="meta-label" data-reveal="text">ROLE</span>
+            <span className="meta-label" data-reveal="text">Role</span>
             <span className="meta-value" data-reveal="text">{project.role}</span>
           </div>
           <div className="col-2">
-            <span className="meta-label" data-reveal="text">STACK</span>
+            <span className="meta-label" data-reveal="text">Stack</span>
             <ul className="meta-stack-list">
               {project.stack?.map((item) => (
                 <li key={item} className="meta-value" data-reveal="text">
@@ -149,7 +149,7 @@ export const CaseStudy: React.FC = () => {
             </ul>
           </div>
           <div className="col-5">
-            <span className="meta-label" data-reveal="text">SUMMARY</span>
+            <span className="meta-label" data-reveal="text">Summary</span>
             <p className="meta-value" data-reveal="text">{project.summary}</p>
           </div>
         </div>
