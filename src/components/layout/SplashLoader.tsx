@@ -23,9 +23,12 @@ interface Props {
  * cubic-bezier easing.
  */
 
-const COUNT_DURATION = 4; // seconds — the whole point: deterministic, not load-dependent
-const HOLD_BEFORE_EXIT = 0.4;
-const EXIT_DURATION = 1.4;
+// Deterministic, not load-dependent. 4s + 0.4 + 1.4 was close to six seconds
+// before anyone saw the site, on every cold load, and at 4s the counter was
+// long enough to be watched rather than glanced at.
+const COUNT_DURATION = 2.4;
+const HOLD_BEFORE_EXIT = 0.3;
+const EXIT_DURATION = 1.0;
 const EASE_CUSTOM = 'cubic-bezier(0.76, 0, 0.24, 1)';
 
 /**

@@ -3,14 +3,16 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { client } from '../../lib/sanity';
 import { RollingText } from '../common/RollingText';
+import { MOTION } from '../../lib/gsap';
 
 interface MenuOverlayProps {
   isOpen: boolean;
   closeMenu: () => void;
 }
 
-/** Seconds the panel takes to slide in, and back out. */
-export const MENU_PANEL_DURATION = 1.4;
+/** Seconds the panel takes to slide in, and back out. Was 1.4: long enough
+ *  that a visitor who opened the menu to leave was kept waiting to do it. */
+export const MENU_PANEL_DURATION = MOTION.panelDuration;
 
 /**
  * How long after the menu closes before a newly-mounted page is allowed to
@@ -93,14 +95,16 @@ export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) =
                     // the bottom up, so it reads as the inverse of the
                     // entrance rather than a replay of it.
                     transition: {
-                      delay: (links.length - 1 - i) * 0.045,
-                      duration: 0.45,
+                      delay: (links.length - 1 - i) * 0.04,
+                      duration: 0.35,
                       ease: expoIn,
                     },
                   }}
+                  // The lead-in scales with the panel: the words start once
+                  // it has covered roughly 30% of the screen, same as before.
                   transition={{
-                    delay: 0.42 + i * 0.085,
-                    duration: 1.15,
+                    delay: MENU_PANEL_DURATION * 0.3 + i * 0.06,
+                    duration: 0.9,
                     ease: expoOut,
                   }}
                 >

@@ -3,14 +3,14 @@ import { Link, useLocation } from 'react-router-dom';
 import { RollingText } from '../common/RollingText';
 import { useReveal } from '../../hooks/useReveal';
 import { useAppReady } from '../../context/AppReadyContext';
+import { scrollToTop } from '../../hooks/useSmoothScroll';
 
 /*
   FOOTER
 
   Nav links use RollingText for the rollover animation.
-  onClick scrolls to the top — RouteTransitions in App.tsx also fires
-  window.scrollTo(0,0) on pathname change, but this ensures it fires
-  even if the user re-clicks the active page link.
+  onClick scrolls to the top. RouteEffects in App.tsx already does this on a
+  pathname change; this covers re-clicking the page you're on.
 
   Color inversion: interactions.css drives bg/color via body.theme-light.
   Hover states: dim on light bg, brighten on dark bg — handled by CSS.
@@ -55,7 +55,11 @@ const SOCIAL_LINKS = [
   { href: 'https://linkedin.com/in/chukwuebuka-nwaju',    aria: 'LinkedIn',    abbr: 'LI' },
 ];
 
-const scrollTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
+// Only matters when the link is the page you're already on: a real route
+// change resets scroll in RouteEffects. Goes through Lenis for the same reason
+// RouteEffects does — window.scrollTo sets the native position and Lenis,
+// which still holds the old target, animates straight back to it.
+const scrollTop = () => scrollToTop();
 
 /**
  * Fraction of the footer that must be uncovered before its reveal fires.

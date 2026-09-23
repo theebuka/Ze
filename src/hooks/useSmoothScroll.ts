@@ -30,7 +30,11 @@ export const useSmoothScroll = () => {
     }
 
     const lenis = new Lenis({
-      lerp: 0.1,
+      // 0.1 left a long float after the wheel stopped, and every scrub then
+      // added its own catch-up on top (see MOTION.scrub). 0.12 settles about
+      // a fifth sooner: still smoothed, no longer drifting.
+      lerp: 0.12,
+      wheelMultiplier: 1,
       smoothWheel: true,
       syncTouch: false,
       autoRaf: false,

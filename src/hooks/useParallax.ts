@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { gsap, useGSAP } from '../lib/gsap';
+import { gsap, useGSAP, MOTION } from '../lib/gsap';
 
 /**
  * useParallax — scoped replacement for useImageParallax.
@@ -41,24 +41,26 @@ export function useParallax(
           //                    percentage height has nothing to resolve
           //                    against and would collapse to 0.
           //
-          // 1.16 against ±7% of travel: 8% of overhang per edge covers 7%.
+          // 1.12 against ±5% of travel: 6% of overhang per edge covers 5%.
+          // ±7% was enough drift that the picture visibly swam in its frame;
+          // at 5 it reads as depth rather than as movement.
           if (wrapper.dataset.parallax === 'cover') {
-            gsap.set(img, { scale: 1.16, transformOrigin: 'center center' });
+            gsap.set(img, { scale: 1.12, transformOrigin: 'center center' });
           }
 
           gsap.fromTo(
             img,
-            { yPercent: -7 },
+            { yPercent: -5 },
             {
-              yPercent: 7,
+              yPercent: 5,
               ease: 'none',
               scrollTrigger: {
                 trigger: wrapper,
                 start: 'top bottom',
                 end: 'bottom top',
-                // 1.5 was heavy enough to visibly trail the scroll on a slow
-                // connection. 0.6 keeps the weight without the lag.
-                scrub: 0.6,
+                // Shared with every other scrub so nothing on screen trails
+                // the page by a different amount.
+                scrub: MOTION.scrub,
                 invalidateOnRefresh: true,
               },
             }

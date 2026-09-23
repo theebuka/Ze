@@ -28,29 +28,35 @@ export { gsap, ScrollTrigger, SplitText, useGSAP };
 /**
  * The site's motion vocabulary — one definition, every hook.
  *
- * `expo.out` is the "premium" curve: it covers most of the distance in the
- * first third and then glides, which is what makes a long duration read as
- * composed rather than slow. A long `power2.out` at the same duration just
- * feels laggy, because the eye reads the tail, not the head.
+ * `expo.out` covers most of its distance in the first third and then glides.
+ * That glide is what reads as composed, but it is also where the time goes:
+ * at 1.5s (text) and 1.9s (images) the tail ran long enough that you could
+ * scroll a full screen further and still catch blocks settling behind you.
+ * These are cut to the point where the arrival still reads as a glide and
+ * finishes while the block is still where you're looking.
  *
- * Durations are deliberately past the 0.8–1s reflex most UI work sits at.
- * Nothing here is a response to a click; it is all scroll-authored, so the
- * viewer is never waiting on it.
+ * `scrub` is the ONE catch-up value for every scroll-linked tween. Lenis is
+ * already smoothing the scroll, so every scrub is a second layer of lag on
+ * top of it — and the parallax (0.6) and the hero and word-fill (0.8) used
+ * to trail by different amounts, so elements on the same screen drifted
+ * apart from each other as well as from the page.
  *
- * CSS counterpart: --ease-out-expo in index.css. Keep the two in sync.
+ * CSS counterparts: --ease-out-expo and the --dur-* tiers in index.css.
  */
 export const MOTION = {
   /** Entrances: reveals, fades, anything arriving. */
   ease: 'expo.out',
   /** Scrubbed A→B moves where both ends need to feel weighted. */
   easeInOut: 'power3.inOut',
-  textDuration: 1.5,
-  imageDuration: 1.9,
-  lineDuration: 1.4,
+  textDuration: 1.1,
+  imageDuration: 1.3,
+  lineDuration: 1.0,
   /** Between lines of the same block. */
-  stagger: 0.11,
-  /** Scrub smoothing, in seconds of catch-up. */
-  scrub: 0.8,
+  stagger: 0.07,
+  /** Scrub catch-up, in seconds, for every scroll-linked tween. */
+  scrub: 0.5,
+  /** Panels that cover the page: menu, splash exit. */
+  panelDuration: 1.0,
 } as const;
 
 /** True when the device has no fine pointer (phones, tablets). */
