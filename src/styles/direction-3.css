@@ -35,18 +35,19 @@
    ============================================================ */
 
 :root {
-  /* A neutral just off white. Not cream: no yellow in it. */
-  --bg-color: #F4F4F2;
+  /* Near white, in the range the references sit in (Kowalski #FDFDFC,
+     Krehel #FCFCFC). #F4F4F2 read as grey paper next to them. */
+  --bg-color: #FCFCFB;
   /* Ink with the faintest warmth so it sits on the paper rather than
      punching through it. */
   --text-color: #111110;
-  /* The only other text tone. 5.0:1 on the paper. */
+  /* The only other text tone. 4.9:1 on the paper. */
   --text-muted: #6F6F6B;
   --text-primary: var(--text-color);
   --text-rest: var(--text-muted);
 
   --light-bg: #111110;
-  --light-text: #F4F4F2;
+  --light-text: #FCFCFB;
 
   --hairline: rgba(17, 17, 16, 0.12);
 
@@ -305,7 +306,7 @@ main.app-main {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #E7E7E4;
+  background: #EFEFED;
 }
 .work-entry-media img {
   width: 100%;
@@ -314,7 +315,7 @@ main.app-main {
   display: block;
 }
 
-/* Most covers are screenshots of white interfaces, and white on #F4F4F2
+/* Most covers are screenshots of white interfaces, and white on #FCFCFB
    loses its edge entirely: the picture bleeds into the page. A 6% inset
    edge defines it without reading as a border. It is a pseudo-element
    rather than an outline because the image carries a GSAP transform
@@ -438,7 +439,7 @@ main.app-main {
 .cs-metadata,
 body.theme-light .cs-metadata { border-top: 0; }
 .cs-media-frame,
-.work-img-wrapper { background: #E7E7E4; }
+.work-img-wrapper { background: #EFEFED; }
 
 .line-reveal { opacity: 0.12; }
 
