@@ -272,7 +272,7 @@
   height: 1px;
   background: rgba(255, 255, 255, 0.18);
 }
-.sec-rule a { color: var(--text-muted); transition: color 0.4s var(--ease-custom); }
+.sec-rule a { color: var(--text-muted); transition: color var(--dur-hover) var(--ease-out); }
 .sec-rule a:hover { color: var(--text-color); }
 
 /* ─────────────────────────────────────────────────────────────
@@ -346,7 +346,7 @@
 .work-img-wrapper { position: relative; }
 .work-item .parallax-img,
 .work-item .work-img-wrapper img {
-  transition: transform 0.9s var(--ease-out-expo), filter 0.6s var(--ease-custom);
+  transition: transform var(--dur-move) var(--ease-out-expo), filter var(--dur-move) var(--ease-out);
 }
 .work-item:hover .work-img-wrapper img { transform: scale(1.035); }
 .work-item:hover .work-img-wrapper { opacity: 1; }
@@ -378,7 +378,8 @@
   background: var(--text-color);
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 1s var(--ease-out-expo);
+  /* Follows the playhead, so it has to keep up with the scroll. */
+  transition: transform 0.6s var(--ease-out-expo);
 }
 .specialty-item.is-active::after { transform: scaleX(1); }
 
