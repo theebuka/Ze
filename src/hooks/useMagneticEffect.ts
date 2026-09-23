@@ -7,7 +7,7 @@ import gsap from 'gsap';
  * Attaches a magnetic pull to the referenced element. When the cursor
  * enters a `radius`-px field around the element's center, the element
  * drifts toward the cursor proportional to `strength`. On cursor exit,
- * it snaps back with elastic spring physics.
+ * it eases back to rest.
  *
  * Automatically disabled on touch/coarse-pointer devices — no JS overhead
  * on mobile.
@@ -31,12 +31,14 @@ export const useMagneticEffect = (
     // quickTo gives us a pre-compiled, low-overhead animation function
     // that fires on every mousemove without creating a new tween each time.
     const xTo = gsap.quickTo(el, 'x', {
-      duration: 0.6,
-      ease: 'elastic.out(1, 0.4)',
+      duration: 0.5,
+      // Was elastic.out: the only overshoot on a site where everything
+      // else settles. power3 follows the pointer without the wobble.
+      ease: 'power3.out',
     });
     const yTo = gsap.quickTo(el, 'y', {
-      duration: 0.6,
-      ease: 'elastic.out(1, 0.4)',
+      duration: 0.5,
+      ease: 'power3.out',
     });
 
     const handleMouseMove = (e: MouseEvent) => {

@@ -134,7 +134,8 @@ html.js [data-reveal='line'] {
 
 @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
   .parallax-img {
-    height: 115%;
+    /* ±5% travel (useParallax) needs 10% of extra height. */
+    height: 110%;
   }
 }
 
@@ -179,7 +180,7 @@ html.js [data-reveal='line'] {
 .custom-cursor .cursor-fallback-label,
 .custom-cursor .cursor-media-wrapper {
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-hover) var(--ease-out);
 }
 
 .custom-cursor.cursor-view-project .cursor-fallback-label {

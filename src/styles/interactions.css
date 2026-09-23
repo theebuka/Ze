@@ -96,7 +96,7 @@
     z-index: 1;
     background-color: var(--bg-color);
     color: var(--text-color);
-    transition: background-color 0.4s ease, color 0.4s ease;
+    transition: background-color var(--dur-theme) var(--ease-out), color var(--dur-theme) var(--ease-out);
     /* Shadow casts downward onto the revealed footer, making main feel like
        a physical card peeling away from a surface underneath it. */
     box-shadow: 0 8px 48px rgba(0, 0, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.1);
@@ -119,7 +119,7 @@
     /* Default (dark pages): footer is light — inverted */
     background-color: var(--light-bg);
     color: var(--light-text);
-    transition: background-color 0.4s ease, color 0.4s ease;
+    transition: background-color var(--dur-theme) var(--ease-out), color var(--dur-theme) var(--ease-out);
   }
   
   /* Case study pages (light theme): footer flips to dark — still inverted */

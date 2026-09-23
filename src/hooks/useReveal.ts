@@ -291,9 +291,22 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
             const inner = Array.from(el.children) as HTMLElement[];
             if (!inner.length) return;
 
-            gsap.set(inner, { yPercent: 110 });
+            // Clear first, then set both axes. Unlike text reveals, a rise
+            // target is never replaced — the footer's links are the same DOM
+            // nodes for the life of the app, and the footer re-runs this on
+            // every route change. On that re-run GSAP re-read the transform
+            // while the previous hidden state was still applied, got it back
+            // as a pixel matrix, and cached it as `y: 16.5px` alongside the
+            // fresh `yPercent: 110`. The tween then took yPercent to 0 and
+            // left the pixel offset behind: every footer link finished one
+            // line-height below its mask, i.e. invisible, after the first
+            // navigation. Clearing drops the stale cache; setting y: 0
+            // explicitly means there is nothing left for it to rebuild from.
+            gsap.set(inner, { clearProps: 'transform' });
+            gsap.set(inner, { y: 0, yPercent: 110 });
             gsap.set(el, { autoAlpha: 1 });
             gsap.to(inner, {
+              y: 0,
               yPercent: 0,
               duration: MOTION.textDuration,
               ease: MOTION.ease,
@@ -316,6 +329,10 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
               ? { clipPath: 'inset(0% 0% 0% 0%)', autoAlpha: 1 }
               : { y: 0, autoAlpha: 1 };
 
+            // Same stale-transform hazard as RISE: image wrappers survive a
+            // dep-change re-run (Home re-runs when its fetch lands), and the
+            // mobile branch animates `y`.
+            gsap.set(el, { clearProps: 'transform,clipPath' });
             gsap.set(el, from);
             gsap.to(el, {
               ...to,
