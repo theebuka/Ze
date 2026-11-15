@@ -2,89 +2,73 @@ import React from 'react';
 import { useReveal } from '../hooks/useReveal';
 import { useAppReady } from '../context/AppReadyContext';
 
-/*
-  CONTACT PAGE
+const GROUPS = [
+  {
+    label: 'Email',
+    links: [{ href: 'mailto:me@theebuka.com', label: 'me@theebuka.com' }],
+  },
+  {
+    label: 'Socials',
+    links: [
+      { href: 'https://instagram.com/rin.ze', label: 'Instagram' },
+      { href: 'https://x.com/ebxkaa', label: 'X' },
+      { href: 'https://linkedin.com/in/chukwuebuka-nwaju', label: 'LinkedIn' },
+    ],
+  },
+  {
+    label: 'Elsewhere',
+    links: [
+      { href: 'https://theebuka.substack.com', label: 'Substack' },
+      { href: 'https://medium.com/@ebxka', label: 'Medium' },
+      { href: 'https://behance.net/theebuka', label: 'Behance' },
+      { href: 'https://dribbble.com/ebukaa', label: 'Dribbble' },
+      { href: 'https://are.na/chukwuebuka-nwaju', label: 'Are.na' },
+    ],
+  },
+];
 
-  .contact-divider-line is a .line-reveal element replacing the <hr>.
-  useReveal (data-reveal="line") animates it left-to-right on scroll.
-*/
-
+/** Same layout as every other page: a statement, then label/content rows. */
 export const Contact: React.FC = () => {
   const splashDone = useAppReady();
-  // Contact can be the entry route on a fresh load/refresh, mounting
-  // underneath the splash overlay same as Home — same gate, same reason.
   const scope = useReveal<HTMLDivElement>({ deps: [], enabled: splashDone });
 
   return (
-    <div className="page-wrapper page-contact" ref={scope}>
-      <div className="contact-top">
-
-        {/* Left col: heading (sticky on desktop) */}
-        <div>
-          <h1 className="contact-heading" data-reveal="text">
-            Let's <span className="contact-muted">talk.</span>
-          </h1>
-        </div>
-
-        {/* Right col: intro + line + 3-col links */}
-        <div>
-          <p className="contact-intro" data-reveal="text">
-            Have a project in mind, a collaboration opportunity, or just want to
-            say hello? I'd love to hear from you. Whether it's a quick question
-            or the start of something bigger, I'm always open to good
-            conversations. Ready when you are.
+    <div className="page-wrapper page-contact page-doc" ref={scope}>
+      <header className="d3-mast">
+        <h1 className="d3-statement" data-reveal="text">
+          Let&rsquo;s <span className="text-muted">talk.</span>
+        </h1>
+        <div className="d3-row d3-mast-sub">
+          <p className="d3-lede" data-reveal="text" data-reveal-delay="0.1">
+            Have a project in mind, a role to fill, or a question? Email is the
+            fastest way to reach me. I usually reply within a day or two.
           </p>
-
-          {/* Animated divider — replaces <hr> */}
-          <span
-            className="line-reveal contact-divider-line"
-            data-reveal="line"
-            aria-hidden="true"
-          />
-
-          <div className="contact-cols">
-
-            {/* SOCIALS */}
-            <div className="contact-col">
-              <span className="contact-col-label">Socials</span>
-              {[
-                { href: 'https://instagram.com/rin.ze', label: 'Instagram' },
-                { href: 'https://x.com/ebxkaa',         label: 'X (Twitter)' },
-                { href: 'https://linkedin.com/in/chukwuebuka-nwaju', label: 'LinkedIn' },
-              ].map(({ href, label }) => (
-                <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link" data-reveal="text">
-                  {label}
-                </a>
-              ))}
-            </div>
-
-            {/* CRAFT */}
-            <div className="contact-col">
-              <span className="contact-col-label">Craft</span>
-              {[
-                { href: 'https://theebuka.substack.com',   label: 'Substack' },
-                { href: 'https://medium.com/@ebxka',    label: 'Medium'   },
-                { href: 'https://behance.net/theebuka',    label: 'Behance'  },
-                { href: 'https://dribbble.com/ebukaa',   label: 'Dribbble' },
-                { href: 'https://are.na/chukwuebuka-nwaju',         label: 'Are.na'   },
-              ].map(({ href, label }) => (
-                <a key={label} href={href} target="_blank" rel="noreferrer" className="contact-link" data-reveal="text">
-                  {label}
-                </a>
-              ))}
-            </div>
-
-            {/* EMAIL */}
-            <div className="contact-col">
-              <span className="contact-col-label">Email</span>
-              <a href="mailto:me@theebuka.com" className="contact-link" data-reveal="text">
-                me@theebuka.com
-              </a>
-            </div>
-
-          </div>
         </div>
-      </div>
+      </header>
+
+      {GROUPS.map((group, i) => (
+        <section
+          className={`d3-row d3-section${i === 0 ? '' : ' d3-section--tight'}`}
+          key={group.label}
+        >
+          <h2 className="d3-label">{group.label}</h2>
+          <ul className="d3-body d3-links">
+            {group.links.map(({ href, label }) => {
+              const external = !href.startsWith('mailto:');
+              return (
+                <li key={label}>
+                  <a
+                    href={href}
+                    {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  >
+                    {label}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 };

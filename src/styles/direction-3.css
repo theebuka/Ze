@@ -50,6 +50,11 @@
   --light-text: #FCFCFB;
 
   --hairline: rgba(17, 17, 16, 0.12);
+  /* Image placeholder, and the inset edge that defines a white screenshot
+     against the page. Tokens so the dark theme can redefine them. */
+  --surface: #EFEFED;
+  --edge: rgba(17, 17, 16, 0.07);
+  color-scheme: light;
 
   /* Wider page margin. 20px at 1440 put the type almost against the
      viewport edge; every site measured sits further in. */
@@ -81,6 +86,44 @@
   --font-footer-label: var(--t-meta);
   --font-cs-sub: var(--t-meta);
   --font-vault-label: var(--t-title);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK THEME
+
+   Token-level only. With no saved choice the OS setting decides; the
+   header toggle stamps data-theme on <html> and wins in both directions
+   (see useTheme and the inline script in index.html).
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg-color: #111110;
+    --text-color: #EDEDEA;
+    /* 6.4:1 on the dark ground. */
+    --text-muted: #8F8F8A;
+    /* The footer stays the "other" surface: one step up from the page, not a
+       white slab at the bottom of a dark one. */
+    --light-bg: #1A1A19;
+    --light-text: #EDEDEA;
+    --hairline: rgba(237, 237, 234, 0.14);
+    --surface: #1C1C1B;
+    --edge: rgba(237, 237, 234, 0.10);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg-color: #111110;
+  --text-color: #EDEDEA;
+  /* 6.4:1 on the dark ground. */
+  --text-muted: #8F8F8A;
+  /* The footer stays the "other" surface: one step up from the page, not a
+     white slab at the bottom of a dark one. */
+  --light-bg: #1A1A19;
+  --light-text: #EDEDEA;
+  --hairline: rgba(237, 237, 234, 0.14);
+  --surface: #1C1C1B;
+  --edge: rgba(237, 237, 234, 0.10);
+  color-scheme: dark;
 }
 
 ::selection { background: var(--text-color); color: var(--bg-color); }
@@ -306,7 +349,7 @@ main.app-main {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #EFEFED;
+  background: var(--surface);
 }
 .work-entry-media img {
   width: 100%;
@@ -324,7 +367,7 @@ main.app-main {
   content: '';
   position: absolute;
   inset: 0;
-  box-shadow: inset 0 0 0 1px rgba(17, 17, 16, 0.07);
+  box-shadow: inset 0 0 0 1px var(--edge);
   pointer-events: none;
   z-index: 1;
 }
@@ -377,7 +420,7 @@ main.app-main {
   outline-offset: 4px;
 }
 
-.work-entry--skeleton .work-entry-media { background: rgba(17, 17, 16, 0.05); }
+.work-entry--skeleton .work-entry-media { background: var(--surface); }
 
 /* ─────────────────────────────────────────────────────────────
    APPROACH
@@ -412,34 +455,12 @@ main.app-main {
    ───────────────────────────────────────────────────────────── */
 .page-work .work-page-header { margin-bottom: 0; }
 
-/* About */
-.about-stage p { color: var(--text-color); }
-.focus-list { font-size: var(--t-body); color: var(--text-muted); gap: 0.4em 2em; }
-.focus-heading { font-size: var(--t-meta); color: var(--text-muted); letter-spacing: 0; margin-bottom: 1.2em; }
-
-/* Contact */
-.contact-divider-line { visibility: hidden; margin-top: 2.4vw; margin-bottom: 2.4vw; }
-.contact-link { font-size: var(--t-body); letter-spacing: -0.005em; line-height: 1.5; }
-.contact-col { gap: 0.35em; }
-.contact-col-label { margin-bottom: 0.6em; }
-
-/* Vault: a list, so the rows keep a divider. It is the one place on the
-   site where a line separates things. */
-.vault-link-item { border-bottom: 1px solid var(--hairline); }
-.vault-link-label {
-  text-transform: none;
-  letter-spacing: -0.015em;
-  color: var(--text-color);
-}
-.vault-link-arrow { color: var(--text-muted); }
-.vault-link:hover .vault-link-label { color: var(--text-muted); }
-
 /* Case study. index.css draws the metadata rule at two specificities
    (plain and under body.theme-light); both go. */
 .cs-metadata,
 body.theme-light .cs-metadata { border-top: 0; }
 .cs-media-frame,
-.work-img-wrapper { background: #EFEFED; }
+.work-img-wrapper { background: var(--surface); }
 
 .line-reveal { opacity: 0.12; }
 
@@ -530,4 +551,126 @@ body.theme-light .cs-metadata { border-top: 0; }
   .d3-list { grid-template-columns: 1fr 1fr; }
 
   .footer-cta-email { font-size: 28px; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HEADER ACTIONS
+   ───────────────────────────────────────────────────────────── */
+.header-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 1.6vw, 28px);
+}
+.header-theme-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--text-muted);
+  transition: color var(--dur-hover) var(--ease-out);
+}
+.header-theme-toggle:hover { color: var(--text-color); }
+
+/* ─────────────────────────────────────────────────────────────
+   SHARED PAGE PIECES (About, Contact, Vault, case study)
+   ───────────────────────────────────────────────────────────── */
+.d3-section--tight { margin-top: clamp(40px, 4.5vw, 80px); }
+
+/* Running copy inside a row. */
+.d3-copy { max-width: 38em; }
+.d3-copy p {
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+.d3-copy p + p { margin-top: 1.1em; }
+
+/* A list of links at title size. */
+.d3-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--t-title);
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+}
+.d3-links a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--dur-hover) var(--ease-out);
+}
+.d3-links a:hover,
+.d3-links a:focus-visible { text-decoration-color: currentColor; }
+.d3-links--static { color: var(--text-muted); }
+
+/* About */
+.about-statement { max-width: 26ch; }
+.about-media { overflow: hidden; background: var(--surface); }
+.about-media img { width: 100%; height: auto; display: block; }
+.about-experience {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 38em;
+  font-size: var(--t-body);
+  line-height: 1.6;
+}
+.about-experience li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--grid-gutter);
+  font-variant-numeric: tabular-nums;
+}
+.about-focus-list { margin-top: 0; }
+
+/* ─────────────────────────────────────────────────────────────
+   CASE STUDY
+   ───────────────────────────────────────────────────────────── */
+.case-study-page {
+  padding-top: calc(var(--header-height) + clamp(56px, 7vw, 128px));
+}
+.cs-head { margin-bottom: clamp(64px, 7vw, 128px); }
+.cs-head-title { max-width: 22ch; }
+.cs-head-title > span { display: block; }
+
+.cs-facts {
+  grid-column: 10 / -1;
+  margin: 0;
+  display: grid;
+  gap: 0.9em;
+  font-size: var(--t-meta);
+  line-height: 1.5;
+}
+.cs-facts dt { color: var(--text-muted); }
+.cs-facts dd { margin: 0; }
+
+/* Captions sit close under their image, in the label style. */
+.cs-caption { display: block; margin-top: 12px; max-width: 60ch; }
+
+.cs-next { margin-top: clamp(96px, 10vw, 180px); }
+.cs-next-link {
+  font-size: var(--t-statement);
+  letter-spacing: -0.032em;
+  line-height: 1.04;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.cs-next-desc { color: var(--text-muted); }
+.cs-next-arrow {
+  display: inline-block;
+  color: var(--text-muted);
+  transition: transform var(--dur-move) var(--ease-out-expo), color var(--dur-hover) var(--ease-out);
+}
+.cs-next-link:hover .cs-next-arrow { transform: translateX(0.12em); color: var(--text-color); }
+
+@media (max-width: 768px) {
+  .cs-facts { margin-top: 24px; }
+  .d3-section--tight { margin-top: 40px; }
+  .about-experience li { flex-direction: column; gap: 0; margin-bottom: 0.8em; }
+  .header-actions { gap: 16px; }
 }

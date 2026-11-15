@@ -6,7 +6,6 @@ import { CustomCursor } from './components/common/CustomCursor';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSmoothScroll, setScrollLocked, scrollToTop } from './hooks/useSmoothScroll';
 import { useScrollTriggerRefresh } from './hooks/useReveal';
-import { SplashLoader } from './components/layout/SplashLoader';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -89,7 +88,10 @@ const RouteFallback: React.FC = () => (
 
 const AppContent: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // There is no splash any more: a fixed 3.7s counter before every cold
+  // load was time nobody asked to spend. The flag stays because the reveal
+  // gate and the scroll lock both read it.
+  const [isLoaded] = useState(true);
   const [menuCovering, setMenuCovering] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
@@ -134,8 +136,6 @@ const AppContent: React.FC = () => {
     <AppReadyProvider ready={isLoaded && !menuCovering}>
       <CustomCursor />
       <RouteEffects />
-
-      {!isLoaded && <SplashLoader onComplete={() => setIsLoaded(true)} />}
 
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <MenuOverlay isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />

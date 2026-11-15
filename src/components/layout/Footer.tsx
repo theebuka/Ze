@@ -38,21 +38,21 @@ const MARQUEE_COUNT = 6; // items per set — always exceeds viewport width
 /** Was hardcoded to 2026 in two places. */
 const YEAR = new Date().getFullYear();
 
+// Vault is left out until it has content. The route still exists.
 const NAV_LINKS = [
-  { to: '/',        label: '/Home'    },
-  { to: '/about',   label: '/About'   },
-  { to: '/work',    label: '/Work'    },
-  { to: '/contact', label: '/Contact' },
-  { to: '/vault',   label: '/Vault'   },
+  { to: '/',        label: 'Home'    },
+  { to: '/about',   label: 'About'   },
+  { to: '/work',    label: 'Work'    },
+  { to: '/contact', label: 'Contact' },
 ];
 
 // Kept in step with the Contact page, which is the source of truth for these.
 // The footer used to carry a different, non-existent set (/theebuka on all
 // three), so half the social links on the site 404'd.
 const SOCIAL_LINKS = [
-  { href: 'https://instagram.com/rin.ze',                 aria: 'Instagram',   abbr: 'IG' },
-  { href: 'https://x.com/ebxkaa',                         aria: 'X / Twitter', abbr: 'X'  },
-  { href: 'https://linkedin.com/in/chukwuebuka-nwaju',    aria: 'LinkedIn',    abbr: 'LI' },
+  { href: 'https://instagram.com/rin.ze',                 aria: 'Instagram',   abbr: 'Instagram' },
+  { href: 'https://x.com/ebxkaa',                         aria: 'X / Twitter', abbr: 'X' },
+  { href: 'https://linkedin.com/in/chukwuebuka-nwaju',    aria: 'LinkedIn',    abbr: 'LinkedIn' },
 ];
 
 // Only matters when the link is the page you're already on: a real route

@@ -47,7 +47,7 @@ export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) =
     { title: 'work', path: '/work', count: workCount },
     { title: 'about', path: '/about' },
     { title: 'contact', path: '/contact' },
-    { title: 'vault', path: '/vault' },
+    // Vault is left out until it has content. The route still exists.
   ];
 
   /** Panel curve — matches --ease-custom in index.css. */

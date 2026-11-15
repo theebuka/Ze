@@ -8,7 +8,15 @@
          hides [data-reveal] elements ONLY under this class, so if JS is
          disabled or the bundle fails to load, all content stays visible
          instead of sitting at opacity 0 forever. -->
-    <script>document.documentElement.classList.add('js');</script>
+    <script>
+      document.documentElement.classList.add('js');
+      // A saved theme choice is applied before first paint so the page never
+      // flashes the other one. No saved choice: CSS follows the OS setting.
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
 
     <!-- Saves a full DNS + TLS handshake before the first image or query.
          From Lagos that is worth 200-400ms on the critical path. -->
@@ -38,7 +46,8 @@
       name="description"
       content="Portfolio of Chukwuebuka Arinze Nwaju — product design, art direction and design engineering for FinTech, EdTech and marketplace startups."
     />
-    <meta name="theme-color" content="#FCFCFB" />
+    <meta name="theme-color" content="#FCFCFB" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href="https://theebuka.com/" />
 
     <!-- og-image.jpg was never added to public/, so every share rendered with

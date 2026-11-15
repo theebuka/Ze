@@ -1,102 +1,41 @@
 import React from 'react';
-import { Arrow } from '../components/common/Arrow';
-import { RollingText } from '../components/common/RollingText';
 import { useReveal } from '../hooks/useReveal';
 import { useAppReady } from '../context/AppReadyContext';
 
-/*
-  VAULT PAGE
-
-  .vault-link-item: block-level container — intentionally not collapsed
-  into the <a> so a future hover image preview can be appended as a sibling
-  of .vault-link without any structural refactoring:
-    <div class="vault-link-item">
-      <a class="vault-link">...</a>
-      <div class="vault-link-preview" />   ← future addition
-    </div>
-
-  .line-reveal: animated border element, sits below the <a> inside
-  .vault-link-item. useReveal (data-reveal="line") handles
-  scaleX(0) → scaleX(1) left-to-right on scroll.
-
-  .vault-link-label deliberately does NOT get data-reveal="text": it's
-  rendered by RollingText, which pre-splits the label into two stacked rows
-  of per-character spans for its hover-roll effect. GSAP SplitText's line
-  splitting isn't aware of that convention and risks breaking it.
-
-  Arrow: an inline SVG (components/common/Arrow), not a character — U+2197
-  has an emoji presentation variant and rendered in full colour on a lot of
-  platforms. CSS .vault-link:hover .vault-link-arrow { transform: rotate(45deg) }
-  swings it clockwise 45° from ↗ to →.
-
-  RollingText: the rollover character animation. It manages its own
-  onMouseEnter/Leave internally.
-*/
-
-const VAULT_CATEGORIES = [
-  { id: 'articles',     label: 'Articles'     },
-  { id: 'explorations', label: 'Explorations' },
-  { id: 'resources',    label: 'Resources'    },
-  { id: 'playlists',    label: 'Playlists'    },
-  { id: 'gallery',      label: 'Gallery'      },
-] as const;
+/**
+ * Not linked from the menu or footer until it has content; the route still
+ * resolves for anyone who has the URL. The categories are listed as plain
+ * text, not links, because there is nothing behind them yet.
+ */
+const CATEGORIES = ['Articles', 'Explorations', 'Resources', 'Playlists', 'Gallery'];
 
 export const Vault: React.FC = () => {
   const splashDone = useAppReady();
-  // Vault can be the entry route on a fresh load/refresh, mounting
-  // underneath the splash overlay same as Home — same gate, same reason.
   const scope = useReveal<HTMLDivElement>({ deps: [], enabled: splashDone });
 
   return (
-    <div className="page-wrapper page-vault" ref={scope}>
-      <div className="vault-top">
-
-        {/* Left col: heading (sticky on desktop) */}
-        <div>
-          <h1 className="vault-heading" data-reveal="text">Vault</h1>
-        </div>
-
-        {/* Right col: intro + category links */}
-        <div>
-          <p className="vault-intro" data-reveal="text">
-            A curated collection of experiments, explorations, and in-progress
-            ideas. The Vault is where I test concepts, refine craft, and document
-            iterations that don't always make the main stage — but shape the work
-            behind it. It's also home to a few cool extras, from playlists to
-            recommended resources that inspire and inform my process.
+    <div className="page-wrapper page-vault page-doc" ref={scope}>
+      <header className="d3-mast">
+        <h1 className="d3-statement" data-reveal="text">
+          Vault
+        </h1>
+        <div className="d3-row d3-mast-sub">
+          <p className="d3-lede" data-reveal="text" data-reveal-delay="0.1">
+            Experiments, explorations and in-progress ideas that don&rsquo;t make
+            the main stage, plus a few extras: playlists and the resources I
+            keep going back to.
           </p>
-
-          <nav className="vault-links" aria-label="Vault categories">
-            {VAULT_CATEGORIES.map((cat) => (
-              <div
-                className="vault-link-item"
-                key={cat.id}
-                data-category={cat.id}
-              >
-                <a
-                  href="#"
-                  className="vault-link"
-                  aria-label={cat.label}
-                >
-                  <Arrow className="vault-link-arrow" />
-                  {/*
-                    RollingText wraps the label. It handles mouse events itself.
-                    The .vault-link:hover rule also brightens arrow + label via CSS.
-                  */}
-                  <RollingText text={cat.label} className="vault-link-label" />
-                </a>
-                {/*
-                  .line-reveal replaces the CSS border-bottom.
-                  useReveal animates it left-to-right on scroll reveal.
-                  Future preview image: add <div className="vault-link-preview" /> here.
-                */}
-                <span className="line-reveal" data-reveal="line" aria-hidden="true" />
-              </div>
-            ))}
-          </nav>
         </div>
+      </header>
 
-      </div>
+      <section className="d3-row d3-section">
+        <h2 className="d3-label">Coming soon</h2>
+        <ul className="d3-body d3-links d3-links--static">
+          {CATEGORIES.map((c) => (
+            <li key={c}>{c}</li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 };

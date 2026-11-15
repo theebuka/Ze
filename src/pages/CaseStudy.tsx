@@ -35,12 +35,26 @@ interface ProjectData {
   stack: string[];
   summary: string;
   contentBlocks: never[];
+  next?: NextProject | null;
+  first?: NextProject | null;
+}
+
+interface NextProject {
+  brand: string;
+  slug: string;
+  projectType?: string;
 }
 
 type Status = 'loading' | 'ready' | 'notfound' | 'error';
 
+// `next` is the project after this one in the same order the work list uses
+// (newest first); `first` is where the last project wraps round to.
 const QUERY = `*[_type == "caseStudy" && slug.current == $slug][0]{
-  brand, projectType, timeline, role, stack, summary, contentBlocks
+  brand, projectType, timeline, role, stack, summary, contentBlocks,
+  "next": *[_type == "caseStudy" && publishedAt < ^.publishedAt]
+    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType },
+  "first": *[_type == "caseStudy"]
+    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType }
 }`;
 
 export const CaseStudy: React.FC = () => {
@@ -119,43 +133,58 @@ export const CaseStudy: React.FC = () => {
     );
   }
 
+  const next = project.next ?? project.first;
+  const facts = [
+    { label: 'Role', value: project.role },
+    { label: 'Timeline', value: project.timeline },
+    { label: 'Stack', value: project.stack?.join(', ') },
+  ].filter((f) => f.value);
+
   return (
     <div className="page-wrapper case-study-page" ref={scope}>
-      <header className="cs-hero section-padding">
-        <h1 className="cs-title">
+      {/* Same shape as the homepage masthead: a statement across the full
+          width, then the summary and the facts in the label/content row. */}
+      <header className="cs-head">
+        <h1 className="d3-statement cs-head-title">
           <span data-reveal="text">{project.brand}</span>
-          <span className="font-sec-muted" data-reveal="text" data-reveal-delay="0.1">
-            {project.projectType}
-          </span>
+          {project.projectType && (
+            <span className="text-muted" data-reveal="text" data-reveal-delay="0.08">
+              {project.projectType}
+            </span>
+          )}
         </h1>
 
-        <div className="cs-metadata grid-12-col">
-          <div className="col-2">
-            <span className="meta-label" data-reveal="text">Timeline</span>
-            <span className="meta-value" data-reveal="text">{project.timeline}</span>
-          </div>
-          <div className="col-3">
-            <span className="meta-label" data-reveal="text">Role</span>
-            <span className="meta-value" data-reveal="text">{project.role}</span>
-          </div>
-          <div className="col-2">
-            <span className="meta-label" data-reveal="text">Stack</span>
-            <ul className="meta-stack-list">
-              {project.stack?.map((item) => (
-                <li key={item} className="meta-value" data-reveal="text">
-                  {item}
-                </li>
+        <div className="d3-row d3-mast-sub">
+          {project.summary && (
+            <p className="d3-lede cs-head-summary" data-reveal="text" data-reveal-delay="0.12">
+              {project.summary}
+            </p>
+          )}
+          {facts.length > 0 && (
+            <dl className="cs-facts">
+              {facts.map((f) => (
+                <div key={f.label}>
+                  <dt>{f.label}</dt>
+                  <dd>{f.value}</dd>
+                </div>
               ))}
-            </ul>
-          </div>
-          <div className="col-5">
-            <span className="meta-label" data-reveal="text">Summary</span>
-            <p className="meta-value" data-reveal="text">{project.summary}</p>
-          </div>
+            </dl>
+          )}
         </div>
       </header>
 
       <BlockRenderer blocks={project.contentBlocks || []} />
+
+      {next && next.slug !== slug && (
+        <nav className="d3-row cs-next" aria-label="Next project">
+          <span className="d3-label">Next project</span>
+          <Link to={`/work/${next.slug}`} className="d3-body cs-next-link">
+            <span className="cs-next-brand">{next.brand}</span>
+            {next.projectType && <span className="cs-next-desc"> {next.projectType}</span>}
+            <span className="cs-next-arrow" aria-hidden="true"> &rarr;</span>
+          </Link>
+        </nav>
+      )}
     </div>
   );
 };

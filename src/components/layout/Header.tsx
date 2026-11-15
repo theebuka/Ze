@@ -4,6 +4,7 @@ import { useLagosTime } from '../../hooks/useLagosTime';
 import { useMagneticEffect } from '../../hooks/useMagneticEffect';
 import { useReveal } from '../../hooks/useReveal';
 import { useAppReady } from '../../context/AppReadyContext';
+import { useTheme } from '../../hooks/useTheme';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -12,6 +13,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const lagosTime = useLagosTime();
+  const { theme, toggle } = useTheme();
   const location = useLocation();
 
   const isCaseStudy =
@@ -56,15 +58,29 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
       {/* Same reason: this button's label toggles between menu/close on every
           click, which under SplitText looked like the button flickering
           between the two words. */}
-      <button
-        ref={toggleRef}
-        className="header-menu-toggle magnetic"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        data-reveal="rise"
-        data-reveal-delay="0.22"
-      >
-        <span>{isMenuOpen ? 'close' : 'menu'}</span>
-      </button>
+      <div className="header-actions">
+        {/* Names the theme you'd switch TO, the same way the menu button
+            names what it will do. */}
+        <button
+          className="header-theme-toggle"
+          onClick={toggle}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+          data-reveal="rise"
+          data-reveal-delay="0.18"
+        >
+          <span>{theme === 'dark' ? 'light' : 'dark'}</span>
+        </button>
+
+        <button
+          ref={toggleRef}
+          className="header-menu-toggle magnetic"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          data-reveal="rise"
+          data-reveal-delay="0.22"
+        >
+          <span>{isMenuOpen ? 'close' : 'menu'}</span>
+        </button>
+      </div>
     </header>
   );
 };
