@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useSmoothScroll, setScrollLocked, scrollToTop } from './hooks/useSmoothScroll';
 import { useScrollTriggerRefresh } from './hooks/useReveal';
 
+import { SplashLoader } from './components/layout/SplashLoader';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { MenuOverlay, MENU_REVEAL_LEAD_MS } from './components/layout/MenuOverlay';
@@ -87,11 +88,9 @@ const RouteFallback: React.FC = () => (
 );
 
 const AppContent: React.FC = () => {
+  const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // There is no splash any more: a fixed 3.7s counter before every cold
-  // load was time nobody asked to spend. The flag stays because the reveal
-  // gate and the scroll lock both read it.
-  const [isLoaded] = useState(true);
+const [isLoaded, setIsLoaded] = useState(false);
   const [menuCovering, setMenuCovering] = useState(false);
   const [footerHeight, setFooterHeight] = useState(0);
 
@@ -137,6 +136,8 @@ const AppContent: React.FC = () => {
       <CustomCursor />
       <RouteEffects />
 
+      {!isLoaded && <SplashLoader onComplete={() => setIsLoaded(true)} />}
+
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       <MenuOverlay isOpen={isMenuOpen} closeMenu={() => setIsMenuOpen(false)} />
 
@@ -148,6 +149,9 @@ const AppContent: React.FC = () => {
             or a persistent error would loop. RouteEffects handles navigation. */}
         <ErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
+            {/* Keyed on the path so each page fades in as it mounts
+                (.route-fade in direction-3.css). */}
+            <div className="route-fade" key={pathname}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
@@ -156,6 +160,7 @@ const AppContent: React.FC = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/vault" element={<Vault />} />
             </Routes>
+            </div>
           </Suspense>
         </ErrorBoundary>
       </main>

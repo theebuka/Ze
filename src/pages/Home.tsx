@@ -2,7 +2,6 @@ import React from 'react';
 import { WorkList } from '../components/work/WorkList';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
-import { useParallax } from '../hooks/useParallax';
 import { useAppReady } from '../context/AppReadyContext';
 
 const CAPABILITIES = [
@@ -34,13 +33,12 @@ export const Home: React.FC = () => {
   // the whole reveal while still covered, and the page would look static
   // the instant the splash clears.
   const scope = useReveal<HTMLDivElement>({ deps: [projects], enabled: splashDone });
-  useParallax(scope, [projects]);
 
   return (
     <div className="page-wrapper page-home page-doc" ref={scope}>
       <header className="d3-mast">
         <h1 className="d3-statement" data-reveal="text">
-          I&rsquo;m Chukwuebuka, a product designer and design engineer in Lagos.
+          Chukwuebuka Nwaju, design engineer based in Lagos
         </h1>
 
         <div className="d3-row d3-mast-sub">

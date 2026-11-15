@@ -1,6 +1,5 @@
 import React from 'react';
 import { WorkList } from '../components/work/WorkList';
-import { useParallax } from '../hooks/useParallax';
 import { useProjects } from '../hooks/useProjects';
 import { useReveal } from '../hooks/useReveal';
 import { useAppReady } from '../context/AppReadyContext';
@@ -12,7 +11,6 @@ export const Work: React.FC = () => {
   // Work can be the entry route on a fresh load/refresh, mounting underneath
   // the splash overlay same as Home — same gate, same reason.
   const scope = useReveal<HTMLDivElement>({ deps: [projects], enabled: splashDone });
-  useParallax(scope, [projects]);
 
   return (
     <div className="page-wrapper page-work" ref={scope}>

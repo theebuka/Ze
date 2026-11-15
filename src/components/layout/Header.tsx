@@ -51,16 +51,13 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
           "rise" masks with a static CSS box and animates this inner <span>
           instead, so React keeps the text node and re-renders into it freely
           while the transform sits on the wrapper it never touches. */}
-      <div className="header-time" data-reveal="rise" data-reveal-delay="0.12">
-        <span>local / {lagosTime.toLowerCase()}</span>
-      </div>
-
-      {/* Same reason: this button's label toggles between menu/close on every
-          click, which under SplitText looked like the button flickering
-          between the two words. */}
-      <div className="header-actions">
-        {/* Names the theme you'd switch TO, the same way the menu button
-            names what it will do. */}
+      {/* The theme toggle sits here, with the clock, rather than beside the
+          menu button: the menu button pulls toward any pointer within 80px,
+          so a neighbour made it lurch every time you went for the toggle. */}
+      <div className="header-center">
+        <div className="header-time" data-reveal="rise" data-reveal-delay="0.12">
+          <span>local / {lagosTime.toLowerCase()}</span>
+        </div>
         <button
           className="header-theme-toggle"
           onClick={toggle}
@@ -70,17 +67,20 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
         >
           <span>{theme === 'dark' ? 'light' : 'dark'}</span>
         </button>
-
-        <button
-          ref={toggleRef}
-          className="header-menu-toggle magnetic"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          data-reveal="rise"
-          data-reveal-delay="0.22"
-        >
-          <span>{isMenuOpen ? 'close' : 'menu'}</span>
-        </button>
       </div>
+
+      {/* Same reason: this button's label toggles between menu/close on every
+          click, which under SplitText looked like the button flickering
+          between the two words. */}
+      <button
+        ref={toggleRef}
+        className="header-menu-toggle magnetic"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        data-reveal="rise"
+        data-reveal-delay="0.22"
+      >
+        <span>{isMenuOpen ? 'close' : 'menu'}</span>
+      </button>
     </header>
   );
 };

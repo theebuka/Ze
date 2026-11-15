@@ -58,12 +58,11 @@ export const WorkList: React.FC<Props> = ({ projects, loading }) => {
         return (
           <li className="work-entry" key={project._id}>
             <Link to={`/work/${project.slug}`} className="work-entry-link">
-              <div className="work-entry-media" data-reveal="image" data-parallax>
+              <div className="work-entry-media" data-reveal="image">
                 {project.thumbnailUrl && (
                   <SanityImage
                     source={project.thumbnailUrl}
                     alt=""
-                    className="parallax-img"
                     sizes={SIZES}
                     priority={i === 0}
                     maxWidth={1920}
