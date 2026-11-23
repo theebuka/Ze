@@ -30,7 +30,7 @@ interface Block {
   _key?: string;
   _type: string;
   sectionTitle?: string;
-  align?: 'left' | 'right';
+  align?: 'left' | 'right' | 'wide';
   media?: unknown;
   leftMedia?: unknown;
   rightMedia?: unknown;
@@ -49,6 +49,9 @@ interface Block {
   text2?: string;
   heading3?: string;
   text3?: string;
+  language?: string;
+  code?: string;
+  caption?: string;
   [key: string]: unknown;
 }
 
@@ -140,6 +143,23 @@ export const BlockRenderer: React.FC<Props> = ({ blocks }) => {
                 </div>
               </section>
             );
+
+          case 'codeBlock': {
+            if (!block.code) return null;
+            const col =
+              block.align === 'right' ? 'push-right-5' : block.align === 'wide' ? 'cs-code-wide' : 'col-5';
+            return (
+              <section key={key} className="grid-12-col section-padding">
+                <SectionTitle title={block.sectionTitle} />
+                <figure className={`cs-code ${col}`} data-reveal="text">
+                  <pre tabIndex={0} aria-label={`${block.language || 'Code'} snippet`}>
+                    <code className={block.language ? `language-${block.language}` : undefined}>{block.code}</code>
+                  </pre>
+                  {block.caption && <figcaption className="cs-caption">{block.caption}</figcaption>}
+                </figure>
+              </section>
+            );
+          }
 
           case 'halfWidthText':
             return (

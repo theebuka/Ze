@@ -29,6 +29,12 @@ export const caseStudy = defineType({
       of: [{ type: 'string' }],
       description: 'Add technologies one by one.'
     }),
+    defineField({
+      name: 'liveUrl',
+      title: 'Live URL (Optional)',
+      type: 'url',
+      description: 'Shown as "Live" in the facts under the summary.'
+    }),
     defineField({ name: 'summary', title: 'Summary', type: 'text', rows: 4 }),
 
     // THE PAGE BUILDER
@@ -93,6 +99,23 @@ export const caseStudy = defineType({
               { name: 'heading2', type: 'string', title: 'Heading 2 (Optional)' }, { name: 'text2', type: 'text', rows: 4 }, 
               { name: 'heading3', type: 'string', title: 'Heading 3 (Optional)' }, { name: 'text3', type: 'text', rows: 4 }
             ]
+          }),
+          defineArrayMember({
+            type: 'object', name: 'codeBlock', title: 'Code Snippet',
+            fields: [
+              { name: 'sectionTitle', type: 'string', title: 'Section Title (Optional)' },
+              { name: 'align', type: 'string', title: 'Width', options: { list: [{ title: 'Left (5/12)', value: 'left' }, { title: 'Right (5/12)', value: 'right' }, { title: 'Wide (8/12)', value: 'wide' }], layout: 'radio' }, initialValue: 'left' },
+              { name: 'language', type: 'string', title: 'Language', options: { list: ['js', 'ts', 'tsx', 'css', 'html', 'json', 'swift', 'bash', 'text'] }, initialValue: 'js' },
+              { name: 'code', type: 'text', title: 'Code', rows: 8 },
+              { name: 'caption', type: 'string', title: 'Caption (Optional)' }
+            ],
+            preview: {
+              select: { code: 'code', language: 'language' },
+              prepare: ({ code, language }: { code?: string; language?: string }) => ({
+                title: (code || '').split('\n')[0].slice(0, 60) || 'Code snippet',
+                subtitle: `Code · ${language || 'text'}`
+              })
+            }
           })
         ]
       })

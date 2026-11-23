@@ -648,6 +648,38 @@ body.theme-light .cs-metadata { border-top: 0; }
 }
 .cs-facts dt { color: var(--text-muted); }
 .cs-facts dd { margin: 0; }
+.cs-live-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--text-muted);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 0.2s ease;
+}
+.cs-live-link:hover,
+.cs-live-link:focus-visible { text-decoration-color: currentColor; }
+
+/* Code snippets: same column widths as the text blocks, in the mono face. */
+.cs-code { margin: 0; min-width: 0; }
+.cs-code-wide { grid-column: span 8; }
+.cs-code pre {
+  margin: 0;
+  padding: clamp(16px, 1.6vw, 24px);
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: 6px;
+  /* --font-mono starts with Nacelle, which is proportional; code needs a
+     true monospace so the columns line up. */
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-color);
+  tab-size: 2;
+}
+.cs-code pre:focus-visible { outline: 1px solid var(--text-muted); outline-offset: 2px; }
+.cs-code code { font: inherit; white-space: pre; }
+@media (max-width: 768px) {
+  .cs-code-wide { grid-column: 1 / -1; }
+}
 
 /* Captions sit close under their image, in the label style. */
 .cs-caption { display: block; margin-top: 12px; max-width: 60ch; }

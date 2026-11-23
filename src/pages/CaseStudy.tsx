@@ -33,6 +33,7 @@ interface ProjectData {
   timeline: string;
   role: string;
   stack: string[];
+  liveUrl?: string;
   summary: string;
   contentBlocks: never[];
   next?: NextProject | null;
@@ -50,7 +51,7 @@ type Status = 'loading' | 'ready' | 'notfound' | 'error';
 // `next` is the project after this one in the same order the work list uses
 // (newest first); `first` is where the last project wraps round to.
 const QUERY = `*[_type == "caseStudy" && slug.current == $slug][0]{
-  brand, projectType, timeline, role, stack, summary, contentBlocks,
+  brand, projectType, timeline, role, stack, liveUrl, summary, contentBlocks,
   "next": *[_type == "caseStudy" && publishedAt < ^.publishedAt]
     | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType },
   "first": *[_type == "caseStudy"]
@@ -168,6 +169,16 @@ export const CaseStudy: React.FC = () => {
                   <dd>{f.value}</dd>
                 </div>
               ))}
+              {project.liveUrl && (
+                <div>
+                  <dt>Live</dt>
+                  <dd>
+                    <a className="cs-live-link" href={project.liveUrl} target="_blank" rel="noreferrer">
+                      {project.liveUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                    </a>
+                  </dd>
+                </div>
+              )}
             </dl>
           )}
         </div>
