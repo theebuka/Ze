@@ -297,6 +297,14 @@ main.app-main {
   max-width: 19ch;
 }
 
+/* The home masthead takes eight of the twelve columns instead of a ch cap,
+   so it lines up with the grid below it. */
+@media (min-width: 769px) {
+  .page-home .d3-statement {
+    max-width: calc((100% - 11 * var(--grid-gutter)) / 12 * 8 + 7 * var(--grid-gutter));
+  }
+}
+
 .d3-mast-sub {
   margin-top: clamp(28px, 3vw, 56px);
   align-items: start;
