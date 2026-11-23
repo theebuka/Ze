@@ -664,7 +664,6 @@ body.theme-light .cs-metadata { border-top: 0; }
 .cs-code pre {
   margin: 0;
   padding: clamp(16px, 1.6vw, 24px);
-  overflow-x: auto;
   background: var(--surface);
   border-radius: 6px;
   /* --font-mono starts with Nacelle, which is proportional; code needs a
@@ -676,7 +675,9 @@ body.theme-light .cs-metadata { border-top: 0; }
   tab-size: 2;
 }
 .cs-code pre:focus-visible { outline: 1px solid var(--text-muted); outline-offset: 2px; }
-.cs-code code { font: inherit; white-space: pre; }
+/* Wrap long lines inside the column instead of clipping or scrolling them;
+   indentation is kept, and long tokens break anywhere as a last resort. */
+.cs-code code { font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 768px) {
   .cs-code-wide { grid-column: 1 / -1; }
 }
