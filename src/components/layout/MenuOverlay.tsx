@@ -4,6 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { client } from '../../lib/sanity';
 import { RollingText } from '../common/RollingText';
 import { MOTION } from '../../lib/gsap';
+import { useTheme } from '../../hooks/useTheme';
+import type { ThemeChoice } from '../../hooks/useTheme';
+
+const THEME_OPTIONS: { value: ThemeChoice; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light',  label: 'Light'  },
+  { value: 'dark',   label: 'Dark'   },
+];
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -30,6 +38,7 @@ export const MENU_REVEAL_LEAD_MS = (MENU_PANEL_DURATION * 1000) / 2;
 
 export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) => {
   const [workCount, setWorkCount] = useState<number>(0);
+  const { choice, setChoice } = useTheme();
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -132,6 +141,35 @@ export const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, closeMenu }) =
               </div>
             ))}
           </nav>
+
+          {/* A setting rather than a destination, so it sits apart from the
+              links along the bottom edge and arrives after them. It doesn't
+              close the menu: you see the change behind nothing. */}
+          <motion.div
+            className="menu-theme"
+            role="group"
+            aria-label="Theme"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+            transition={{
+              delay: MENU_PANEL_DURATION * 0.3 + links.length * 0.06 + 0.1,
+              duration: 0.4,
+            }}
+          >
+            <span className="menu-theme-label">Theme</span>
+            {THEME_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                className="menu-theme-option"
+                aria-pressed={choice === value}
+                onClick={() => setChoice(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

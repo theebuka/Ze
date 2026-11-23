@@ -556,28 +556,33 @@ body.theme-light .cs-metadata { border-top: 0; }
 /* ─────────────────────────────────────────────────────────────
    HEADER ACTIONS
    ───────────────────────────────────────────────────────────── */
-/* Theme switch in the footer: three words, the current one underlined. */
-.footer-theme {
+/* Theme switch, along the bottom of the menu overlay. */
+.menu-theme {
+  position: absolute;
+  left: var(--grid-margin);
+  right: var(--grid-margin);
+  bottom: clamp(24px, 3vw, 48px);
   display: flex;
-  gap: var(--gap-footer-social);
-  font-size: var(--font-footer-body);
-  line-height: var(--lh-footer-body);
+  justify-content: center;
+  align-items: baseline;
+  gap: clamp(16px, 1.6vw, 28px);
+  font-size: var(--t-meta);
 }
-.footer-theme-option {
+.menu-theme-label { color: var(--text-muted); }
+.menu-theme-option {
   background: none;
   border: 0;
   padding: 0;
   font: inherit;
-  color: inherit;
-  opacity: 0.55;
+  color: var(--text-muted);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
   text-decoration-color: transparent;
-  transition: opacity var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
+  transition: color var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
 }
-.footer-theme-option:hover { opacity: 1; }
-.footer-theme-option[aria-pressed='true'] { opacity: 1; text-decoration-color: currentColor; }
+.menu-theme-option:hover { color: var(--text-color); }
+.menu-theme-option[aria-pressed='true'] { color: var(--text-color); text-decoration-color: currentColor; }
 
 /* ─────────────────────────────────────────────────────────────
    SHARED PAGE PIECES (About, Contact, Vault, case study)
