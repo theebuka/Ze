@@ -4,6 +4,8 @@ import { RollingText } from '../common/RollingText';
 import { useReveal } from '../../hooks/useReveal';
 import { useAppReady } from '../../context/AppReadyContext';
 import { scrollToTop } from '../../hooks/useSmoothScroll';
+import { useTheme } from '../../hooks/useTheme';
+import type { ThemeChoice } from '../../hooks/useTheme';
 
 /*
   FOOTER
@@ -49,6 +51,12 @@ const NAV_LINKS = [
 // Kept in step with the Contact page, which is the source of truth for these.
 // The footer used to carry a different, non-existent set (/theebuka on all
 // three), so half the social links on the site 404'd.
+const THEME_OPTIONS: { value: ThemeChoice; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light',  label: 'Light'  },
+  { value: 'dark',   label: 'Dark'   },
+];
+
 const SOCIAL_LINKS = [
   { href: 'https://instagram.com/rin.ze',                 aria: 'Instagram',   abbr: 'Instagram' },
   { href: 'https://x.com/ebxkaa',                         aria: 'X / Twitter', abbr: 'X' },
@@ -93,6 +101,7 @@ const VIEW_TRIGGER = {
 export const Footer: React.FC = () => {
   const splashDone = useAppReady();
   const { pathname } = useLocation();
+  const { choice, setChoice } = useTheme();
   // Footer is always mounted from the very first paint, underneath the
   // splash overlay, so it needs the same splashDone gate every page does.
   //
@@ -158,6 +167,29 @@ export const Footer: React.FC = () => {
               >
                 <RollingText text={abbr} />
               </a>
+            ))}
+          </div>
+
+          {/* Theme lives here rather than in the header: it's a setting you
+              change once, and next to the menu button it sat inside that
+              button's magnetic field. */}
+          <div
+            className="footer-theme"
+            role="group"
+            aria-label="Theme"
+            data-reveal="rise"
+            data-reveal-delay="0.28"
+          >
+            {THEME_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                className="footer-theme-option"
+                aria-pressed={choice === value}
+                onClick={() => setChoice(value)}
+              >
+                {label}
+              </button>
             ))}
           </div>
         </div>

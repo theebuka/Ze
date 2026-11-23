@@ -556,21 +556,28 @@ body.theme-light .cs-metadata { border-top: 0; }
 /* ─────────────────────────────────────────────────────────────
    HEADER ACTIONS
    ───────────────────────────────────────────────────────────── */
-.header-center {
-  justify-self: center;
+/* Theme switch in the footer: three words, the current one underlined. */
+.footer-theme {
   display: flex;
-  align-items: center;
-  gap: clamp(14px, 1.4vw, 24px);
+  gap: var(--gap-footer-social);
+  font-size: var(--font-footer-body);
+  line-height: var(--lh-footer-body);
 }
-.header-theme-toggle {
+.footer-theme-option {
   background: none;
   border: 0;
   padding: 0;
   font: inherit;
-  color: var(--text-muted);
-  transition: color var(--dur-hover) var(--ease-out);
+  color: inherit;
+  opacity: 0.55;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: transparent;
+  transition: opacity var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
 }
-.header-theme-toggle:hover { color: var(--text-color); }
+.footer-theme-option:hover { opacity: 1; }
+.footer-theme-option[aria-pressed='true'] { opacity: 1; text-decoration-color: currentColor; }
 
 /* ─────────────────────────────────────────────────────────────
    SHARED PAGE PIECES (About, Contact, Vault, case study)
@@ -687,11 +694,17 @@ body.theme-light .cs-metadata { border-top: 0; }
 
 .cs-next { margin-top: clamp(96px, 10vw, 180px); }
 .cs-next-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(200px, 24vw, 420px);
+  gap: var(--grid-gutter);
+  align-items: center;
+}
+.cs-next-text {
   font-size: var(--t-statement);
   letter-spacing: -0.032em;
   line-height: 1.04;
   text-wrap: balance;
-  max-width: 22ch;
+  max-width: 18ch;
 }
 .cs-next-desc { color: var(--text-muted); }
 .cs-next-arrow {
@@ -699,13 +712,46 @@ body.theme-light .cs-metadata { border-top: 0; }
   color: var(--text-muted);
   transition: transform var(--dur-move) var(--ease-out-expo), color var(--dur-hover) var(--ease-out);
 }
+
+/* The next project's cover, wiped up from the bottom on hover. Its column
+   is reserved even while hidden so the title never reflows under it. */
+.cs-next-thumb {
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface);
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path var(--dur-move) var(--ease-out-expo);
+}
+.cs-next-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.06);
+  transition: transform 0.9s var(--ease-out-expo);
+}
+.cs-next-link:hover .cs-next-thumb,
+.cs-next-link:focus-visible .cs-next-thumb { clip-path: inset(0 0 0 0); }
+.cs-next-link:hover .cs-next-thumb img,
+.cs-next-link:focus-visible .cs-next-thumb img { transform: scale(1); }
+
+/* No hover to reveal it on a phone, so it's simply shown, under the title. */
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  .cs-next-link { grid-template-columns: 1fr; }
+  .cs-next-thumb { clip-path: none; margin-top: 8px; }
+  .cs-next-thumb img { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-next-thumb { transition: none; }
+  .cs-next-thumb img { transition: none; transform: none; }
+}
 .cs-next-link:hover .cs-next-arrow { transform: translateX(0.12em); color: var(--text-color); }
 
 @media (max-width: 768px) {
   .cs-facts { margin-top: 24px; }
   .d3-section--tight { margin-top: 40px; }
   .about-experience li { flex-direction: column; gap: 0; margin-bottom: 0.8em; }
-  .header-center { gap: 12px; }
 }
 
 /* Each route fades in as it mounts (keyed wrapper in App.tsx). Opacity

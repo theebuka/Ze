@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { client } from '../lib/sanity';
 import { BlockRenderer } from '../components/case-study/BlockRenderer';
+import { SanityImage } from '../components/common/SanityImage';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
 import { useAppReady } from '../context/AppReadyContext';
@@ -44,6 +45,7 @@ interface NextProject {
   brand: string;
   slug: string;
   projectType?: string;
+  thumbnailUrl?: string;
 }
 
 type Status = 'loading' | 'ready' | 'notfound' | 'error';
@@ -53,9 +55,9 @@ type Status = 'loading' | 'ready' | 'notfound' | 'error';
 const QUERY = `*[_type == "caseStudy" && slug.current == $slug][0]{
   brand, projectType, timeline, role, stack, liveUrl, summary, contentBlocks,
   "next": *[_type == "caseStudy" && publishedAt < ^.publishedAt]
-    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType },
+    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType, "thumbnailUrl": thumbnail.asset->url },
   "first": *[_type == "caseStudy"]
-    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType }
+    | order(publishedAt desc)[0]{ brand, "slug": slug.current, projectType, "thumbnailUrl": thumbnail.asset->url }
 }`;
 
 export const CaseStudy: React.FC = () => {
@@ -190,9 +192,21 @@ export const CaseStudy: React.FC = () => {
         <nav className="d3-row cs-next" aria-label="Next project">
           <span className="d3-label">Next project</span>
           <Link to={`/work/${next.slug}`} className="d3-body cs-next-link">
-            <span className="cs-next-brand">{next.brand}</span>
-            {next.projectType && <span className="cs-next-desc"> {next.projectType}</span>}
-            <span className="cs-next-arrow" aria-hidden="true"> &rarr;</span>
+            <span className="cs-next-text">
+              <span className="cs-next-brand">{next.brand}</span>
+              {next.projectType && <span className="cs-next-desc"> {next.projectType}</span>}
+              <span className="cs-next-arrow" aria-hidden="true"> &rarr;</span>
+            </span>
+            {next.thumbnailUrl && (
+              <span className="cs-next-thumb" aria-hidden="true">
+                <SanityImage
+                  source={next.thumbnailUrl}
+                  alt=""
+                  sizes="(max-width: 768px) 100vw, 420px"
+                  maxWidth={1024}
+                />
+              </span>
+            )}
           </Link>
         </nav>
       )}

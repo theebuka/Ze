@@ -4,7 +4,6 @@ import { useLagosTime } from '../../hooks/useLagosTime';
 import { useMagneticEffect } from '../../hooks/useMagneticEffect';
 import { useReveal } from '../../hooks/useReveal';
 import { useAppReady } from '../../context/AppReadyContext';
-import { useTheme } from '../../hooks/useTheme';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -13,7 +12,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => {
   const lagosTime = useLagosTime();
-  const { theme, toggle } = useTheme();
   const location = useLocation();
 
   const isCaseStudy =
@@ -51,22 +49,8 @@ export const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen }) => 
           "rise" masks with a static CSS box and animates this inner <span>
           instead, so React keeps the text node and re-renders into it freely
           while the transform sits on the wrapper it never touches. */}
-      {/* The theme toggle sits here, with the clock, rather than beside the
-          menu button: the menu button pulls toward any pointer within 80px,
-          so a neighbour made it lurch every time you went for the toggle. */}
-      <div className="header-center">
-        <div className="header-time" data-reveal="rise" data-reveal-delay="0.12">
-          <span>local / {lagosTime.toLowerCase()}</span>
-        </div>
-        <button
-          className="header-theme-toggle"
-          onClick={toggle}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-          data-reveal="rise"
-          data-reveal-delay="0.18"
-        >
-          <span>{theme === 'dark' ? 'light' : 'dark'}</span>
-        </button>
+      <div className="header-time" data-reveal="rise" data-reveal-delay="0.12">
+        <span>local / {lagosTime.toLowerCase()}</span>
       </div>
 
       {/* Same reason: this button's label toggles between menu/close on every

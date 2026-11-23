@@ -1,41 +1,52 @@
 import { useCallback, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark';
+export type ThemeChoice = Theme | 'system';
 
 const media = () => window.matchMedia('(prefers-color-scheme: dark)');
 
 /** An explicit choice (data-theme, set here or by index.html) wins over the OS. */
-const current = (): Theme => {
+const readChoice = (): ThemeChoice => {
   const set = document.documentElement.dataset.theme;
-  if (set === 'dark' || set === 'light') return set;
-  return media().matches ? 'dark' : 'light';
+  return set === 'dark' || set === 'light' ? set : 'system';
 };
 
+const resolve = (choice: ThemeChoice): Theme =>
+  choice === 'system' ? (media().matches ? 'dark' : 'light') : choice;
+
 /**
- * Light/dark theme. With no saved choice the CSS follows the OS setting and
- * nothing is stamped on <html>; toggling stamps data-theme and saves it.
+ * Light/dark theme. 'system' leaves <html> unstamped so the CSS follows the
+ * OS; 'light' or 'dark' stamps data-theme and saves the choice.
  */
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(current);
+  const [choice, setChoiceState] = useState<ThemeChoice>(readChoice);
+  const [theme, setTheme] = useState<Theme>(() => resolve(readChoice()));
 
-  // Follow the OS while the visitor hasn't chosen for themselves.
+  // Follow the OS while the choice is 'system'.
   useEffect(() => {
     const mq = media();
-    const onChange = () => setTheme(current());
+    const onChange = () => setTheme(resolve(readChoice()));
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const toggle = useCallback(() => {
-    const next: Theme = current() === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
+  const setChoice = useCallback((next: ThemeChoice) => {
+    const root = document.documentElement;
     try {
-      localStorage.setItem('theme', next);
+      if (next === 'system') {
+        delete root.dataset.theme;
+        localStorage.removeItem('theme');
+      } else {
+        root.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      }
     } catch {
-      // Private mode: the choice just won't survive a reload.
+      // Private mode: the choice applies now but won't survive a reload.
+      if (next !== 'system') root.dataset.theme = next;
     }
-    setTheme(next);
+    setChoiceState(next);
+    setTheme(resolve(next));
   }, []);
 
-  return { theme, toggle };
+  return { theme, choice, setChoice };
 }

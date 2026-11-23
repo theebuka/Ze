@@ -167,14 +167,20 @@ export const MediaItem: React.FC<Props> = ({ data, sizes = '100vw', priority = f
 
   if (data.image) {
     return (
-      <figure className="cs-media-wrapper" data-reveal="image" data-parallax>
-        <SanityImage
-          source={data.image}
-          alt={data.caption || 'Case study visual'}
-          className="cs-img"
-          sizes={sizes}
-          priority={priority}
-        />
+      <figure className="cs-media-wrapper" data-reveal="image">
+        {/* The parallax drift happens inside this frame. It used to be set on
+            the figure, so the image moved within a box that also held the
+            caption, and slid down over it. The frame keeps the image's own
+            height; "cover" scales the image just enough to hide its edges. */}
+        <div className="cs-media-img" data-parallax="cover">
+          <SanityImage
+            source={data.image}
+            alt={data.caption || 'Case study visual'}
+            className="cs-img"
+            sizes={sizes}
+            priority={priority}
+          />
+        </div>
         {data.caption && <figcaption className="cs-caption">{data.caption}</figcaption>}
       </figure>
     );
