@@ -36,7 +36,7 @@ export const SanityImage: React.FC<Props> = ({
   className,
   sizes = '100vw',
   priority = false,
-  maxWidth = 2560,
+  maxWidth = 3200,
 }) => {
   if (!source) return null;
 
