@@ -38,7 +38,8 @@ export const Home: React.FC = () => {
     <div className="page-wrapper page-home page-doc" ref={scope}>
       <header className="d3-mast">
         <h1 className="d3-statement" data-reveal="text">
-          Chukwuebuka Nwaju, design engineer based in Lagos
+          Chukwuebuka Nwaju, multidisciplinary design engineer and art director
+          based in Lagos
         </h1>
 
         <div className="d3-row d3-mast-sub">
@@ -46,7 +47,7 @@ export const Home: React.FC = () => {
             I design systems, then build them. Usually the first designer in the
             room, and close enough to the code that the intent survives delivery.
           </p>
-          <p className="d3-meta">
+          <p className="d3-meta" data-reveal="text" data-reveal-delay="0.2">
             Open to new work
             <br />
             <a href="mailto:me@theebuka.com">me@theebuka.com</a>
@@ -55,16 +56,16 @@ export const Home: React.FC = () => {
       </header>
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Selected work</h2>
+        <h2 className="d3-label" data-reveal="text">Selected work</h2>
         <div className="d3-body">
           <WorkList projects={projects} loading={loading} />
         </div>
       </section>
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Approach</h2>
+        <h2 className="d3-label" data-reveal="text">Approach</h2>
         <div className="d3-body">
-          <p className="d3-prose">
+          <p className="d3-prose" data-reveal="text">
             I lean toward brutalist minimalism: structure left visible, contrast
             doing the work, and restraint where a system would otherwise start
             shouting. Most of my work has been in fintech, B2B and SaaS, often as
@@ -72,8 +73,10 @@ export const Home: React.FC = () => {
             first sketch to what ships.
           </p>
           <ul className="d3-list">
-            {CAPABILITIES.map((c) => (
-              <li key={c}>{c}</li>
+            {CAPABILITIES.map((c, i) => (
+              <li key={c} data-reveal="text" data-reveal-delay={i * 0.04}>
+                {c}
+              </li>
             ))}
           </ul>
         </div>

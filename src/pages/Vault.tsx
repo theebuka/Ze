@@ -29,10 +29,12 @@ export const Vault: React.FC = () => {
       </header>
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Coming soon</h2>
+        <h2 className="d3-label" data-reveal="text">Coming soon</h2>
         <ul className="d3-body d3-links d3-links--static">
-          {CATEGORIES.map((c) => (
-            <li key={c}>{c}</li>
+          {CATEGORIES.map((c, i) => (
+            <li key={c} data-reveal="text" data-reveal-delay={i * 0.06}>
+              {c}
+            </li>
           ))}
         </ul>
       </section>

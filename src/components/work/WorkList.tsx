@@ -71,7 +71,7 @@ export const WorkList: React.FC<Props> = ({ projects, loading }) => {
               </div>
 
               <div className="work-entry-caption">
-                <p className="work-entry-title">
+                <p className="work-entry-title" data-reveal="text">
                   <span className="work-entry-brand">{project.brand}</span>
                   {project.projectType && (
                     <span className="work-entry-desc">
@@ -79,7 +79,7 @@ export const WorkList: React.FC<Props> = ({ projects, loading }) => {
                     </span>
                   )}
                 </p>
-                {meta && <p className="work-entry-meta">{meta}</p>}
+                {meta && <p className="work-entry-meta" data-reveal="text" data-reveal-delay="0.06">{meta}</p>}
               </div>
             </Link>
           </li>

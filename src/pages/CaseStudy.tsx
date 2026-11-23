@@ -167,14 +167,14 @@ export const CaseStudy: React.FC = () => {
             <dl className="cs-facts">
               {facts.map((f) => (
                 <div key={f.label}>
-                  <dt>{f.label}</dt>
-                  <dd>{f.value}</dd>
+                  <dt data-reveal="text" data-reveal-delay="0.16">{f.label}</dt>
+                  <dd data-reveal="text" data-reveal-delay="0.2">{f.value}</dd>
                 </div>
               ))}
               {project.liveUrl && (
                 <div>
-                  <dt>Live</dt>
-                  <dd>
+                  <dt data-reveal="text" data-reveal-delay="0.16">Live</dt>
+                  <dd data-reveal="text" data-reveal-delay="0.2">
                     <a className="cs-live-link" href={project.liveUrl} target="_blank" rel="noreferrer">
                       {project.liveUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                     </a>

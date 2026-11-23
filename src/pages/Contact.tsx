@@ -51,12 +51,12 @@ export const Contact: React.FC = () => {
           className={`d3-row d3-section${i === 0 ? '' : ' d3-section--tight'}`}
           key={group.label}
         >
-          <h2 className="d3-label">{group.label}</h2>
+          <h2 className="d3-label" data-reveal="text">{group.label}</h2>
           <ul className="d3-body d3-links">
-            {group.links.map(({ href, label }) => {
+            {group.links.map(({ href, label }, j) => {
               const external = !href.startsWith('mailto:');
               return (
-                <li key={label}>
+                <li key={label} data-reveal="text" data-reveal-delay={j * 0.06}>
                   <a
                     href={href}
                     {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}

@@ -75,14 +75,14 @@ export const About: React.FC = () => {
       {image('aboutImage1', 'ZE thinking')}
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Background</h2>
+        <h2 className="d3-label" data-reveal="text">Background</h2>
         <div className="d3-body d3-copy">
-          <p>
+          <p data-reveal="text">
             I came to design through medical radiography. Working inside complex
             systems of care, and helping other people make sense of them, I
             realised what I cared about most was how people experience systems.
           </p>
-          <p>
+          <p data-reveal="text">
             From there I joined tech startups, where I&rsquo;ve spent the last few
             years designing products from the ground up, often as the first or
             only designer, working closely with engineers and product teams.
@@ -95,9 +95,9 @@ export const About: React.FC = () => {
       </section>
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">How I work</h2>
+        <h2 className="d3-label" data-reveal="text">How I work</h2>
         <div className="d3-body d3-copy">
-          <p>
+          <p data-reveal="text">
             Most of my work is in fintech, B2B enterprise and SaaS, across
             product roles and freelance. I ask a lot of questions, I&rsquo;m
             practical, and I&rsquo;d rather make small moves that keep getting it
@@ -105,7 +105,7 @@ export const About: React.FC = () => {
             on typography: alignment, space, and the gap between what something
             means and how it&rsquo;s presented.
           </p>
-          <p>
+          <p data-reveal="text">
             My taste runs to brutalist minimalism: structure and contrast first,
             restraint over decoration. Less, but it has to hold up.
           </p>
@@ -114,10 +114,10 @@ export const About: React.FC = () => {
 
       {EXPERIENCE.length > 0 && (
         <section className="d3-row d3-section">
-          <h2 className="d3-label">Experience</h2>
+          <h2 className="d3-label" data-reveal="text">Experience</h2>
           <ul className="d3-body about-experience">
             {EXPERIENCE.map((e) => (
-              <li key={`${e.company}-${e.years}`}>
+              <li key={`${e.company}-${e.years}`} data-reveal="text">
                 <span>
                   {e.role}, <span className="text-muted">{e.company}</span>
                 </span>
@@ -131,9 +131,9 @@ export const About: React.FC = () => {
       {image('aboutImage2', 'ZE smiling')}
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Outside work</h2>
+        <h2 className="d3-label" data-reveal="text">Outside work</h2>
         <div className="d3-body d3-copy">
-          <p>
+          <p data-reveal="text">
             Music, pop culture and collecting. I keep mood boards and a deep
             library of underground, lo-fi and alternative hip-hop. I&rsquo;m drawn
             to physical things (books, magazines, sneakers) because material,
@@ -143,10 +143,12 @@ export const About: React.FC = () => {
       </section>
 
       <section className="d3-row d3-section">
-        <h2 className="d3-label">Focus</h2>
+        <h2 className="d3-label" data-reveal="text">Focus</h2>
         <ul className="d3-body d3-list about-focus-list">
-          {FOCUS.map((f) => (
-            <li key={f}>{f}</li>
+          {FOCUS.map((f, i) => (
+            <li key={f} data-reveal="text" data-reveal-delay={i * 0.04}>
+              {f}
+            </li>
           ))}
         </ul>
       </section>

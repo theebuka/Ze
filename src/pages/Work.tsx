@@ -16,14 +16,14 @@ export const Work: React.FC = () => {
     <div className="page-wrapper page-work" ref={scope}>
       <header className="work-page-header">
         <h1 className="work-title" data-reveal="text">
-          Take a look at a few projects I&rsquo;ve
-          <br />
-          hashed out in recent years
+          Few projects I&rsquo;ve worked on in recent years
         </h1>
       </header>
 
       <section className="d3-row d3-section d3-section--first">
-        <h2 className="d3-label">
+        {/* Keyed so the count arriving remounts the label. SplitText owns the
+            text nodes once split, so React cannot update them in place. */}
+        <h2 className="d3-label" data-reveal="text" key={loading ? 'loading' : 'ready'}>
           All work{!loading && ` (${projects.length})`}
         </h2>
         <div className="d3-body">

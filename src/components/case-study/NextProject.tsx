@@ -66,9 +66,9 @@ export const NextProject: React.FC<Props> = ({ brand, slug, projectType, thumbna
 
   return (
     <nav className="d3-row cs-next" aria-label="Next project">
-      <span className="d3-label">Next project</span>
+      <span className="d3-label" data-reveal="text">Next project</span>
       <Link ref={linkRef} to={`/work/${slug}`} className="d3-body cs-next-link">
-        <span className="cs-next-text">
+        <span className="cs-next-text" data-reveal="text">
           <span className="cs-next-brand">{brand}</span>
           {projectType && <span className="cs-next-desc"> {projectType}</span>}
           <span className="cs-next-arrow" aria-hidden="true"> &rarr;</span>
