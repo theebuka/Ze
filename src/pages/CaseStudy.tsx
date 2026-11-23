@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { client } from '../lib/sanity';
 import { BlockRenderer } from '../components/case-study/BlockRenderer';
-import { SanityImage } from '../components/common/SanityImage';
+import { NextProject } from '../components/case-study/NextProject';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
 import { useAppReady } from '../context/AppReadyContext';
@@ -189,26 +189,12 @@ export const CaseStudy: React.FC = () => {
       <BlockRenderer blocks={project.contentBlocks || []} />
 
       {next && next.slug !== slug && (
-        <nav className="d3-row cs-next" aria-label="Next project">
-          <span className="d3-label">Next project</span>
-          <Link to={`/work/${next.slug}`} className="d3-body cs-next-link">
-            <span className="cs-next-text">
-              <span className="cs-next-brand">{next.brand}</span>
-              {next.projectType && <span className="cs-next-desc"> {next.projectType}</span>}
-              <span className="cs-next-arrow" aria-hidden="true"> &rarr;</span>
-            </span>
-            {next.thumbnailUrl && (
-              <span className="cs-next-thumb" aria-hidden="true">
-                <SanityImage
-                  source={next.thumbnailUrl}
-                  alt=""
-                  sizes="(max-width: 768px) 100vw, 420px"
-                  maxWidth={1024}
-                />
-              </span>
-            )}
-          </Link>
-        </nav>
+        <NextProject
+          brand={next.brand}
+          slug={next.slug}
+          projectType={next.projectType}
+          thumbnailUrl={next.thumbnailUrl}
+        />
       )}
     </div>
   );

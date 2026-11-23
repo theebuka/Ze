@@ -693,18 +693,14 @@ body.theme-light .cs-metadata { border-top: 0; }
 .cs-caption { display: block; margin-top: 12px; max-width: 60ch; }
 
 .cs-next { margin-top: clamp(96px, 10vw, 180px); }
-.cs-next-link {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(200px, 24vw, 420px);
-  gap: var(--grid-gutter);
-  align-items: center;
-}
+.cs-next-link { display: block; }
 .cs-next-text {
+  display: block;
   font-size: var(--t-statement);
   letter-spacing: -0.032em;
   line-height: 1.04;
   text-wrap: balance;
-  max-width: 18ch;
+  max-width: 22ch;
 }
 .cs-next-desc { color: var(--text-muted); }
 .cs-next-arrow {
@@ -713,38 +709,45 @@ body.theme-light .cs-metadata { border-top: 0; }
   transition: transform var(--dur-move) var(--ease-out-expo), color var(--dur-hover) var(--ease-out);
 }
 
-/* The next project's cover, wiped up from the bottom on hover. Its column
-   is reserved even while hidden so the title never reflows under it. */
-.cs-next-thumb {
-  display: block;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  background: var(--surface);
-  clip-path: inset(100% 0 0 0);
-  transition: clip-path var(--dur-move) var(--ease-out-expo);
+/* The next project's cover, following the pointer (NextProject.tsx moves
+   the outer element; the inner one handles appearing and disappearing). */
+.cs-next-float {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 360px;
+  height: 225px;
+  pointer-events: none;
+  z-index: 50;
 }
-.cs-next-thumb img {
+.cs-next-float-inner {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
-  transform: scale(1.06);
-  transition: transform 0.9s var(--ease-out-expo);
+  overflow: hidden;
+  background: var(--surface);
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-out-expo);
 }
-.cs-next-link:hover .cs-next-thumb,
-.cs-next-link:focus-visible .cs-next-thumb { clip-path: inset(0 0 0 0); }
-.cs-next-link:hover .cs-next-thumb img,
-.cs-next-link:focus-visible .cs-next-thumb img { transform: scale(1); }
+.cs-next-float-inner.is-on { opacity: 1; transform: scale(1); }
+.cs-next-float img,
+.cs-next-thumb-static img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* No hover to reveal it on a phone, so it's simply shown, under the title. */
-@media (hover: none), (pointer: coarse), (max-width: 768px) {
-  .cs-next-link { grid-template-columns: 1fr; }
-  .cs-next-thumb { clip-path: none; margin-top: 8px; }
-  .cs-next-thumb img { transform: none; }
+/* On touch there's nothing to follow, so the cover sits under the title. */
+.cs-next-thumb-static { display: none; }
+@media (hover: none), (pointer: coarse) {
+  .cs-next-float { display: none; }
+  .cs-next-thumb-static {
+    display: block;
+    margin-top: 20px;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--surface);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cs-next-thumb { transition: none; }
-  .cs-next-thumb img { transition: none; transform: none; }
+  .cs-next-float-inner { transform: none; transition: opacity var(--dur-hover) linear; }
 }
 .cs-next-link:hover .cs-next-arrow { transform: translateX(0.12em); color: var(--text-color); }
 
